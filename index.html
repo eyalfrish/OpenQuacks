@@ -267,10 +267,9 @@
                     Rubies: <strong id="shop-rubies" style="color: #ff4444; font-size: 1.2rem; margin-left: 5px;">0</strong>
                 </span>
             </div>
-            <p style="margin-bottom: 10px; font-size: 0.9em;">Buy up to 2 ingredients of different colors.</p>
+            <p style="margin-bottom: 10px; font-size: 0.9em;">Buy up to 2 ingredients of different colors. Ruby items have no limits!</p>
             <div id="shop-items" class="shop-grid"></div>
             <div style="margin-top: 15px; border-top: 1px solid var(--panel-border); padding-top: 15px;">
-                <button id="btn-recharge-flask" style="background-color: #00b4d8;">Recharge Flask (1 Ruby)</button>
                 <button id="btn-finish-buying" style="background-color: #4caf50;">Next Round</button>
             </div>
         </div>
@@ -587,7 +586,6 @@
 
                 document.getElementById('btn-choose-vp').addEventListener('click', () => { this.game.humanPlayer.victoryPoints += this.game.humanPlayer.roundVP; document.getElementById('explosion-modal').style.display = 'none'; this.startBuyingPhase(); });
                 document.getElementById('btn-choose-money').addEventListener('click', () => { this.game.humanPlayer.money += this.game.humanPlayer.roundMoney; document.getElementById('explosion-modal').style.display = 'none'; this.startBuyingPhase(); });
-                document.getElementById('btn-recharge-flask').addEventListener('click', () => { if (this.game.humanPlayer.rubies >= 1 && !this.game.humanPlayer.flaskActive) { this.game.humanPlayer.rubies -= 1; this.game.humanPlayer.flaskActive = true; this.renderShopUI(); } });
                 document.getElementById('btn-finish-buying').addEventListener('click', () => { document.getElementById('shop-modal').style.display = 'none'; this.game.endRound(); });
             }
 
@@ -613,7 +611,6 @@
             renderShopUI() {
                 const h = this.game.humanPlayer;
                 document.getElementById('shop-money').innerText = h.money; document.getElementById('shop-rubies').innerText = h.rubies;
-                document.getElementById('btn-recharge-flask').disabled = (h.rubies < 1 || h.flaskActive);
 
                 const shopItems = document.getElementById('shop-items'); shopItems.innerHTML = '';
                 const cartColors = this.shopCart.map(c => c.type.id);
@@ -639,6 +636,46 @@
                     if (!disabled) el.addEventListener('click', () => { if (h.buyChip(item.type, item.value, item.cost)) { this.shopCart.push(item); this.renderShopUI(); } });
                     shopItems.appendChild(el);
                 });
+
+                // --- Special Ruby Upgrades ---
+
+                // 1. Droplet Upgrade
+                const dropletEl = document.createElement('div');
+                const canAffordDroplet = h.rubies >= 2;
+                dropletEl.className = `shop-item ${!canAffordDroplet ? 'disabled' : ''}`;
+                dropletEl.innerHTML = `
+                    <div style="width: 25px; height: 35px; ${getUtilSpriteStyle('DROPLET')}"></div>
+                    <div style="font-size: 0.8em; font-weight: bold;">Droplet</div>
+                    <div style="font-size: 0.9em; color: #ff4444;">Cost: 2 Rubies</div>
+                    <div class="tooltip">Move your starting droplet forward by 1 space permanently. Can be purchased multiple times.</div>
+                `;
+                if (canAffordDroplet) {
+                    dropletEl.addEventListener('click', () => {
+                        h.rubies -= 2;
+                        h.dropletPosition++;
+                        this.renderShopUI();
+                    });
+                }
+                shopItems.appendChild(dropletEl);
+
+                // 2. Flask Refill
+                const flaskEl = document.createElement('div');
+                const canAffordFlask = h.rubies >= 2 && !h.flaskActive;
+                flaskEl.className = `shop-item ${!canAffordFlask ? 'disabled' : ''}`;
+                flaskEl.innerHTML = `
+                    <div style="width: 25px; height: 35px; ${getUtilSpriteStyle(h.flaskActive ? 'FLASK_FULL' : 'FLASK_EMPTY')}"></div>
+                    <div style="font-size: 0.8em; font-weight: bold;">Refill Flask</div>
+                    <div style="font-size: 0.9em; color: #ff4444;">Cost: 2 Rubies</div>
+                    <div class="tooltip">${h.flaskActive ? 'Your flask is already full.' : 'Refill your empty flask so it can be used again.'}</div>
+                `;
+                if (canAffordFlask) {
+                    flaskEl.addEventListener('click', () => {
+                        h.rubies -= 2;
+                        h.flaskActive = true;
+                        this.renderShopUI();
+                    });
+                }
+                shopItems.appendChild(flaskEl);
             }
 
             handleResize() {
