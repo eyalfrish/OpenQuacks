@@ -482,7 +482,12 @@
                 const book = this.game.books[chip.type.id];
                 if (book && book.immediate) book.immediate(this, placedChip);
 
-                if (this.currentWhiteValue > this.game.config.explosionThreshold) { this.exploded = true; this.hasStopped = true; }
+                if (this.currentWhiteValue > this.game.config.explosionThreshold) { 
+                    this.exploded = true; 
+                    this.hasStopped = true; 
+                } else if (this.bag.length === 0) {
+                    this.hasStopped = true; // Automatically stop if the bag is empty
+                }
             }
 
             useFlask() {
@@ -594,7 +599,8 @@
                 window.addEventListener('resize', () => this.handleResize());
                 document.getElementById('btn-draw').addEventListener('click', () => {
                     this.game.humanPlayer.drawChip(); this.updateFullUI();
-                    if (this.game.humanPlayer.exploded) this.game.checkBrewingPhaseEnd();
+                    // Trigger evaluation check if they exploded or ran out of chips
+                    if (this.game.humanPlayer.exploded || this.game.humanPlayer.hasStopped) this.game.checkBrewingPhaseEnd();
                 });
                 document.getElementById('btn-stop').addEventListener('click', () => {
                     this.game.humanPlayer.hasStopped = true; this.updateFullUI(); this.game.checkBrewingPhaseEnd();
@@ -849,7 +855,7 @@
 
                 const canDraw = !human.exploded && !human.hasStopped && human.bag.length > 0;
                 document.getElementById('btn-draw').disabled = !canDraw;
-                document.getElementById('btn-stop').disabled = !canDraw;
+                document.getElementById('btn-stop').disabled = human.exploded || human.hasStopped; // Uncoupled from canDraw
 
                 const flaskBtn = document.getElementById('btn-flask');
                 const lastChip = human.cauldron[human.cauldron.length - 1];
