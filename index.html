@@ -1029,7 +1029,21 @@
                 this.game.players.filter(p => !p.isHuman).forEach(ai => {
                     const status = ai.exploded ? "EXPLODED!" : (ai.hasStopped ? "Finished" : "Brewing...");
                     const card = document.createElement('div'); card.className = 'ai-card';
-                    card.innerHTML = `<strong>${ai.name}</strong><div style="font-size: 0.9em; margin-top: 5px;"><div>VP: ${ai.victoryPoints} | Rubies: ${ai.rubies}</div><div>Final Space: ${ai.currentBrewValue}</div><div style="color: ${ai.exploded ? '#ff4444' : '#aaaaaa'}">Status: ${status}</div></div>`;
+                    
+                    const aiBrewVal = ai.currentBrewValue || 0;
+                    const aiReward = TRACK_REWARDS[Math.min(aiBrewVal, TRACK_REWARDS.length - 1)];
+                    
+                    let brewHtml = `<div style="display: flex; align-items: center; margin: 3px 0;">Brew Value: `;
+                    if (aiReward.vp > 0) {
+                        brewHtml += `<span style="color: #f5f5f5; margin-left: 5px;">${aiReward.vp}</span><span style="width: 16px; height: 16px; display: inline-block; margin-left: 2px; margin-right: 5px; ${getUtilSpriteStyle('VP')}"></span>`;
+                    }
+                    brewHtml += `<strong style="color: gold; margin-left: 5px;">${aiReward.money}</strong>`;
+                    if (aiReward.ruby) {
+                        brewHtml += `<span style="width: 16px; height: 16px; display: inline-block; margin-left: 2px; margin-right: 0; ${getUtilSpriteStyle('RUBY')}"></span>`;
+                    }
+                    brewHtml += `</div>`;
+
+                    card.innerHTML = `<strong>${ai.name}</strong><div style="font-size: 0.9em; margin-top: 5px;"><div>VP: ${ai.victoryPoints} | Rubies: ${ai.rubies}</div>${brewHtml}<div style="color: ${ai.exploded ? '#ff4444' : '#aaaaaa'}">Status: ${status}</div></div>`;
                     aiListEl.appendChild(card);
                 });
             }
