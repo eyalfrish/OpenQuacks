@@ -252,7 +252,7 @@
         <!-- Cauldron Canvas -->
         <div id="cauldron-wrapper">
             <canvas id="cauldron-canvas"></canvas>
-            <video id="explosion-video" src="assets/explosion.mp4" playsinline preload="auto"></video>
+            <video id="explosion-video" src="assets/explosion.mp4" playsinline preload="auto" loop></video>
             <video id="bubbling-video" src="assets/cauldron_bubble1.mp4" playsinline preload="auto" muted loop style="display: none;"></video>
         </div>
     </div>
@@ -411,7 +411,7 @@
         const TRACK_REWARDS = Array.from({ length: 60 }, (_, i) => ({
             vp: i >= 10 ? Math.floor((i - 5) / 5) : 0, 
             money: i === 0 ? 0 : i + Math.floor(i / 3),
-            ruby: (i === 5 || i === 9 || i === 13 || i === 17 || i === 21)
+            ruby: (i === 5 || i === 9 || i === 13 || i === 17 || i === 21 || i === 26 || i === 30 || i === 35 || i === 41 || i === 44 || i === 50 || i === 54)
         }));
 
         const VP_RAT_SPACES = [1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66, 78, 91];
@@ -642,7 +642,7 @@
                     
                     vid.onerror = () => { vid.style.display = 'none'; resolve(); };
                     vid.onended = () => { vid.currentTime = 0; };
-                    
+
                     vid.play().then(() => {
                         // Resolve the promise after 1 full loop so the evaluation modal can appear
                         const durationMs = (vid.duration && !isNaN(vid.duration)) ? vid.duration * 1000 : 2000;
@@ -914,6 +914,17 @@
                         if(idx % 5 === 0 && idx > 0) { this.ctx.fillStyle = '#6a6e8f'; this.ctx.font = '10px Arial'; this.ctx.fillText(idx, pos.x - 5, pos.y - 15); }
                     });
                 }
+
+                // 2.5 Draw Rubies on the track spaces
+                this.spiralSpaces.forEach((pos, idx) => {
+                    if (idx < TRACK_REWARDS.length && TRACK_REWARDS[idx].ruby) {
+                        if (!this.drawSprite('UTILS', UTILS_MAP.RUBY, pos.x - 10, pos.y - 10, 20, 20)) {
+                            // Fallback
+                            this.ctx.beginPath(); this.ctx.arc(pos.x, pos.y, 6, 0, Math.PI * 2);
+                            this.ctx.fillStyle = '#e63946'; this.ctx.fill();
+                        }
+                    }
+                });
 
                 // 3. Draw Droplet & Rat
                 if(this.spiralSpaces[player.dropletPosition]) {
