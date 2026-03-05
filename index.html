@@ -876,6 +876,8 @@
 
             renderCanvas() {
                 const w = this.canvas.width, h = this.canvas.height;
+                const baseSize = Math.min(w, h); // Use baseSize for relative scaling of all elements
+                
                 this.ctx.clearRect(0, 0, w, h);
                 this.ctx.fillStyle = '#22223b'; this.ctx.fillRect(0, 0, w, h);
 
@@ -924,21 +926,32 @@
                 // Apply global fade out for elements if exploding
                 this.ctx.globalAlpha = elementAlpha;
 
+                // Define relative sizes for board elements
+                const trackPointSize = baseSize * 0.02;
+                const rubySize = baseSize * 0.055;
+                const rubyOffset = rubySize / 2;
+                const dropletSize = baseSize * 0.07;
+                const dropletOffset = dropletSize / 2;
+                const ratSize = baseSize * 0.06;
+                const ratOffset = ratSize / 2;
+                const chipSize = baseSize * 0.085;
+                const chipOffset = chipSize / 2;
+
                 // 2. Draw Track indicators (Debug/Fallback only, invisible if image is used)
                 if (!this.assets.CAULDRON_BG || !this.assets.CAULDRON_BG.complete) {
                     this.spiralSpaces.forEach((pos, idx) => {
-                        this.ctx.beginPath(); this.ctx.arc(pos.x, pos.y, 12, 0, Math.PI * 2);
+                        this.ctx.beginPath(); this.ctx.arc(pos.x, pos.y, trackPointSize, 0, Math.PI * 2);
                         this.ctx.fillStyle = '#3a3f58'; this.ctx.fill();
-                        if(idx % 5 === 0 && idx > 0) { this.ctx.fillStyle = '#6a6e8f'; this.ctx.font = '10px Arial'; this.ctx.fillText(idx, pos.x - 5, pos.y - 15); }
+                        if(idx % 5 === 0 && idx > 0) { this.ctx.fillStyle = '#6a6e8f'; this.ctx.font = `${trackPointSize}px Arial`; this.ctx.fillText(idx, pos.x - trackPointSize/2, pos.y - trackPointSize*1.2); }
                     });
                 }
 
                 // 2.5 Draw Rubies on the track spaces
                 this.spiralSpaces.forEach((pos, idx) => {
                     if (idx < TRACK_REWARDS.length && TRACK_REWARDS[idx].ruby) {
-                        if (!this.drawSprite('UTILS', UTILS_MAP.RUBY, pos.x - 10, pos.y - 10, 20, 20)) {
+                        if (!this.drawSprite('UTILS', UTILS_MAP.RUBY, pos.x - rubyOffset, pos.y - rubyOffset, rubySize, rubySize)) {
                             // Fallback
-                            this.ctx.beginPath(); this.ctx.arc(pos.x, pos.y, 6, 0, Math.PI * 2);
+                            this.ctx.beginPath(); this.ctx.arc(pos.x, pos.y, rubySize * 0.4, 0, Math.PI * 2);
                             this.ctx.fillStyle = '#e63946'; this.ctx.fill();
                         }
                     }
@@ -947,16 +960,16 @@
                 // 3. Draw Droplet & Rat
                 if(this.spiralSpaces[player.dropletPosition]) {
                     const dp = this.spiralSpaces[player.dropletPosition];
-                    if(!this.drawSprite('UTILS', UTILS_MAP.DROPLET, dp.x - 18, dp.y - 18, 36, 36)) {
-                        this.ctx.beginPath(); this.ctx.arc(dp.x, dp.y, 14, 0, Math.PI * 2);
+                    if(!this.drawSprite('UTILS', UTILS_MAP.DROPLET, dp.x - dropletOffset, dp.y - dropletOffset, dropletSize, dropletSize)) {
+                        this.ctx.beginPath(); this.ctx.arc(dp.x, dp.y, dropletSize * 0.4, 0, Math.PI * 2);
                         this.ctx.fillStyle = '#00b4d8'; this.ctx.fill();
                     }
                 }
 
                 if(player.ratTails > 0 && this.spiralSpaces[player.dropletPosition + player.ratTails]) {
                     const rp = this.spiralSpaces[player.dropletPosition + player.ratTails];
-                    if(!this.drawSprite('UTILS', UTILS_MAP.RAT, rp.x - 16, rp.y - 16, 32, 32)) {
-                        this.ctx.font = '20px Arial'; this.ctx.fillText('🐀', rp.x - 10, rp.y + 7);
+                    if(!this.drawSprite('UTILS', UTILS_MAP.RAT, rp.x - ratOffset, rp.y - ratOffset, ratSize, ratSize)) {
+                        this.ctx.font = `${ratSize * 0.6}px Arial`; this.ctx.fillText('🐀', rp.x - ratOffset*0.5, rp.y + ratOffset*0.5);
                     }
                 }
 
@@ -978,13 +991,13 @@
                         const sw = cDef.w * imgChips.width;
                         const sh = cDef.h * imgChips.height;
                         
-                        this.ctx.drawImage(imgChips, sx, sy, sw, sh, pos.x - 20, pos.y - 20, 40, 40);
+                        this.ctx.drawImage(imgChips, sx, sy, sw, sh, pos.x - chipOffset, pos.y - chipOffset, chipSize, chipSize);
                     } else {
                         // Fallback circles
-                        this.ctx.beginPath(); this.ctx.arc(pos.x, pos.y, 16, 0, Math.PI*2);
+                        this.ctx.beginPath(); this.ctx.arc(pos.x, pos.y, chipSize * 0.4, 0, Math.PI*2);
                         this.ctx.fillStyle = chip.type.color; this.ctx.fill();
-                        this.ctx.fillStyle = chip.type.textCol; this.ctx.font = 'bold 16px Arial';
-                        this.ctx.fillText(chip.value, pos.x - 5, pos.y + 5);
+                        this.ctx.fillStyle = chip.type.textCol; this.ctx.font = `bold ${chipSize * 0.4}px Arial`;
+                        this.ctx.fillText(chip.value, pos.x - chipSize*0.1, pos.y + chipSize*0.15);
                     }
                     this.ctx.globalAlpha = elementAlpha; // Reset to the global element alpha for the next chip
                 });
