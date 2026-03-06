@@ -253,6 +253,15 @@
     </div>
 
     <!-- Modals -->
+    <div id="bonus-die-modal" class="modal-overlay" style="z-index: 1006;">
+        <div class="modal-content">
+            <h2>🎲 Bonus Die Roll! 🎲</h2>
+            <p>You brewed the best potion this round!</p>
+            <div id="bonus-die-result" style="font-size: 1.5rem; margin: 20px 0; color: var(--accent); font-weight: bold;"></div>
+            <button id="btn-bonus-die-ok" style="background-color: #4caf50;">Awesome!</button>
+        </div>
+    </div>
+
     <div id="explosion-modal" class="modal-overlay">
         <div class="modal-content">
             <h2>💥 Your Cauldron Exploded! 💥</h2>
@@ -420,6 +429,14 @@
             { text: "If you do not explode this round, gain 2 VP.", type: 'conditional', evaluate: (g) => g.players.forEach(p => { if(!p.exploded) p.victoryPoints += 2; }) }
         ];
 
+        const BONUS_DIE_FACES = [
+            { text: "1 VP!", apply: (p) => p.victoryPoints += 1 },
+            { text: "2 VP!", apply: (p) => p.victoryPoints += 2 },
+            { text: "1 Ruby!", apply: (p) => p.rubies += 1 },
+            { text: "1 Droplet step!", apply: (p) => p.dropletPosition += 1 },
+            { text: "1 Pumpkin Token!", apply: (p) => p.inventory.push({ type: INGREDIENTS.ORANGE, value: 1 }) }
+        ];
+
         const INGREDIENT_BOOKS_SET_1 = {
             RED: { 
                 description: "If there is at least 1 Pumpkin in your cauldron, move 1 extra space.",
@@ -582,6 +599,34 @@
             runEvaluationPhase() {
                 this.phase = 'Evaluation';
                 
+                let eligiblePlayers = [];
+                const nonExploded = this.players.filter(p => !p.exploded);
+                
+                if (nonExploded.length > 0) {
+                    const maxBrew = Math.max(...nonExploded.map(p => p.currentBrewValue || 0));
+                    eligiblePlayers = nonExploded.filter(p => (p.currentBrewValue || 0) === maxBrew);
+                }
+
+                let humanRolled = false;
+                let humanResult = null;
+
+                eligiblePlayers.forEach(p => {
+                    const face = BONUS_DIE_FACES[Math.floor(Math.random() * BONUS_DIE_FACES.length)];
+                    face.apply(p);
+                    if (p.isHuman) {
+                        humanRolled = true;
+                        humanResult = face.text;
+                    }
+                });
+
+                if (humanRolled && this.uiManager) {
+                    this.uiManager.showBonusDieModal(humanResult);
+                } else {
+                    this.continueEvaluationPhase();
+                }
+            }
+
+            continueEvaluationPhase() {
                 this.players.forEach(p => {
                     const trackSpace = TRACK_REWARDS[Math.min(p.currentBrewValue || 0, TRACK_REWARDS.length - 1)];
                     p.roundVP = trackSpace.vp; p.roundMoney = trackSpace.money; p.roundRuby = trackSpace.ruby;
@@ -692,6 +737,17 @@
                 document.getElementById('btn-finish-buying').addEventListener('click', () => { document.getElementById('shop-modal').style.display = 'none'; this.game.endRound(); });
                 
                 document.getElementById('btn-close-bag').addEventListener('click', () => { document.getElementById('bag-modal').style.display = 'none'; });
+
+                document.getElementById('btn-bonus-die-ok').addEventListener('click', () => { 
+                    document.getElementById('bonus-die-modal').style.display = 'none'; 
+                    this.game.continueEvaluationPhase(); 
+                });
+            }
+
+            showBonusDieModal(resultText) {
+                document.getElementById('bonus-die-result').innerText = resultText;
+                document.getElementById('bonus-die-modal').style.display = 'flex';
+                this.updateFullUI();
             }
 
             showExplosionModal(vp, money) {
