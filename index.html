@@ -758,6 +758,12 @@
                 this.shopCart = [];
                 this.game.players.forEach(p => {
                     if (!p.isHuman) { 
+                        // AI constantly buys droplets as long as it has at least 2 rubies
+                        while (p.rubies >= 2) {
+                            p.rubies -= 2;
+                            p.dropletPosition++;
+                        }
+
                         let boughtColors = [];
                         // AI can buy up to 2 chips
                         for (let i = 0; i < 2; i++) {
