@@ -251,8 +251,8 @@
         <!-- Cauldron Canvas -->
         <div id="cauldron-wrapper">
             <canvas id="cauldron-canvas"></canvas>
-            <video id="explosion-video" src="assets/explosion.mp4" playsinline preload="auto" style="display: none;"></video>
-            <video id="bubbling-video" src="assets/cauldron_bubble1.mp4" playsinline preload="auto" muted loop style="display: none;"></video>
+            <video id="explosion-video" src="assets/explosion.mov" playsinline preload="auto" style="display: none;"></video>
+            <video id="bubbling-video" src="assets/cauldron_bubble1.mov" playsinline preload="auto" loop style="display: none;"></video>
         </div>
     </div>
 
@@ -598,18 +598,40 @@
                     p.prepareForNewRound();
                 });
 
+                if(this.uiManager) this.uiManager.updateFullUI();
+
+                // Start AI loops
                 this.players.filter(p => !p.isHuman).forEach(p => {
-                    while (!p.hasStopped && !p.exploded && p.bag.length > 0) {
-                        if (p.currentWhiteValue >= 6) { p.hasStopped = true; break; }
+                    this.runAIBrewing(p);
+                });
+            }
+            
+            async runAIBrewing(p) {
+                while (!p.hasStopped && !p.exploded && p.bag.length > 0) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    // Break out if game state has fundamentally changed while awaiting
+                    if (this.phase !== 'Brewing' || p.hasStopped || p.exploded) break;
+
+                    if (p.currentWhiteValue >= 6) { 
+                        p.hasStopped = true; 
+                    } else {
                         p.drawChip();
                     }
-                    if (!p.exploded) p.hasStopped = true;
-                });
-
-                if(this.uiManager) this.uiManager.updateFullUI();
+                    
+                    if (this.uiManager) this.uiManager.updateFullUI();
+                }
+                
+                if (!p.exploded) p.hasStopped = true;
+                if (this.uiManager) this.uiManager.updateFullUI();
+                this.checkBrewingPhaseEnd();
             }
 
-            checkBrewingPhaseEnd() { if (this.players.every(p => p.hasStopped)) this.runEvaluationPhase(); }
+            checkBrewingPhaseEnd() { 
+                if (this.phase === 'Brewing' && this.players.every(p => p.hasStopped)) {
+                    this.runEvaluationPhase(); 
+                }
+            }
 
             runEvaluationPhase() {
                 this.phase = 'Evaluation';
