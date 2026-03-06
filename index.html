@@ -733,7 +733,28 @@
                 if (this.game.round === 9) { this.game.endRound(); return; }
                 this.shopCart = [];
                 this.game.players.forEach(p => {
-                    if (!p.isHuman) { const affordable = SHOP_CATALOG.filter(i => i.cost <= p.money); if(affordable.length > 0) { const buy = affordable[Math.floor(Math.random() * affordable.length)]; p.buyChip(buy.type, buy.value, buy.cost); } }
+                    if (!p.isHuman) { 
+                        let boughtColors = [];
+                        // AI can buy up to 2 chips
+                        for (let i = 0; i < 2; i++) {
+                            // Find all available ingredients that the AI can afford, hasn't bought the color of yet, and are unlocked this round
+                            const available = SHOP_CATALOG.filter(item => {
+                                if (item.type.id === 'YELLOW' && this.game.round <= 2) return false;
+                                if (item.type.id === 'BLUE' && this.game.round <= 3) return false;
+                                return item.cost <= p.money && !boughtColors.includes(item.type.id);
+                            });
+                            
+                            if (available.length > 0) {
+                                // Sort descending by cost to find the most expensive affordable item
+                                available.sort((a, b) => b.cost - a.cost);
+                                const buy = available[0];
+                                p.buyChip(buy.type, buy.value, buy.cost);
+                                boughtColors.push(buy.type.id);
+                            } else {
+                                break; // Break out if no affordable items are left
+                            }
+                        }
+                    }
                 });
                 this.renderShopUI(); document.getElementById('shop-modal').style.display = 'flex'; this.updateFullUI();
             }
