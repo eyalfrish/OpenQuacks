@@ -135,15 +135,16 @@
         }
         .modal-content {
             background: var(--panel-bg); border: 2px solid var(--panel-border);
-            border-radius: 12px; padding: 25px; max-width: 600px; width: 90%;
+            border-radius: 12px; padding: 20px; max-width: 600px; width: 90%;
+            max-height: 90vh; overflow-y: auto; overflow-x: hidden;
             text-align: center; color: var(--text-light); box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
-        .modal-content h2 { color: var(--text-main); margin-bottom: 15px; }
-        .modal-content button { margin: 10px; padding: 10px 20px; font-size: 1.1rem; }
+        .modal-content h2 { color: var(--text-main); margin-bottom: 10px; }
+        .modal-content button { margin: 5px; padding: 8px 16px; font-size: 1rem; }
         
-        .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; margin-bottom: 15px; }
         .shop-item {
-            background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px;
+            background: rgba(0,0,0,0.3); border-radius: 8px; padding: 8px;
             display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; border: 2px solid transparent;
             position: relative;
         }
@@ -250,8 +251,8 @@
         <!-- Cauldron Canvas -->
         <div id="cauldron-wrapper">
             <canvas id="cauldron-canvas"></canvas>
-            <video id="explosion-video" src="assets/explosion.mov" playsinline preload="auto" style="display: none;"></video>
-            <video id="bubbling-video" src="assets/cauldron_bubble1.mov" playsinline preload="auto" loop style="display: none;"></video>
+            <video id="explosion-video" src="assets/explosion.mp4" playsinline preload="auto" style="display: none;"></video>
+            <video id="bubbling-video" src="assets/cauldron_bubble1.mp4" playsinline preload="auto" muted loop style="display: none;"></video>
         </div>
     </div>
 
