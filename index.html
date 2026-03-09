@@ -186,7 +186,7 @@
             </div>
             <div class="board-sections">
                 <div class="board-section" id="human-character">
-                    <div id="ui-human-face" style="width: 80px; height: 80px; border-radius: 8px; border: 2px solid var(--panel-border); background-color: rgba(0,0,0,0.5);"></div>
+                    <div id="ui-human-face" style="width: 70px; height: 90px; border-radius: 8px; border: 2px solid var(--panel-border); background-color: rgba(0,0,0,0.5);"></div>
                 </div>
                 <div class="board-section" id="round-track">
                     <h3>Round Track</h3>
@@ -1225,7 +1225,7 @@
 
                 // Update human character face box based on their mood
                 const humanMood = getPlayerMood(human);
-                document.getElementById('ui-human-face').style.cssText = `width: 80px; height: 80px; border-radius: 8px; border: 2px solid var(--panel-border); background-color: rgba(0,0,0,0.5); ${getCharacterSpriteStyle(human.character, humanMood)}`;
+                document.getElementById('ui-human-face').style.cssText = `width: 70px; height: 90px; border-radius: 8px; border: 2px solid var(--panel-border); background-color: rgba(0,0,0,0.5); ${getCharacterSpriteStyle(human.character, humanMood)}`;
 
                 document.getElementById('ui-phase').innerText = `(Phase: ${this.game.phase})`;
                 document.getElementById('ui-round').innerText = this.game.round;
@@ -1304,7 +1304,7 @@
 
                     card.innerHTML = `
                         <div style="display: flex; gap: 10px; align-items: center;">
-                            <div style="width: 60px; height: 60px; border-radius: 6px; border: 1px solid #aaa; flex-shrink: 0; background-color: rgba(0,0,0,0.5); ${aiFaceStyle}"></div>
+                            <div style="width: 70px; height: 90px; border-radius: 6px; border: 1px solid #aaa; flex-shrink: 0; background-color: rgba(0,0,0,0.5); ${aiFaceStyle}"></div>
                             <div style="flex: 1;">
                                 <strong>${ai.name}</strong>
                                 <div style="font-size: 0.9em; margin-top: 5px;">
