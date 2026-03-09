@@ -185,9 +185,12 @@
                 <button id="btn-help" style="width: 24px; height: 24px; padding: 0; border-radius: 4px; background-color: #00b4d8; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex: none; margin-left: auto;" title="How to play">?</button>
             </div>
             <div class="board-sections">
+                <div class="board-section" id="human-character">
+                    <div id="ui-human-face" style="width: 80px; height: 80px; border-radius: 8px; border: 2px solid var(--panel-border); background-color: rgba(0,0,0,0.5);"></div>
+                </div>
                 <div class="board-section" id="round-track">
                     <h3>Round Track</h3>
-                    <p>Current Round: <span id="ui-round">1</span> / 9</p>
+                    <p style="margin-top: 10px;">Round: <span id="ui-round">1</span> / 9</p>
                 </div>
                 <div class="board-section" id="fortune-teller">
                     <h3>Fortune Teller</h3>
@@ -337,7 +340,8 @@
         const ASSET_PATHS = {
             CAULDRON_BG: 'assets/cauldron_board.png',
             CHIPS: 'assets/tokens.png',
-            UTILS: 'assets/utils.png'
+            UTILS: 'assets/utils.png',
+            CHARACTERS: 'assets/characters.png'
         };
 
         // Exact fractional coordinates for the 6x4 layout
@@ -378,6 +382,10 @@
             VP:          { x: 0.81, y: 0.34, w: 0.17, h: 0.27 }  
         };
 
+        // 4x4 Grid Constants for Characters
+        const CHAR_ROW = { 'WITCH': 0, 'WIZARD': 1, 'MONK': 2, 'CHILD': 3 };
+        const MOOD_COL = { 'SMIRK': 0, 'CONCERN': 1, 'DISAPPOINTMENT': 2, 'TRIUMPHANT': 3 };
+
         class AssetManager {
             constructor() {
                 this.images = {};
@@ -411,6 +419,24 @@
             const posX = def.w < 1 ? (def.x / (1 - def.w)) * 100 : 0;
             const posY = def.h < 1 ? (def.y / (1 - def.h)) * 100 : 0;
             return `background-image: url('${ASSET_PATHS.UTILS}'); background-size: ${100/def.w}% ${100/def.h}%; background-position: ${posX}% ${posY}%; background-repeat: no-repeat;`;
+        }
+        
+        function getCharacterSpriteStyle(charName, moodName) {
+            const row = CHAR_ROW[charName] || 0;
+            const col = MOOD_COL[moodName] || 0;
+            // For a 4x4 grid, the background size is 400%, and position offsets are 0, 33.33%, 66.66%, 100%
+            const x = col * 33.3333;
+            const y = row * 33.3333;
+            return `background-image: url('${ASSET_PATHS.CHARACTERS}'); background-size: 400% 400%; background-position: ${x}% ${y}%; background-repeat: no-repeat;`;
+        }
+
+        // --- Helper to determine the mood of a player based on state ---
+        function getPlayerMood(player, isGameOver = false, isWinner = false) {
+            if (isGameOver) return isWinner ? 'TRIUMPHANT' : 'DISAPPOINTMENT';
+            if (player.exploded) return 'DISAPPOINTMENT';
+            if (player.hasStopped) return 'SMIRK';
+            if (player.currentWhiteValue > 3) return 'CONCERN';
+            return 'SMIRK';
         }
 
 
@@ -498,8 +524,9 @@
          * 3. GAME LOGIC & STATE
          */
         class Player {
-            constructor(name, isHuman, game) {
+            constructor(name, isHuman, game, charName = 'CHILD') {
                 this.name = name; this.isHuman = isHuman; this.game = game;
+                this.character = charName;
                 this.victoryPoints = 0; this.rubies = 0; this.money = 0;
                 this.flaskActive = true; this.dropletPosition = 0; this.ratTails = 0;
                 this.inventory = []; this.bag = []; this.cauldron = [];
@@ -579,10 +606,12 @@
             }
 
             setupPlayers() {
-                this.humanPlayer = new Player('You', true, this);
+                this.humanPlayer = new Player('You', true, this, 'WITCH');
                 this.players.push(this.humanPlayer);
+                
+                const aiChars = ['WIZARD', 'MONK', 'CHILD'];
                 for(let i=1; i<=this.config.numAIs; i++) {
-                    this.players.push(new Player(`AI ${i}`, false, this));
+                    this.players.push(new Player(`AI ${i}`, false, this, aiChars[(i-1) % aiChars.length]));
                 }
             }
 
@@ -811,6 +840,10 @@
                 }
 
                 const scores = sortedPlayers.map((p, i) => {
+                    const isWinner = (i === 0);
+                    const faceMood = getPlayerMood(p, true, isWinner);
+                    const faceStyle = getCharacterSpriteStyle(p.character, faceMood);
+                    
                     // Extract the converted amounts
                     const moneyVP = Math.floor(p.money / 5);
                     const rubyVP = Math.floor(p.rubies / 2);
@@ -818,7 +851,10 @@
                     
                     return `<div style="display: flex; flex-direction: column; padding: 10px 15px; background: ${i%2===0?'rgba(255,255,255,0.1)':'transparent'}; border-radius: 8px; margin-bottom: 8px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                            <span>${i===0?'👑 ':''}${p.name}</span>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 55px; height: 55px; border-radius: 50%; border: 2px solid ${isWinner ? 'gold' : '#666'}; ${faceStyle}"></div>
+                                <span>${isWinner ? '👑 ' : ''}${p.name}</span>
+                            </div>
                             <strong style="color: var(--accent); font-size: 1.2em;">${p.victoryPoints} VP</strong>
                         </div>
                         <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #aaa; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 5px;">
@@ -1187,6 +1223,10 @@
                     explVid.currentTime = 0;
                 }
 
+                // Update human character face box based on their mood
+                const humanMood = getPlayerMood(human);
+                document.getElementById('ui-human-face').style.cssText = `width: 80px; height: 80px; border-radius: 8px; border: 2px solid var(--panel-border); background-color: rgba(0,0,0,0.5); ${getCharacterSpriteStyle(human.character, humanMood)}`;
+
                 document.getElementById('ui-phase').innerText = `(Phase: ${this.game.phase})`;
                 document.getElementById('ui-round').innerText = this.game.round;
                 if (this.game.currentFortuneCard) document.getElementById('ui-fortune-text').innerText = `"${this.game.currentFortuneCard.text}"`;
@@ -1249,6 +1289,8 @@
                     
                     const aiBrewVal = ai.currentBrewValue || 0;
                     const aiReward = TRACK_REWARDS[Math.min(aiBrewVal, TRACK_REWARDS.length - 1)];
+                    const aiMood = getPlayerMood(ai);
+                    const aiFaceStyle = getCharacterSpriteStyle(ai.character, aiMood);
                     
                     let brewHtml = `<div style="display: flex; align-items: center; margin: 3px 0;">Brew Value: `;
                     if (aiReward.vp > 0) {
@@ -1260,7 +1302,18 @@
                     }
                     brewHtml += `</div>`;
 
-                    card.innerHTML = `<strong>${ai.name}</strong><div style="font-size: 0.9em; margin-top: 5px;"><div>VP: ${ai.victoryPoints} | Rubies: ${ai.rubies}</div>${brewHtml}<div style="color: ${ai.exploded ? '#ff4444' : '#aaaaaa'}">Status: ${status}</div></div>`;
+                    card.innerHTML = `
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <div style="width: 60px; height: 60px; border-radius: 6px; border: 1px solid #aaa; flex-shrink: 0; background-color: rgba(0,0,0,0.5); ${aiFaceStyle}"></div>
+                            <div style="flex: 1;">
+                                <strong>${ai.name}</strong>
+                                <div style="font-size: 0.9em; margin-top: 5px;">
+                                    <div>VP: ${ai.victoryPoints} | Rubies: ${ai.rubies}</div>
+                                    ${brewHtml}
+                                    <div style="color: ${ai.exploded ? '#ff4444' : '#aaaaaa'}">Status: ${status}</div>
+                                </div>
+                            </div>
+                        </div>`;
                     
                     if (this.isDebug) {
                         card.style.cursor = 'pointer';
