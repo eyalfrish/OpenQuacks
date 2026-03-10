@@ -232,17 +232,12 @@
                     <button id="btn-flask" class="flask-btn" disabled>Use</button>
                 </div>
                 <div class="status-box">
-                    <div style="display: flex; align-items: center;">
-                        <span id="ui-icon-rat" class="icon-small"></span>Rat Tails:
-                    </div>
-                    <strong id="ui-rat-tails" style="color: #ffb703;">0</strong>
-                </div>
-                <div class="status-box">
                     <span>Brew Value:</span>
                     <span style="display: flex; align-items: center;">
                         <strong id="ui-brew-vp" style="color: #f5f5f5; display: none;">0</strong>
                         <span id="ui-brew-vp-icon" class="icon-small" style="display: none; margin-left: 5px; margin-right: 10px;"></span>
                         <strong id="ui-brew-value" style="color: gold;">0</strong>
+                        <span id="ui-brew-coin" class="icon-small" style="margin-left: 3px;"></span>
                         <strong id="ui-brew-ruby-val" style="color: #ff4444; display: none; margin-left: 8px;">0</strong>
                         <span id="ui-brew-ruby" class="icon-small" style="display: none; margin-left: 3px; margin-right: 0;"></span>
                     </span>
@@ -285,13 +280,17 @@
     </div>
 
     <div id="help-modal" class="modal-overlay" style="z-index: 1007;">
-        <div class="modal-content">
-            <h2>❓ How to Play Open Quacks</h2>
-            <p style="margin: 15px 0; font-size: 1.1em; line-height: 1.5; color: #ddd;">
-                Draw ingredients from your bag to fill your cauldron and earn money and victory points. 
-                Buy new ingredients to make your brew more powerful, but be careful not to draw too many Boomberries (white tokens), or your cauldron will explode!
-            </p>
-            <button id="btn-close-help" style="background-color: #4caf50;">Got it!</button>
+        <div class="modal-content" style="max-width: 550px;">
+            <h2>❓ How to play OpenQuacks</h2>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 20px;">
+                <button id="btn-help-prev" style="flex: none; width: 40px; height: 40px; padding: 0; border-radius: 50%; background-color: #4a4e69; font-size: 1.2rem; margin: 0;">&lt;</button>
+                <div id="help-slide-content" style="flex: 1; margin: 0 15px; font-size: 1.05em; line-height: 1.5; color: #ddd; min-height: 160px; display: flex; flex-direction: column; justify-content: center;">
+                    <!-- content injected here -->
+                </div>
+                <button id="btn-help-next" style="flex: none; width: 40px; height: 40px; padding: 0; border-radius: 50%; background-color: #4a4e69; font-size: 1.2rem; margin: 0;">&gt;</button>
+            </div>
+            <div id="help-slide-indicator" style="margin-top: 15px; font-size: 0.9rem; color: #aaa; font-weight: bold;">1 / 6</div>
+            <button id="btn-close-help" style="background-color: #4caf50; margin-top: 15px;">Got it!</button>
         </div>
     </div>
 
@@ -311,7 +310,7 @@
             <p style="margin: 15px 0; font-size: 0.9em; color: #aaa;">(You may only take Victory Points OR Money to buy ingredients, not both).</p>
             <div>
                 <button id="btn-choose-vp">Take <span id="expl-vp-val">0</span> VP</button>
-                <button id="btn-choose-money">Take <span id="expl-money-val">0</span> Money</button>
+                <button id="btn-choose-money" style="display: inline-flex; align-items: center; justify-content: center;">Take <span id="expl-money-val" style="margin: 0 5px;">0</span> <span id="expl-money-icon"></span></button>
             </div>
         </div>
     </div>
@@ -320,7 +319,7 @@
         <div class="modal-content">
             <h2>🛒 Buying Phase</h2>
             <div style="display: flex; justify-content: space-around; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
-                <span>Available Money: <strong id="shop-money" style="color: gold; font-size: 1.2rem;">0</strong></span>
+                <span style="display: flex; align-items: center;">Available Money: <strong id="shop-money" style="color: gold; font-size: 1.2rem; margin-left: 5px;">0</strong><span id="shop-money-icon"></span></span>
                 <span style="display: flex; align-items: center;">
                     <span id="ui-icon-ruby" class="icon-small"></span> 
                     Rubies: <strong id="shop-rubies" style="color: #ff4444; font-size: 1.2rem; margin-left: 5px;">0</strong>
@@ -419,12 +418,13 @@
 
         // Utility Sprite Mappings updated for the new irregular layout
         const UTILS_MAP = {
-            FLASK_FULL:  { x: 0.04, y: 0.24, w: 0.19, h: 0.38 }, 
-            FLASK_EMPTY: { x: 0.24, y: 0.24, w: 0.19, h: 0.38 }, 
-            RUBY:        { x: 0.44, y: 0.34, w: 0.13, h: 0.27 }, 
-            DROPLET:     { x: 0.57, y: 0.33, w: 0.11, h: 0.28 }, 
-            RAT:         { x: 0.69, y: 0.38, w: 0.12, h: 0.21 }, 
-            VP:          { x: 0.81, y: 0.34, w: 0.17, h: 0.27 }  
+            FLASK_FULL:  { x: 0.00, y: 0.00, w: 0.20, h: 0.95 }, 
+            FLASK_EMPTY: { x: 0.20, y: 0.00, w: 0.20, h: 0.95 }, 
+            RUBY:        { x: 0.41, y: 0.05, w: 0.13, h: 0.40 }, 
+            COIN:        { x: 0.37, y: 0.44, w: 0.20, h: 0.55 },
+            DROPLET:     { x: 0.56, y: 0.12, w: 0.12, h: 0.50 }, 
+            RAT:         { x: 0.68, y: 0.15, w: 0.14, h: 0.50 }, 
+            VP:          { x: 0.82, y: 0.08, w: 0.17, h: 0.50 }  
         };
 
         // 4x4 Grid Constants for Characters
@@ -799,6 +799,7 @@
                 this.ctx = this.canvas.getContext('2d');
                 this.wrapper = document.getElementById('cauldron-wrapper');
                 this.spiralSpaces = []; this.shopCart = [];
+                this.helpSlideIndex = 0;
                 
                 this.isDebug = window.location.href.includes('debug=1');
 
@@ -866,6 +867,19 @@
                 document.getElementById('btn-settings').addEventListener('click', () => { this.showCharacterSelect(false); });
                 document.getElementById('btn-help').addEventListener('click', () => { this.showHelpModal(); });
                 document.getElementById('btn-close-help').addEventListener('click', () => { document.getElementById('help-modal').style.display = 'none'; });
+                
+                document.getElementById('btn-help-prev').addEventListener('click', () => {
+                    if (this.helpSlideIndex > 0) {
+                        this.helpSlideIndex--;
+                        this.renderHelpSlide();
+                    }
+                });
+                document.getElementById('btn-help-next').addEventListener('click', () => {
+                    if (this.helpSlideIndex < 5) {
+                        this.helpSlideIndex++;
+                        this.renderHelpSlide();
+                    }
+                });
             }
 
             showCharacterSelect(isMandatory = false) {
@@ -921,7 +935,71 @@
             }
 
             showHelpModal() {
+                this.helpSlideIndex = 0;
+                this.renderHelpSlide();
                 document.getElementById('help-modal').style.display = 'flex';
+            }
+
+            renderHelpSlide() {
+                const contentEl = document.getElementById('help-slide-content');
+                const indicatorEl = document.getElementById('help-slide-indicator');
+                
+                const slides = [
+                    {
+                        text: "DRAW ingredients from your bag to fill your cauldron, brew a great potion, and earn money and victory points. But be careful and STOP before drawing too many Boomberries (white tokens), or your cauldron will explode!",
+                        html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; font-weight: bold;">
+                            <div class="chip-icon" style="${getChipSpriteStyle('WHITE', 3)}"></div> + 
+                            <div class="chip-icon" style="${getChipSpriteStyle('WHITE', 3)}"></div> + 
+                            <div class="chip-icon" style="${getChipSpriteStyle('WHITE', 2)}"></div> = <span style="font-size: 1.8rem; margin-left: 5px;">💥</span>
+                        </div>`
+                    },
+                    {
+                        text: "At the end of each day, spend money to buy more ingredients. These ingredients make your brew more powerful!",
+                        html: `<div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; flex-wrap: wrap;">
+                            <div class="chip-icon" style="${getChipSpriteStyle('ORANGE', 1)}"></div>
+                            <div class="chip-icon" style="${getChipSpriteStyle('RED', 1)}"></div>
+                            <div class="chip-icon" style="${getChipSpriteStyle('GREEN', 1)}"></div>
+                            <div class="chip-icon" style="${getChipSpriteStyle('YELLOW', 1)}"></div>
+                            <div class="chip-icon" style="${getChipSpriteStyle('PURPLE', 1)}"></div>
+                            <div class="chip-icon" style="${getChipSpriteStyle('BLACK', 1)}"></div>
+                            <div class="chip-icon" style="${getChipSpriteStyle('BLUE', 1)}"></div>
+                        </div>`
+                    },
+                    {
+                        text: "Use the FLASK to take back a boomberry into your bag. You may only use the flask immediately after drawing a boomberry, and you cannot use the flask if your brew exploded! You can refill your flask for a price.",
+                        html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; font-weight: bold;">
+                            <div style="width:30px; height:45px; ${getUtilSpriteStyle('FLASK_EMPTY')}"></div> + 
+                            <div style="width:25px; height:25px; ${getUtilSpriteStyle('RUBY')}"></div> + 
+                            <div style="width:25px; height:25px; ${getUtilSpriteStyle('RUBY')}"></div> = 
+                            <div style="width:30px; height:45px; ${getUtilSpriteStyle('FLASK_FULL')}"></div>
+                        </div>`
+                    },
+                    {
+                        text: "The DROPLET is where you start brewing from. Adding droplets makes your brew more valuable, but they cost rubies!",
+                        html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; font-weight: bold;">
+                            <div style="width:25px; height:25px; ${getUtilSpriteStyle('RUBY')}"></div> + 
+                            <div style="width:25px; height:25px; ${getUtilSpriteStyle('RUBY')}"></div> = 
+                            <div style="width:30px; height:45px; ${getUtilSpriteStyle('DROPLET')}"></div>
+                        </div>`
+                    },
+                    {
+                        text: "Get free RAT TAILS if you are far behind the leader. These ingredients give you a temporary boost, so you could catch up with your opponents!",
+                        html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px;">
+                            <div style="width:40px; height:40px; ${getUtilSpriteStyle('RAT')}"></div>
+                        </div>`
+                    },
+                    {
+                        text: "The game lasts for 9 rounds. At the end of the last day, whoever has the most VP is the winner!",
+                        html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; font-size: 3rem;">🏆</div>`
+                    }
+                ];
+
+                const slide = slides[this.helpSlideIndex];
+                contentEl.innerHTML = `<div>${slide.text}</div>${slide.html}`;
+                indicatorEl.innerText = `${this.helpSlideIndex + 1} / ${slides.length}`;
+                
+                document.getElementById('btn-help-prev').disabled = this.helpSlideIndex === 0;
+                document.getElementById('btn-help-next').disabled = this.helpSlideIndex === slides.length - 1;
             }
 
             showBonusDieModal(resultText) {
@@ -932,6 +1010,7 @@
 
             showExplosionModal(vp, money) {
                 document.getElementById('expl-vp-val').innerText = vp; document.getElementById('expl-money-val').innerText = money;
+                document.getElementById('expl-money-icon').style.cssText = `width: 20px; height: 20px; display: inline-block; ${getUtilSpriteStyle('COIN')}`;
                 document.getElementById('explosion-modal').style.display = 'flex';
             }
 
@@ -965,7 +1044,7 @@
                         </div>
                         <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #aaa; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 5px;">
                             <span>Base: <strong style="color: #f5f5f5;">${baseVP}</strong></span>
-                            <span>Money (${p.money}): <strong style="color: gold;">+${moneyVP}</strong></span>
+                            <span style="display: flex; align-items: center;">Money <span style="width: 14px; height: 14px; display: inline-block; margin: 0 4px; ${getUtilSpriteStyle('COIN')}"></span> (${p.money}): <strong style="color: gold; margin-left: 2px;">+${moneyVP}</strong></span>
                             <span>Rubies (${p.rubies}): <strong style="color: #ff4444;">+${rubyVP}</strong></span>
                         </div>
                     </div>`;
@@ -1044,6 +1123,7 @@
             renderShopUI() {
                 const h = this.game.humanPlayer;
                 document.getElementById('shop-money').innerText = h.money; document.getElementById('shop-rubies').innerText = h.rubies;
+                document.getElementById('shop-money-icon').style.cssText = `width: 24px; height: 24px; display: inline-block; margin-left: 5px; ${getUtilSpriteStyle('COIN')}`;
 
                 const shopItems = document.getElementById('shop-items'); shopItems.innerHTML = '';
                 const cartColors = this.shopCart.map(c => c.type.id);
@@ -1063,7 +1143,7 @@
                     
                     el.innerHTML = `<div class="chip-icon" style="${chipStyle || `background-color: ${item.type.color};`}">${!chipStyle ? item.value : ''}</div>
                                     <div style="font-size: 0.8em; font-weight: bold;">${item.type.name}</div>
-                                    <div style="font-size: 0.9em; color: gold;">Cost: ${item.cost}</div>
+                                    <div style="font-size: 0.9em; color: gold; display: flex; align-items: center; justify-content: center;">Cost: ${item.cost} <span style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; ${getUtilSpriteStyle('COIN')}"></span></div>
                                     <div class="tooltip">${desc}</div>`;
 
                     if (!disabled) el.addEventListener('click', () => { if (h.buyChip(item.type, item.value, item.cost)) { this.shopCart.push(item); this.renderShopUI(); } });
@@ -1373,10 +1453,10 @@
                 document.getElementById('ui-my-vp').innerText = `${human.victoryPoints} VP`;
 
                 document.getElementById('ui-bag-count').innerText = human.bag.length;
-                document.getElementById('ui-rat-tails').innerText = `${human.ratTails}`;
                 
                 const humanRewards = this.getProjectedRewards(human);
                 document.getElementById('ui-brew-value').innerText = humanRewards.money;
+                document.getElementById('ui-brew-coin').style.cssText = `width: 20px; height: 20px; display: inline-block; margin-left: 3px; margin-right: 5px; ${getUtilSpriteStyle('COIN')}`;
                 
                 const brewRubyEl = document.getElementById('ui-brew-ruby');
                 const brewRubyValEl = document.getElementById('ui-brew-ruby-val');
@@ -1421,7 +1501,6 @@
 
                 // Apply Sprite UI Icons
                 document.getElementById('ui-flask-icon').style.cssText = `width: 25px; height: 35px; ${getUtilSpriteStyle(human.flaskActive ? 'FLASK_FULL' : 'FLASK_EMPTY')}`;
-                document.getElementById('ui-icon-rat').style.cssText = `width: 20px; height: 20px; display: inline-block; ${getUtilSpriteStyle('RAT')}`;
                 document.getElementById('ui-icon-ruby').style.cssText = `width: 20px; height: 20px; display: inline-block; ${getUtilSpriteStyle('RUBY')}`;
 
                 const aiListEl = document.getElementById('ai-list'); aiListEl.innerHTML = ''; 
@@ -1437,7 +1516,7 @@
                     if (aiRewards.vp > 0) {
                         brewHtml += `<span style="color: #f5f5f5; margin-left: 5px;">${aiRewards.vp}</span><span style="width: 16px; height: 16px; display: inline-block; margin-left: 2px; margin-right: 5px; ${getUtilSpriteStyle('VP')}"></span>`;
                     }
-                    brewHtml += `<strong style="color: gold; margin-left: 5px;">${aiRewards.money}</strong>`;
+                    brewHtml += `<strong style="color: gold; margin-left: 5px;">${aiRewards.money}</strong><span style="width: 16px; height: 16px; display: inline-block; margin-left: 2px; margin-right: 5px; ${getUtilSpriteStyle('COIN')}"></span>`;
                     if (aiRewards.rubies > 0) {
                         if (aiRewards.rubies > 1) {
                             brewHtml += `<span style="color: #ff4444; margin-left: 8px;">${aiRewards.rubies}</span>`;
