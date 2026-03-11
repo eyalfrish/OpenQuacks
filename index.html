@@ -844,28 +844,82 @@
                 });
             }
 
+            async handlePlayerDraw(e) {
+                if (document.getElementById('btn-draw').disabled) return;
+
+                if (this.isDebug && e.shiftKey) {
+                    this.showDebugDrawModal();
+                    return;
+                }
+                
+                const wasExploded = this.game.humanPlayer.exploded;
+                this.game.humanPlayer.drawChip(); 
+                this.updateFullUI();
+                
+                // If the latest draw caused an explosion, play the video before triggering the evaluation phase
+                if (!wasExploded && this.game.humanPlayer.exploded) {
+                    await this.playExplosionVideo();
+                }
+
+                // Trigger evaluation check if they exploded or ran out of chips
+                if (this.game.humanPlayer.exploded || this.game.humanPlayer.hasStopped) {
+                    this.game.checkBrewingPhaseEnd();
+                }
+            }
+
             bindEvents() {
                 window.addEventListener('resize', () => this.handleResize());
-                document.getElementById('btn-draw').addEventListener('click', async (e) => {
-                    if (this.isDebug && e.shiftKey) {
-                        this.showDebugDrawModal();
-                        return;
-                    }
-                    
-                    const wasExploded = this.game.humanPlayer.exploded;
-                    this.game.humanPlayer.drawChip(); 
-                    this.updateFullUI();
-                    
-                    // If the latest draw caused an explosion, play the video before triggering the evaluation phase
-                    if (!wasExploded && this.game.humanPlayer.exploded) {
-                        await this.playExplosionVideo();
-                    }
+                document.getElementById('btn-draw').addEventListener('click', (e) => this.handlePlayerDraw(e));
 
-                    // Trigger evaluation check if they exploded or ran out of chips
-                    if (this.game.humanPlayer.exploded || this.game.humanPlayer.hasStopped) {
-                        this.game.checkBrewingPhaseEnd();
+                // Make canvas Sack clickable
+                this.canvas.addEventListener('click', (e) => {
+                    const w = this.canvas.width, h = this.canvas.height;
+                    const baseSize = Math.min(w, h);
+                    const sackSize = baseSize * 0.15;
+                    const sackX = w - sackSize - baseSize * 0.02;
+                    const sackY = h - sackSize - baseSize * 0.02;
+
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    
+                    const clickX = (e.clientX - rect.left) * scaleX;
+                    const clickY = (e.clientY - rect.top) * scaleY;
+
+                    if (clickX >= sackX && clickX <= sackX + sackSize &&
+                        clickY >= sackY && clickY <= sackY + sackSize) {
+                        this.handlePlayerDraw(e);
                     }
                 });
+
+                // Update cursor when hovering over the Sack
+                this.canvas.addEventListener('mousemove', (e) => {
+                    const w = this.canvas.width, h = this.canvas.height;
+                    const baseSize = Math.min(w, h);
+                    const sackSize = baseSize * 0.15;
+                    const sackX = w - sackSize - baseSize * 0.02;
+                    const sackY = h - sackSize - baseSize * 0.02;
+
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    
+                    const mouseX = (e.clientX - rect.left) * scaleX;
+                    const mouseY = (e.clientY - rect.top) * scaleY;
+
+                    if (mouseX >= sackX && mouseX <= sackX + sackSize &&
+                        mouseY >= sackY && mouseY <= sackY + sackSize && 
+                        !document.getElementById('btn-draw').disabled) {
+                        this.canvas.style.cursor = 'pointer';
+                    } else {
+                        this.canvas.style.cursor = 'default';
+                    }
+                });
+
+                this.canvas.addEventListener('mouseleave', () => {
+                    this.canvas.style.cursor = 'default';
+                });
+
                 document.getElementById('btn-stop').addEventListener('click', () => {
                     this.game.humanPlayer.hasStopped = true; this.updateFullUI(); this.game.checkBrewingPhaseEnd();
                 });
