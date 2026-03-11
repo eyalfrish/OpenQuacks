@@ -221,10 +221,6 @@
                 </div>
                 
                 <div class="status-box">
-                    <span>Bag Count:</span>
-                    <strong id="ui-bag-count">0</strong>
-                </div>
-                <div class="status-box">
                     <div style="display: flex; align-items: center; gap: 5px;">
                         <div id="ui-flask-icon" style="width: 25px; height: 35px;"></div>
                         <span>Flask</span>
@@ -1559,8 +1555,6 @@
 
                 document.getElementById('ui-my-vp').innerText = `${human.victoryPoints} VP`;
 
-                document.getElementById('ui-bag-count').innerText = human.bag.length;
-                
                 const humanRewards = this.getProjectedRewards(human);
                 document.getElementById('ui-brew-value').innerText = humanRewards.money;
                 document.getElementById('ui-brew-coin').style.cssText = `width: 20px; height: 20px; display: inline-block; margin-left: 3px; margin-right: 5px; ${getUtilSpriteStyle('COIN')}`;
