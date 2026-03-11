@@ -438,8 +438,8 @@
             VP          : { x: 0.73, y: 0.53, w: 0.14, h: 0.36 }
         };
 
-        // 4x4 Grid Constants for Characters
-        const CHAR_ROW = { 'WIZARD': 0, 'WITCH': 1, 'MONK': 2, 'CHILD': 3 };
+        // 5x4 Grid Constants for Characters
+        const CHAR_ROW = { 'WIZARD': 0, 'WITCH': 1, 'MONK': 2, 'CHILD': 3, 'PRINCESS': 4 };
         const MOOD_COL = { 'SMIRK': 0, 'CONCERN': 1, 'DISAPPOINTMENT': 2, 'TRIUMPHANT': 3 };
 
         class AssetManager {
@@ -480,10 +480,12 @@
         function getCharacterSpriteStyle(charName, moodName) {
             const row = CHAR_ROW[charName] || 0;
             const col = MOOD_COL[moodName] || 0;
-            // For a 4x4 grid, the background size is 400%, and position offsets are 0, 33.33%, 66.66%, 100%
+            // For a 5x4 grid, the background size is 400% (cols) by 500% (rows)
+            // X position offsets are 0, 33.33%, 66.66%, 100%
+            // Y position offsets are 0, 25%, 50%, 75%, 100%
             const x = col * 33.3333;
-            const y = row * 33.3333;
-            return `background-image: url('${ASSET_PATHS.CHARACTERS}'); background-size: 400% 400%; background-position: ${x}% ${y}%; background-repeat: no-repeat;`;
+            const y = row * 25;
+            return `background-image: url('${ASSET_PATHS.CHARACTERS}'); background-size: 400% 500%; background-position: ${x}% ${y}%; background-repeat: no-repeat;`;
         }
 
         // --- Helper to determine the mood of a player based on state ---
@@ -665,7 +667,7 @@
                 this.humanPlayer = new Player('You', true, this, humanCharName);
                 this.players.push(this.humanPlayer);
                 
-                const allChars = ['WITCH', 'WIZARD', 'MONK', 'CHILD'];
+                const allChars = ['WITCH', 'WIZARD', 'MONK', 'CHILD', 'PRINCESS'];
                 const availableChars = allChars.filter(c => c !== humanCharName);
                 
                 // Randomly shuffle available characters for AIs
@@ -937,7 +939,7 @@
             showCharacterSelect(isMandatory = false) {
                 const grid = document.getElementById('char-select-grid');
                 grid.innerHTML = '';
-                const chars = ['WITCH', 'WIZARD', 'MONK', 'CHILD'];
+                const chars = ['WITCH', 'WIZARD', 'MONK', 'CHILD', 'PRINCESS'];
                 
                 chars.forEach(charName => {
                     const btn = document.createElement('div');
