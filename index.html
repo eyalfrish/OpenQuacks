@@ -229,7 +229,7 @@
                         <div id="ui-flask-icon" style="width: 25px; height: 35px;"></div>
                         <span>Flask</span>
                     </div>
-                    <button id="btn-flask" class="flask-btn" disabled>Use</button>
+                    <button id="btn-flask" class="flask-btn" disabled style="display: none;">Use</button>
                 </div>
                 <div class="status-box">
                     <span>Brew Value:</span>
@@ -1559,7 +1559,8 @@
                 const lastChip = human.cauldron[human.cauldron.length - 1];
                 const canFlask = human.flaskActive && !human.exploded && !human.hasStopped && human.cauldron.length > 0 && lastChip && lastChip.type.id === 'WHITE';
                 flaskBtn.disabled = !canFlask;
-                flaskBtn.innerText = !human.flaskActive ? "Empty" : (canFlask ? "Use" : "Ready");
+                flaskBtn.innerText = "Use";
+                flaskBtn.style.display = canFlask ? 'inline-block' : 'none';
 
                 // Apply Sprite UI Icons
                 document.getElementById('ui-flask-icon').style.cssText = `width: 25px; height: 35px; ${getUtilSpriteStyle(human.flaskActive ? 'FLASK_FULL' : 'FLASK_EMPTY')}`;
