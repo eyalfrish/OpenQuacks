@@ -526,7 +526,8 @@
             { text: "Everyone gains 1 VP.", type: 'immediate', apply: (g) => g.players.forEach(p => p.victoryPoints++) },
             { text: "Everyone gains 2 Money.", type: 'immediate', apply: (g) => g.players.forEach(p => p.money += 2) },
             { text: "Everyone may move their droplet forward 1 space.", type: 'immediate', apply: (g) => g.players.forEach(p => p.dropletPosition++) },
-            { text: "If you do not explode this round, gain 2 VP.", type: 'conditional', evaluate: (g) => g.players.forEach(p => { if(!p.exploded) p.victoryPoints += 2; }) }
+            { text: "If you do not explode this round, gain 2 VP.", type: 'conditional', evaluate: (g) => g.players.forEach(p => { if(!p.exploded) p.victoryPoints += 2; }) },
+            { text: "The explosion limit is increased to 9 this round.", type: 'immediate', apply: (g) => g.config.explosionThreshold = 9 }
         ];
 
         const BONUS_DIE_FACES = [
@@ -685,6 +686,7 @@
 
             startRound() {
                 this.phase = 'Brewing';
+                this.config.explosionThreshold = 7; // Reset threshold in case it was altered
                 this.currentFortuneCard = FORTUNE_CARDS[Math.floor(Math.random() * FORTUNE_CARDS.length)];
                 if (this.currentFortuneCard.type === 'immediate') this.currentFortuneCard.apply(this);
 
@@ -709,7 +711,7 @@
                     // Break out if game state has fundamentally changed while awaiting
                     if (this.phase !== 'Brewing' || p.hasStopped || p.exploded) break;
 
-                    if (p.currentWhiteValue >= 6) { 
+                    if (p.currentWhiteValue >= this.config.explosionThreshold - 1) { 
                         p.hasStopped = true; 
                     } else {
                         p.drawChip();
@@ -1639,7 +1641,7 @@
                 
                 const wEl = document.getElementById('ui-white-value');
                 wEl.innerText = `${human.currentWhiteValue} / ${this.game.config.explosionThreshold}`;
-                wEl.className = (human.currentWhiteValue >= 5 && !human.exploded) ? 'danger-text' : 'safe-text';
+                wEl.className = (human.currentWhiteValue >= this.game.config.explosionThreshold - 2 && !human.exploded) ? 'danger-text' : 'safe-text';
 
                 const titleEl = document.getElementById('ui-player-status-title');
                 if (human.exploded) { titleEl.innerText = "EXPLODED!"; titleEl.style.color = "#ff4444"; } 
