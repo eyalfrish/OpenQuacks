@@ -232,12 +232,6 @@
                     <button id="btn-flask" class="flask-btn" disabled>Use</button>
                 </div>
                 <div class="status-box">
-                    <div style="display: flex; align-items: center;">
-                        <span id="ui-icon-rat" class="icon-small"></span>Rat Tails:
-                    </div>
-                    <strong id="ui-rat-tails" style="color: #ffb703;">0</strong>
-                </div>
-                <div class="status-box">
                     <span>Brew Value:</span>
                     <span style="display: flex; align-items: center;">
                         <strong id="ui-brew-vp" style="color: #f5f5f5; display: none;">0</strong>
@@ -295,7 +289,7 @@
                 </div>
                 <button id="btn-help-next" style="flex: none; width: 40px; height: 40px; padding: 0; border-radius: 50%; background-color: #4a4e69; font-size: 1.2rem; margin: 0;">&gt;</button>
             </div>
-            <div id="help-slide-indicator" style="margin-top: 15px; font-size: 0.9rem; color: #aaa; font-weight: bold;">1 / 6</div>
+            <div id="help-slide-indicator" style="margin-top: 15px; font-size: 0.9rem; color: #aaa; font-weight: bold;">1 / 7</div>
             <button id="btn-close-help" style="background-color: #4caf50; margin-top: 15px;">Got it!</button>
         </div>
     </div>
@@ -902,7 +896,7 @@
                     }
                 });
                 document.getElementById('btn-help-next').addEventListener('click', () => {
-                    if (this.helpSlideIndex < 5) {
+                    if (this.helpSlideIndex < 6) {
                         this.helpSlideIndex++;
                         this.renderHelpSlide();
                     }
@@ -1008,7 +1002,13 @@
                 
                 const slides = [
                     {
-                        text: "DRAW ingredients from your bag to fill your cauldron, brew a great potion, and earn money and victory points. But be careful and STOP before drawing too many Boomberries (white tokens), or your cauldron will explode!",
+                        text: "DRAW ingredients from your bag to fill your cauldron, brew a great potion, and earn money and victory points. Ingredients you draw from your bag get added from the blue droplet, in an outward spiral.",
+                        html: `<div style="display: flex; align-items: center; justify-content: center; margin-top: 15px;">
+                            <img src="assets/spiral_demo.png" alt="Spiral Demo" style="max-height: 140px; border-radius: 8px; border: 2px solid var(--panel-border);">
+                        </div>`
+                    },
+                    {
+                        text: "But be careful and STOP before drawing too many Boomberries (white tokens), or your cauldron will explode!",
                         html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; font-weight: bold;">
                             <div class="chip-icon" style="${getChipSpriteStyle('WHITE', 3)}"></div> + 
                             <div class="chip-icon" style="${getChipSpriteStyle('WHITE', 3)}"></div> + 
@@ -1051,7 +1051,7 @@
                         </div>`
                     },
                     {
-                        text: "The game lasts for 9 rounds. At the end of the last day, whoever has the most VP is the winner!",
+                        text: "The game goes on for 9 rounds. At the end of the last day, whoever has the most VP is the winner!",
                         html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; font-size: 3rem;">🏆</div>`
                     }
                 ];
