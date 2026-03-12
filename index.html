@@ -175,6 +175,37 @@
         }
 
         .icon-small { width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 5px; }
+
+        /* --- Mobile / Narrow Screen Responsive Layout --- */
+        @media (max-aspect-ratio: 2/3) {
+            body {
+                height: auto;
+                overflow-y: auto;
+            }
+            #game-container {
+                display: flex;
+                flex-direction: column;
+                height: auto;
+                overflow: visible;
+            }
+            #main-board {
+                order: 1;
+            }
+            #cauldron-wrapper {
+                order: 2;
+                aspect-ratio: 1 / 1;
+                width: 100%;
+                min-height: 300px;
+            }
+            #side-panel {
+                order: 3;
+                overflow-y: visible;
+                height: auto;
+            }
+            .board-sections {
+                flex-wrap: wrap;
+            }
+        }
     </style>
 </head>
 <body>
