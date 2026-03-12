@@ -600,8 +600,7 @@
             { text: "Everyone gains 1 VP.", type: 'immediate', apply: (g) => g.players.forEach(p => p.victoryPoints++) },
             { text: "Everyone gains 2 Money.", type: 'immediate', apply: (g) => g.players.forEach(p => p.money += 2) },
             { text: "Everyone may move their droplet forward 1 space.", type: 'immediate', apply: (g) => g.players.forEach(p => p.dropletPosition++) },
-            { text: "If you do not explode this round, gain 2 VP.", type: 'conditional', evaluate: (g) => g.players.forEach(p => { if(!p.exploded) p.victoryPoints += 2; }) },
-            { text: "The explosion limit is increased to 9 this round.", type: 'immediate', apply: (g) => g.config.explosionThreshold = 9 }
+            { text: "If you do not explode this round, gain 2 VP.", type: 'conditional', evaluate: (g) => g.players.forEach(p => { if(!p.exploded) p.victoryPoints += 2; }) }
         ];
 
         const BONUS_DIE_FACES = [
@@ -1262,13 +1261,17 @@
             }
 
             showBonusDieModal(face, money) {
-                document.getElementById('bonus-die-desc').innerHTML = `You brewed the best potion this round! (${money} <span style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; ${getUtilSpriteStyle('COIN')}"></span>)`;
+                const descEl = document.getElementById('bonus-die-desc');
+                if (descEl) {
+                    descEl.innerHTML = `You brewed the best potion this round! (${money} <span style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; ${getUtilSpriteStyle('COIN')}"></span>)`;
+                }
                 
                 let iconHtml = '';
                 if (face.isChip) {
-                    iconHtml = `<div class="chip-icon" style="width: 36px; height: 36px; ${getChipSpriteStyle(face.typeId, face.value)}"></div>`;
+                    iconHtml = `<div class="chip-icon" style="width: 40px; height: 40px; ${getChipSpriteStyle(face.typeId, face.value)}"></div>`;
                 } else {
-                    iconHtml = `<div style="width: 30px; height: 40px; ${getUtilSpriteStyle(face.icon)}"></div>`;
+                    // Set width and height to 40px equally to ensure a perfect 1:1 aspect ratio!
+                    iconHtml = `<div style="width: 40px; height: 40px; ${getUtilSpriteStyle(face.icon)}"></div>`;
                 }
 
                 document.getElementById('bonus-die-result').innerHTML = `${iconHtml}<span>${face.text}</span>`;
