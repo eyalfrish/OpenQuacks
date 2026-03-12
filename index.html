@@ -386,7 +386,7 @@
         <div class="modal-content">
             <h2>🛒 Shopping!</h2>
             <div style="display: flex; justify-content: space-around; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
-                <span style="display: flex; align-items: center;">Available Money: <strong id="shop-money" style="color: gold; font-size: 1.2rem; margin-left: 5px;">0</strong><span id="shop-money-icon"></span></span>
+                <span style="display: flex; align-items: center;">Money: <strong id="shop-money" style="color: gold; font-size: 1.2rem; margin-left: 5px;">0</strong><span id="shop-money-icon"></span></span>
                 <span style="display: flex; align-items: center;">
                     Rubies: <strong id="shop-rubies" style="color: #ff4444; font-size: 1.2rem; margin-left: 5px; margin-right: 5px;">0</strong>
                     <span id="shop-ruby-icon" class="icon-small"></span> 
@@ -1430,7 +1430,7 @@
                 dropletEl.innerHTML = `
                     <div style="width: 25px; height: 35px; ${getUtilSpriteStyle('DROPLET')}"></div>
                     <div style="font-size: 0.8em; font-weight: bold;">Droplet</div>
-                    <div style="font-size: 0.9em; color: #ff4444;">Cost: 2 Rubies</div>
+                    <div style="font-size: 0.9em; color: #ff4444; display: flex; align-items: center; justify-content: center;">Cost: 2 <span style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; ${getUtilSpriteStyle('RUBY')}"></span></div>
                     <div class="tooltip">Move your starting droplet forward by 1 space permanently. Can be purchased multiple times.</div>
                 `;
                 if (canAffordDroplet) {
@@ -1449,7 +1449,7 @@
                 flaskEl.innerHTML = `
                     <div style="width: 25px; height: 35px; ${getUtilSpriteStyle(h.flaskActive ? 'FLASK_FULL' : 'FLASK_EMPTY')}"></div>
                     <div style="font-size: 0.8em; font-weight: bold;">Refill Flask</div>
-                    <div style="font-size: 0.9em; color: #ff4444;">Cost: 2 Rubies</div>
+                    <div style="font-size: 0.9em; color: #ff4444; display: flex; align-items: center; justify-content: center;">Cost: 2 <span style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; ${getUtilSpriteStyle('RUBY')}"></span></div>
                     <div class="tooltip">${h.flaskActive ? 'Your flask is already full.' : 'Refill your empty flask so it can be used again.'}</div>
                 `;
                 if (canAffordFlask) {
@@ -1468,7 +1468,7 @@
                 bagEl.innerHTML = `
                     <div style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; ${getUtilSpriteStyle('SACK')}"></div>
                     <div style="font-size: 0.8em; font-weight: bold;">View Bag</div>
-                    <div style="font-size: 0.9em; color: #ff4444;">Cost: 1 Ruby</div>
+                    <div style="font-size: 0.9em; color: #ff4444; display: flex; align-items: center; justify-content: center;">Cost: 1 <span style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; ${getUtilSpriteStyle('RUBY')}"></span></div>
                     <div class="tooltip">Peek inside your bag to see all your tokens (played, unplayed, and newly purchased).</div>
                 `;
                 if (canAffordBag) {
