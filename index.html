@@ -137,15 +137,31 @@
         #btn-toggle-values {
             position: absolute; top: 10px; left: 10px; z-index: 10; 
             background: rgba(0,0,0,0.5); border: 2px solid #4a4e69; 
-            border-radius: 50%; width: 40px; height: 40px; 
-            font-size: 1.5rem; display: flex; align-items: center; 
-            justify-content: center; padding: 0; cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.5); color: white;
-            transition: all 0.2s;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; 
+            padding: 0; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+            color: white; transition: all 0.2s;
         }
         #btn-toggle-values:hover {
             background: rgba(0,0,0,0.8);
             transform: scale(1.1);
+        }
+
+        #btn-sell-potion {
+            position: absolute; bottom: 10px; left: 10px; z-index: 10; 
+            background: rgba(0,0,0,0.5); border: 2px solid #4a4e69; 
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; 
+            padding: 0; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+            color: white; transition: all 0.2s;
+        }
+        #btn-sell-potion:hover:not(:disabled) {
+            background: rgba(0,0,0,0.8);
+            transform: scale(1.1);
+            border-color: #4caf50;
+        }
+        #btn-sell-potion:disabled {
+            opacity: 0.5; cursor: not-allowed;
         }
 
         /* --- Modal & Shop Styles --- */
@@ -263,6 +279,10 @@
                 </div>
                 
                 <div class="status-box">
+                    <span>Bag Count:</span>
+                    <strong id="ui-bag-count">0</strong>
+                </div>
+                <div class="status-box">
                     <span>Brew Value:</span>
                     <span style="display: flex; align-items: center;">
                         <strong id="ui-brew-vp" style="color: #f5f5f5; display: none;">0</strong>
@@ -292,7 +312,8 @@
 
         <!-- Cauldron Canvas -->
         <div id="cauldron-wrapper">
-            <button id="btn-toggle-values" title="Toggle Track Values">🧐</button>
+            <button id="btn-toggle-values" title="Toggle Track Values"><div id="ui-monocle-icon"></div></button>
+            <button id="btn-sell-potion" title="Sell Potion">💲</button>
             <canvas id="cauldron-canvas"></canvas>
             <video id="explosion-video" src="assets/explosion.mov" playsinline preload="auto" style="display: none;"></video>
             <video id="bubbling-video" src="assets/cauldron_bubble1.mov" playsinline preload="auto" loop style="display: none;"></video>
@@ -343,6 +364,20 @@
             <div>
                 <button id="btn-choose-vp">Take <span id="expl-vp-val">0</span> VP</button>
                 <button id="btn-choose-money" style="display: inline-flex; align-items: center; justify-content: center;">Take <span id="expl-money-val" style="margin: 0 5px;">0</span> <span id="expl-money-icon"></span></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sell-modal" class="modal-overlay" style="z-index: 1006;">
+        <div class="modal-content">
+            <h2>💰 Sell Potion? 💰</h2>
+            <p style="margin-bottom: 15px;">Stop brewing and sell this potion for:</p>
+            <div id="sell-modal-value" style="display: flex; justify-content: center; align-items: center; font-size: 1.5rem; margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">
+                <!-- Filled by JS -->
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="btn-sell-confirm" style="background-color: #4caf50;">Sell Potion</button>
+                <button id="btn-sell-cancel" style="background-color: #4a4e69;">Keep Brewing</button>
             </div>
         </div>
     </div>
@@ -471,7 +506,8 @@
             SACK        : { x: 0.34, y: 0.54, w: 0.13, h: 0.35 }, 
             DROPLET     : { x: 0.51, y: 0.54, w: 0.08, h: 0.34 }, 
             RAT         : { x: 0.62, y: 0.54, w: 0.09, h: 0.33 }, 
-            VP          : { x: 0.73, y: 0.53, w: 0.14, h: 0.36 }
+            VP          : { x: 0.73, y: 0.53, w: 0.14, h: 0.36 },
+            MONOCLE     : { x: 0.68, y: 0.06, w: 0.15, h: 0.42 }
         };
 
         // 8x4 Grid Constants for Characters
@@ -862,7 +898,14 @@
                 
                 this.isDebug = window.location.href.includes('debug=1');
 
-                this.bindEvents(); this.handleResize(); this.updateFullUI();
+                // Initialize the monocle icon style BEFORE resizing so it persists
+                const monocleEl = document.getElementById('ui-monocle-icon');
+                if (monocleEl) {
+                    monocleEl.style.cssText = `display: inline-block; ${getUtilSpriteStyle('MONOCLE')}`;
+                }
+
+                this.bindEvents(); 
+                this.handleResize();
                 this.startAnimationLoop(); // Continuous loop for fades
             }
 
@@ -972,6 +1015,39 @@
                 document.getElementById('btn-stop').addEventListener('click', () => {
                     this.game.humanPlayer.hasStopped = true; this.updateFullUI(); this.game.checkBrewingPhaseEnd();
                 });
+                
+                document.getElementById('btn-sell-potion').addEventListener('click', () => {
+                    if (this.game.humanPlayer.hasStopped || this.game.humanPlayer.exploded) return;
+                    const h = this.game.humanPlayer;
+                    const humanRewards = this.getProjectedRewards(h);
+                    
+                    let brewHtml = ``;
+                    if (humanRewards.vp > 0) {
+                        brewHtml += `<strong style="color: #f5f5f5;">${humanRewards.vp}</strong><span style="width: 24px; height: 24px; display: inline-block; margin-left: 5px; margin-right: 15px; ${getUtilSpriteStyle('VP')}"></span>`;
+                    }
+                    brewHtml += `<strong style="color: gold;">${humanRewards.money}</strong><span style="width: 24px; height: 24px; display: inline-block; margin-left: 5px; margin-right: 15px; ${getUtilSpriteStyle('COIN')}"></span>`;
+                    if (humanRewards.rubies > 0) {
+                        if (humanRewards.rubies > 1) {
+                            brewHtml += `<strong style="color: #ff4444;">${humanRewards.rubies}</strong>`;
+                        }
+                        brewHtml += `<span style="width: 24px; height: 24px; display: inline-block; margin-left: 5px; margin-right: 0; ${getUtilSpriteStyle('RUBY')}"></span>`;
+                    }
+
+                    document.getElementById('sell-modal-value').innerHTML = brewHtml;
+                    document.getElementById('sell-modal').style.display = 'flex';
+                });
+
+                document.getElementById('btn-sell-confirm').addEventListener('click', () => {
+                    document.getElementById('sell-modal').style.display = 'none';
+                    this.game.humanPlayer.hasStopped = true; 
+                    this.updateFullUI(); 
+                    this.game.checkBrewingPhaseEnd();
+                });
+
+                document.getElementById('btn-sell-cancel').addEventListener('click', () => {
+                    document.getElementById('sell-modal').style.display = 'none';
+                });
+
                 document.getElementById('ui-flask-icon').addEventListener('click', () => { if(this.game.humanPlayer.useFlask()) this.updateFullUI(); });
 
                 document.getElementById('btn-choose-vp').addEventListener('click', () => { this.game.humanPlayer.victoryPoints += this.game.humanPlayer.roundVP; document.getElementById('explosion-modal').style.display = 'none'; this.startBuyingPhase(); });
@@ -1409,6 +1485,29 @@
                 const rect = this.wrapper.getBoundingClientRect();
                 this.canvas.width = rect.width; this.canvas.height = rect.height;
                 this.generateSpiral();
+                
+                // Dynamically resize overlay buttons relative to the canvas
+                const baseSize = Math.min(this.canvas.width, this.canvas.height);
+                const btnSize = baseSize * 0.15;
+                
+                const toggleBtn = document.getElementById('btn-toggle-values');
+                if (toggleBtn) {
+                    toggleBtn.style.width = `${btnSize}px`;
+                    toggleBtn.style.height = `${btnSize}px`;
+                }
+                
+                const monocleIcon = document.getElementById('ui-monocle-icon');
+                if (monocleIcon) {
+                    monocleIcon.style.width = `${btnSize * 0.65}px`;
+                    monocleIcon.style.height = `${btnSize * 0.65}px`;
+                }
+                
+                const sellBtn = document.getElementById('btn-sell-potion');
+                if (sellBtn) {
+                    sellBtn.style.width = `${btnSize}px`;
+                    sellBtn.style.height = `${btnSize}px`;
+                    sellBtn.style.fontSize = `${btnSize * 0.5}px`;
+                }
             }
 
             generateSpiral() {
@@ -1742,6 +1841,8 @@
 
                 document.getElementById('ui-my-vp').innerText = `${human.victoryPoints} VP`;
 
+                document.getElementById('ui-bag-count').innerText = human.bag.length;
+                
                 const humanRewards = this.getProjectedRewards(human);
                 document.getElementById('ui-brew-value').innerText = humanRewards.money;
                 document.getElementById('ui-brew-coin').style.cssText = `width: 20px; height: 20px; display: inline-block; margin-left: 3px; margin-right: 5px; ${getUtilSpriteStyle('COIN')}`;
@@ -1780,6 +1881,9 @@
                 const canDraw = !human.exploded && !human.hasStopped && human.bag.length > 0;
                 document.getElementById('btn-draw').disabled = !canDraw;
                 document.getElementById('btn-stop').disabled = human.exploded || human.hasStopped; // Uncoupled from canDraw
+                
+                const sellBtn = document.getElementById('btn-sell-potion');
+                if (sellBtn) sellBtn.disabled = human.exploded || human.hasStopped;
 
                 const flaskIcon = document.getElementById('ui-flask-icon');
                 const lastChip = human.cauldron[human.cauldron.length - 1];
