@@ -279,10 +279,6 @@
                 </div>
                 
                 <div class="status-box">
-                    <span>Bag Count:</span>
-                    <strong id="ui-bag-count">0</strong>
-                </div>
-                <div class="status-box">
                     <span>Brew Value:</span>
                     <span style="display: flex; align-items: center;">
                         <strong id="ui-brew-vp" style="color: #f5f5f5; display: none;">0</strong>
@@ -1849,8 +1845,6 @@
                 if (this.game.currentFortuneCard) document.getElementById('ui-fortune-text').innerText = `"${this.game.currentFortuneCard.text}"`;
 
                 document.getElementById('ui-my-vp').innerText = `${human.victoryPoints} VP`;
-
-                document.getElementById('ui-bag-count').innerText = human.bag.length;
                 
                 const humanRewards = this.getProjectedRewards(human);
                 document.getElementById('ui-brew-value').innerText = humanRewards.money;
