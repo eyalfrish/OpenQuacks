@@ -164,6 +164,26 @@
             opacity: 0.5; cursor: not-allowed;
         }
 
+        #ui-boomberry-meter {
+            position: absolute; top: 10px; right: 10px; z-index: 10;
+            background: rgba(0,0,0,0.5); border: 2px solid #4a4e69;
+            border-radius: 15px; overflow: hidden; display: flex; 
+            align-items: center; justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        #ui-boomberry-fill {
+            position: absolute; top: 0; left: 0; height: 100%; 
+            width: 0%; background-color: #ffffff; 
+            transition: width 0.3s ease, background-color 0.3s ease; z-index: 1;
+        }
+
+        #ui-boomberry-text {
+            position: relative; z-index: 2; width: 100%; 
+            text-align: center; color: #ffffff; font-weight: bold; 
+            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.8);
+        }
+
         /* --- Modal & Shop Styles --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -310,6 +330,10 @@
         <div id="cauldron-wrapper">
             <button id="btn-toggle-values" title="Toggle Track Values"><div id="ui-monocle-icon"></div></button>
             <button id="btn-sell-potion" title="Sell Potion">💲</button>
+            <div id="ui-boomberry-meter" title="Boomberry Explosion Limit">
+                <div id="ui-boomberry-fill"></div>
+                <div id="ui-boomberry-text">0 / 7</div>
+            </div>
             <canvas id="cauldron-canvas"></canvas>
             <video id="explosion-video" src="assets/explosion.mov" playsinline preload="auto" style="display: none;"></video>
             <video id="bubbling-video" src="assets/cauldron_bubble1.mov" playsinline preload="auto" loop style="display: none;"></video>
@@ -1512,6 +1536,17 @@
                     sellBtn.style.height = `${btnSize}px`;
                     sellBtn.style.fontSize = `${btnSize * 0.5}px`;
                 }
+
+                const meter = document.getElementById('ui-boomberry-meter');
+                if (meter) {
+                    meter.style.width = `${baseSize * 0.3}px`;
+                    meter.style.height = `${btnSize * 0.45}px`; // Scaled relative to the corner buttons
+                    meter.style.borderRadius = `${btnSize * 0.25}px`;
+                }
+                const meterText = document.getElementById('ui-boomberry-text');
+                if (meterText) {
+                    meterText.style.fontSize = `${btnSize * 0.25}px`;
+                }
             }
 
             generateSpiral() {
@@ -1844,7 +1879,6 @@
                 if (this.game.currentFortuneCard) document.getElementById('ui-fortune-text').innerText = `"${this.game.currentFortuneCard.text}"`;
 
                 document.getElementById('ui-my-vp').innerText = `${human.victoryPoints} VP`;
-
                 
                 const humanRewards = this.getProjectedRewards(human);
                 document.getElementById('ui-brew-value').innerText = humanRewards.money;
@@ -1907,6 +1941,28 @@
                         sellBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.5)';
                         sellBtn.style.borderColor = '#4a4e69';
                         sellBtn.title = "Sell Potion";
+                    }
+                }
+
+                // Boomberry Progress Bar Updates
+                const maxThreshold = this.game.config.explosionThreshold;
+                const currentWhite = human.currentWhiteValue;
+                const fillPercent = Math.min(100, (currentWhite / maxThreshold) * 100);
+                
+                const meterFill = document.getElementById('ui-boomberry-fill');
+                const meterText = document.getElementById('ui-boomberry-text');
+                
+                if (meterFill && meterText) {
+                    meterFill.style.width = `${fillPercent}%`;
+                    meterText.innerText = `${currentWhite} / ${maxThreshold}`;
+                    
+                    // Transition bar color based on danger level
+                    if (currentWhite > maxThreshold) {
+                        meterFill.style.backgroundColor = '#ff4444'; // Red (Exploded)
+                    } else if (currentWhite >= maxThreshold - 2) {
+                        meterFill.style.backgroundColor = '#ffbb33'; // Orange/Yellow (Danger)
+                    } else {
+                        meterFill.style.backgroundColor = '#ffffff'; // White (Safe)
                     }
                 }
 
