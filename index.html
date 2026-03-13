@@ -97,7 +97,7 @@
         #ui-fortune-text { font-style: italic; color: #dda0dd; margin-top: 10px; }
 
         #side-panel { grid-column: 2 / 3; grid-row: 1 / 3; overflow-y: auto; display: flex; flex-direction: column; }
-        .ai-card { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; margin-bottom: 15px; }
+        .player-card { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; margin-bottom: 15px; }
 
         #cauldron-wrapper {
             grid-column: 1 / 2; grid-row: 2 / 3;
@@ -322,8 +322,8 @@
 
             <hr style="border-color: var(--panel-border); margin: 10px 0 20px 0;">
             
-            <h3 style="color: var(--text-light); margin-bottom: 10px; font-size: 1.1rem;">Opponents</h3>
-            <div id="ai-list"></div>
+            <h3 style="color: var(--text-light); margin-bottom: 10px; font-size: 1.1rem;">Players</h3>
+            <div id="player-list"></div>
         </div>
 
         <!-- Cauldron Canvas -->
@@ -1979,23 +1979,23 @@
                 flaskIcon.style.cssText = `width: 60px; height: 70px; cursor: ${canFlask ? 'pointer' : 'default'}; transition: transform 0.4s ease, filter 0.2s ease; ${transformStyle} ${filterStyle} ${getUtilSpriteStyle(human.flaskActive ? 'FLASK_FULL' : 'FLASK_EMPTY')}`;
                 flaskIcon.title = canFlask ? "Click to use Flask and return the last Boomberry to your bag!" : (!human.flaskActive ? "Flask is empty." : "Can only be used immediately after drawing a Boomberry.");
 
-                const aiListEl = document.getElementById('ai-list'); aiListEl.innerHTML = ''; 
-                this.game.players.filter(p => !p.isHuman).forEach(ai => {
-                    const status = ai.exploded ? "EXPLODED!" : (ai.hasStopped ? "Finished" : "Brewing...");
-                    const card = document.createElement('div'); card.className = 'ai-card';
+                const playerListEl = document.getElementById('player-list'); playerListEl.innerHTML = ''; 
+                this.game.players.forEach(player => {
+                    const status = player.exploded ? "EXPLODED!" : (player.hasStopped ? "Finished" : "Brewing...");
+                    const card = document.createElement('div'); card.className = 'player-card';
                     
-                    const aiRewards = this.getProjectedRewards(ai);
-                    const aiMood = getPlayerMood(ai);
-                    const aiFaceStyle = getCharacterSpriteStyle(ai.character, aiMood);
+                    const pRewards = this.getProjectedRewards(player);
+                    const pMood = getPlayerMood(player);
+                    const pFaceStyle = getCharacterSpriteStyle(player.character, pMood);
                     
                     let brewHtml = `<div style="display: flex; align-items: center; margin: 3px 0;">Brew Value: `;
-                    if (aiRewards.vp > 0) {
-                        brewHtml += `<span style="color: #f5f5f5; margin-left: 5px;">${aiRewards.vp}</span><span style="width: 16px; height: 16px; display: inline-block; margin-left: 2px; margin-right: 5px; ${getUtilSpriteStyle('VP')}"></span>`;
+                    if (pRewards.vp > 0) {
+                        brewHtml += `<span style="color: #f5f5f5; margin-left: 5px;">${pRewards.vp}</span><span style="width: 16px; height: 16px; display: inline-block; margin-left: 2px; margin-right: 5px; ${getUtilSpriteStyle('VP')}"></span>`;
                     }
-                    brewHtml += `<strong style="color: gold; margin-left: 5px;">${aiRewards.money}</strong><span style="width: 16px; height: 16px; display: inline-block; margin-left: 2px; margin-right: 5px; ${getUtilSpriteStyle('COIN')}"></span>`;
-                    if (aiRewards.rubies > 0) {
-                        if (aiRewards.rubies > 1) {
-                            brewHtml += `<span style="color: #ff4444; margin-left: 8px;">${aiRewards.rubies}</span>`;
+                    brewHtml += `<strong style="color: gold; margin-left: 5px;">${pRewards.money}</strong><span style="width: 16px; height: 16px; display: inline-block; margin-left: 2px; margin-right: 5px; ${getUtilSpriteStyle('COIN')}"></span>`;
+                    if (pRewards.rubies > 0) {
+                        if (pRewards.rubies > 1) {
+                            brewHtml += `<span style="color: #ff4444; margin-left: 8px;">${pRewards.rubies}</span>`;
                         }
                         brewHtml += `<span style="width: 16px; height: 16px; display: inline-block; margin-left: 2px; margin-right: 0; ${getUtilSpriteStyle('RUBY')}"></span>`;
                     }
@@ -2003,28 +2003,28 @@
 
                     card.innerHTML = `
                         <div style="display: flex; gap: 10px; align-items: center;">
-                            <div style="width: 70px; height: 90px; border-radius: 6px; border: 1px solid #aaa; flex-shrink: 0; background-color: rgba(0,0,0,0.5); ${aiFaceStyle}"></div>
+                            <div style="width: 70px; height: 90px; border-radius: 6px; border: 1px solid ${player.isHuman ? 'gold' : '#aaa'}; flex-shrink: 0; background-color: rgba(0,0,0,0.5); ${pFaceStyle}"></div>
                             <div style="flex: 1;">
-                                <strong>${ai.name}</strong>
+                                <strong>${player.name}</strong>
                                 <div style="font-size: 0.9em; margin-top: 5px;">
-                                    <div>VP: ${ai.victoryPoints} | Rubies: ${ai.rubies}</div>
+                                    <div>VP: ${player.victoryPoints} | Rubies: ${player.rubies}</div>
                                     ${brewHtml}
-                                    <div style="color: ${ai.exploded ? '#ff4444' : '#aaaaaa'}">Status: ${status}</div>
+                                    <div style="color: ${player.exploded ? '#ff4444' : '#aaaaaa'}">Status: ${status}</div>
                                 </div>
                             </div>
                         </div>`;
                     
-                    if (this.isDebug) {
+                    if (this.isDebug || player.isHuman) {
                         card.style.cursor = 'pointer';
-                        card.title = "Shift-click to peek at bag (Debug)";
+                        card.title = player.isHuman ? "Click to view your bag" : "Shift-click to peek at bag (Debug)";
                         card.addEventListener('click', (e) => {
-                            if (e.shiftKey) {
-                                this.showBagModal(ai);
+                            if (player.isHuman || e.shiftKey) {
+                                this.showBagModal(player);
                             }
                         });
                     }
 
-                    aiListEl.appendChild(card);
+                    playerListEl.appendChild(card);
                 });
             }
         }
