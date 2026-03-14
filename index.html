@@ -315,7 +315,7 @@
                 </div>
                 <button id="btn-help-next" style="flex: none; width: 40px; height: 40px; padding: 0; border-radius: 50%; background-color: #4a4e69; font-size: 1.2rem; margin: 0;">&gt;</button>
             </div>
-            <div id="help-slide-indicator" style="margin-top: 15px; font-size: 0.9rem; color: #aaa; font-weight: bold;">1 / 7</div>
+            <div id="help-slide-indicator" style="margin-top: 15px; font-size: 0.9rem; color: #aaa; font-weight: bold;">1 / 8</div>
             <button id="btn-close-help" style="background-color: #4caf50; margin-top: 15px;">Got it!</button>
         </div>
     </div>
@@ -1046,7 +1046,7 @@
                     }
                 });
                 document.getElementById('btn-help-next').addEventListener('click', () => {
-                    if (this.helpSlideIndex < 6) {
+                    if (this.helpSlideIndex < 7) {
                         this.helpSlideIndex++;
                         this.renderHelpSlide();
                     }
@@ -1175,17 +1175,21 @@
                 
                 const slides = [
                     {
-                        text: "DRAW ingredients from your bag to fill your cauldron, brew a great potion, and earn money and victory points. Ingredients you draw from your bag get added from the blue droplet, in an outward spiral.",
-                        html: `<div style="display: flex; align-items: center; justify-content: center; margin-top: 15px;">
-                            <img src="assets/spiral_demo.png" alt="Spiral Demo" style="max-height: 140px; border-radius: 8px; border: 2px solid var(--panel-border);">
+                        text: "Press the SACK to draw random ingredients into your cauldron.",
+                        html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px;">
+                            <div style="width: 60px; height: 60px; ${getUtilSpriteStyle('SACK')}"></div>
                         </div>`
                     },
                     {
-                        text: "But be careful and STOP before drawing too many Boomberries (white tokens), or your cauldron will explode!",
-                        html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; font-weight: bold;">
-                            <div class="chip-icon" style="${getChipSpriteStyle('WHITE', 3)}"></div> + 
-                            <div class="chip-icon" style="${getChipSpriteStyle('WHITE', 3)}"></div> + 
-                            <div class="chip-icon" style="${getChipSpriteStyle('WHITE', 2)}"></div> = <span style="font-size: 1.8rem; margin-left: 5px;">💥</span>
+                        text: "Press the 💲 button to stop brewing and sell your potion. Sell before drawing too many Boomberries (white tokens), or your cauldron will explode!",
+                        html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; font-weight: bold; font-size: 1.5rem;">
+                            8 x <div class="chip-icon" style="${getChipSpriteStyle('WHITE', 1)}"></div> = <span style="font-size: 2rem; margin-left: 5px;">💥</span>
+                        </div>`
+                    },
+                    {
+                        text: "Ingredients you draw from your bag get added from the blue droplet, in an outward spiral. The more you add, the more rewards you get!",
+                        html: `<div style="display: flex; align-items: center; justify-content: center; margin-top: 15px;">
+                            <img src="assets/spiral_demo.png" alt="Spiral Demo" style="max-height: 140px; border-radius: 8px; border: 2px solid var(--panel-border);">
                         </div>`
                     },
                     {
