@@ -1935,9 +1935,9 @@
                             </div>
                         </div>`;
                     
-                    if (this.isDebug || player.isHuman) {
+                    if (this.isDebug) {
                         card.style.cursor = 'pointer';
-                        card.title = player.isHuman ? "Click to view your bag" : "Shift-click to peek at bag (Debug)";
+                        card.title = "Shift-click to peek at bag (Debug)";
                         card.addEventListener('click', (e) => {
                             if (player.isHuman || e.shiftKey) {
                                 this.showBagModal(player);
