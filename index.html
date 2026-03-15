@@ -1939,7 +1939,7 @@
                         card.style.cursor = 'pointer';
                         card.title = "Shift-click to peek at bag (Debug)";
                         card.addEventListener('click', (e) => {
-                            if (player.isHuman || e.shiftKey) {
+                            if (e.shiftKey) {
                                 this.showBagModal(player);
                             }
                         });
