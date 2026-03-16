@@ -779,22 +779,6 @@
                     if (this.round === 6) {
                         this.uiManager.animateToSack({ typeId: 'WHITE', value: 1, color: '#ffffff', textCol: '#000000' });
                     }
-                    if (this.round === 1) {
-                        const startChips = [
-                            { typeId: 'WHITE', value: 1, color: '#ffffff', textCol: '#000000' },
-                            { typeId: 'WHITE', value: 1, color: '#ffffff', textCol: '#000000' },
-                            { typeId: 'WHITE', value: 1, color: '#ffffff', textCol: '#000000' },
-                            { typeId: 'WHITE', value: 1, color: '#ffffff', textCol: '#000000' },
-                            { typeId: 'WHITE', value: 2, color: '#ffffff', textCol: '#000000' },
-                            { typeId: 'WHITE', value: 2, color: '#ffffff', textCol: '#000000' },
-                            { typeId: 'WHITE', value: 3, color: '#ffffff', textCol: '#000000' },
-                            { typeId: 'ORANGE', value: 1, color: '#ff8c00', textCol: '#ffffff' },
-                            { typeId: 'GREEN', value: 1, color: '#008000', textCol: '#ffffff' }
-                        ];
-                        startChips.forEach((chip, i) => {
-                            setTimeout(() => this.uiManager.animateToSack(chip), i * 150);
-                        });
-                    }
                 }
 
                 // Start AI loops
@@ -919,6 +903,7 @@
                 this.sackAnimations = [];
                 this.helpSlideIndex = 0;
                 this.showTrackValues = false;
+                this.hasPlayedStartAnimation = false;
                 
                 this.isDebug = window.location.href.includes('debug=1');
 
@@ -938,11 +923,32 @@
                 loop();
             }
 
-            animateToSack(chipDef) {
+            animateToSack(chipDef, delay = 0) {
                 this.sackAnimations.push({
                     chipDef: chipDef,
-                    startTime: Date.now(),
+                    startTime: Date.now() + delay,
                     duration: 800 // Milliseconds for the chip to drop into the sack
+                });
+            }
+
+            playStartAnimation() {
+                if (this.hasPlayedStartAnimation) return;
+                this.hasPlayedStartAnimation = true;
+                
+                const startChips = [
+                    { typeId: 'WHITE', value: 1, color: '#ffffff', textCol: '#000000' },
+                    { typeId: 'WHITE', value: 1, color: '#ffffff', textCol: '#000000' },
+                    { typeId: 'WHITE', value: 1, color: '#ffffff', textCol: '#000000' },
+                    { typeId: 'WHITE', value: 1, color: '#ffffff', textCol: '#000000' },
+                    { typeId: 'WHITE', value: 2, color: '#ffffff', textCol: '#000000' },
+                    { typeId: 'WHITE', value: 2, color: '#ffffff', textCol: '#000000' },
+                    { typeId: 'WHITE', value: 3, color: '#ffffff', textCol: '#000000' },
+                    { typeId: 'ORANGE', value: 1, color: '#ff8c00', textCol: '#ffffff' },
+                    { typeId: 'GREEN', value: 1, color: '#008000', textCol: '#ffffff' }
+                ];
+                
+                startChips.forEach((chip, i) => {
+                    this.animateToSack(chip, i * 150);
                 });
             }
 
@@ -1094,7 +1100,12 @@
 
                 document.getElementById('btn-settings').addEventListener('click', () => { this.showCharacterSelect(false); });
                 document.getElementById('btn-help').addEventListener('click', () => { this.showHelpModal(); });
-                document.getElementById('btn-close-help').addEventListener('click', () => { document.getElementById('help-modal').style.display = 'none'; });
+                document.getElementById('btn-close-help').addEventListener('click', () => { 
+                    document.getElementById('help-modal').style.display = 'none'; 
+                    if (this.game.round === 1) {
+                        this.playStartAnimation();
+                    }
+                });
                 
                 document.getElementById('btn-help-prev').addEventListener('click', () => {
                     if (this.helpSlideIndex > 0) {
@@ -1118,8 +1129,10 @@
                     document.getElementById('game-over-modal').style.display = 'none';
                     // Re-setup players to wipe out old states, keeping the same chosen character
                     this.game.setupPlayers(this.game.humanPlayer.character);
+                    this.hasPlayedStartAnimation = false;
                     // Start game loop again
                     this.game.startGame();
+                    this.playStartAnimation();
                 });
             }
 
@@ -1178,11 +1191,14 @@
                             this.game.setupPlayers(charName);
                             this.game.startGame();
                             this.updateFullUI();
+                            
                             const forceHelp = window.location.href.includes('help=1');
                             const hasSeenHelp = getCookie('hasSeenHelp');
                             if (forceHelp || !hasSeenHelp) {
                                 this.showHelpModal();
                                 setCookie('hasSeenHelp', 'true', 365);
+                            } else {
+                                this.playStartAnimation();
                             }
                         } else {
                             // Swap dynamically mid-game
@@ -1743,6 +1759,13 @@
                         this.ctx.fillRect(sackX, sackY, sackSize, sackSize);
                     }
 
+                    // Calculate display count (subtracting currently animating chips)
+                    const displayBagCount = Math.max(0, player.bag.length - this.sackAnimations.length);
+                    const bagCountEl = document.getElementById('ui-bag-count');
+                    if (bagCountEl && bagCountEl.innerText !== String(displayBagCount)) {
+                        bagCountEl.innerText = displayBagCount;
+                    }
+
                     // Draw bag count text over the sack
                     this.ctx.save();
                     this.ctx.fillStyle = '#ffffff';
@@ -1757,13 +1780,14 @@
                     this.ctx.shadowBlur = 3;
                     
                     // Shifted slightly down to visually center on the "bulge" of the sack
-                    this.ctx.fillText(player.bag.length, sackX + sackSize / 2, sackY + sackSize * 0.55);
+                    this.ctx.fillText(displayBagCount, sackX + sackSize / 2, sackY + sackSize * 0.55);
                     this.ctx.restore();
 
                     // NEW: Draw Sack Animations
                     const now = Date.now();
                     this.sackAnimations = this.sackAnimations.filter(anim => {
                         const age = now - anim.startTime;
+                        if (age < 0) return true; // Delayed start
                         if (age >= anim.duration) return false;
 
                         const progress = age / anim.duration;
@@ -2097,9 +2121,14 @@
                 gameController.setupPlayers(savedChar);
                 gameController.startGame();
                 
-                const isHelp = window.location.href.includes('help=1');
-                if (isHelp) {
+                const forceHelp = window.location.href.includes('help=1');
+                const hasSeenHelp = getCookie('hasSeenHelp');
+                
+                if (forceHelp || !hasSeenHelp) {
                     uiManager.showHelpModal();
+                    setCookie('hasSeenHelp', 'true', 365);
+                } else {
+                    uiManager.playStartAnimation();
                 }
             }
         };
