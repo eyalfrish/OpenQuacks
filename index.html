@@ -167,6 +167,23 @@
             text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.8);
         }
 
+        /* --- Tutorial Arrows --- */
+        .tutorial-arrow {
+            position: absolute;
+            z-index: 20;
+            pointer-events: none;
+            display: none;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+        @keyframes tutorial-poke-right {
+            0%, 100% { transform: translateX(0); opacity: 0.5; }
+            50% { transform: translateX(10px); opacity: 1; }
+        }
+        @keyframes tutorial-poke-left {
+            0%, 100% { transform: translateX(0); opacity: 0.5; }
+            50% { transform: translateX(-10px); opacity: 1; }
+        }
+
         /* --- Modal & Shop Styles --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -287,6 +304,8 @@
                 <div id="ui-boomberry-fill"></div>
                 <div id="ui-boomberry-text">0 / 7</div>
             </div>
+            <div id="tutorial-arrow-sack" class="tutorial-arrow" style="animation: tutorial-poke-right 1.5s infinite;">👉</div>
+            <div id="tutorial-arrow-sell" class="tutorial-arrow" style="animation: tutorial-poke-left 1.5s infinite;">👈</div>
             <canvas id="cauldron-canvas"></canvas>
             <video id="explosion-video" src="assets/explosion.mov" playsinline preload="auto" style="display: none;"></video>
             <video id="bubbling-video" src="assets/cauldron_bubble1.mov" playsinline preload="auto" loop style="display: none;"></video>
@@ -1503,6 +1522,24 @@
                 if (meterText) {
                     meterText.style.fontSize = `${btnSize * 0.25}px`;
                 }
+
+                // Tutorial Arrows Positioning
+                const sackArrow = document.getElementById('tutorial-arrow-sack');
+                if (sackArrow) {
+                    const sackSize = baseSize * 0.15;
+                    const sackX = this.canvas.width - sackSize - baseSize * 0.02;
+                    const sackY = this.canvas.height - sackSize - baseSize * 0.02;
+                    sackArrow.style.left = `${sackX - baseSize * 0.12}px`;
+                    sackArrow.style.top = `${sackY + sackSize * 0.25}px`;
+                    sackArrow.style.fontSize = `${btnSize * 0.8}px`;
+                }
+
+                const sellArrow = document.getElementById('tutorial-arrow-sell');
+                if (sellArrow) {
+                    sellArrow.style.left = `${10 + btnSize + 15}px`;
+                    sellArrow.style.bottom = `${10 + btnSize * 0.1}px`;
+                    sellArrow.style.fontSize = `${btnSize * 0.8}px`;
+                }
             }
 
             generateSpiral() {
@@ -1881,6 +1918,24 @@
                     }
                 }
 
+                // Tutorial Arrows
+                const sackArrow = document.getElementById('tutorial-arrow-sack');
+                const sellArrow = document.getElementById('tutorial-arrow-sell');
+                if (sackArrow && sellArrow) {
+                    if (this.game.round === 1 && !human.hasStopped && !human.exploded) {
+                        if (human.cauldron.length < 3) {
+                            sackArrow.style.display = 'block';
+                            sellArrow.style.display = 'none';
+                        } else {
+                            sackArrow.style.display = 'none';
+                            sellArrow.style.display = 'block';
+                        }
+                    } else {
+                        sackArrow.style.display = 'none';
+                        sellArrow.style.display = 'none';
+                    }
+                }
+
                 const flaskIcon = document.getElementById('ui-flask-icon');
                 const lastChip = human.cauldron[human.cauldron.length - 1];
                 const canFlask = human.flaskActive && !human.exploded && !human.hasStopped && human.cauldron.length > 0 && lastChip && lastChip.type.id === 'WHITE';
@@ -1961,27 +2016,25 @@
             // 3. Boot Game and Check Character Selection
             const gameConfig = { numAIs: 2 }; 
             const gameController = new QuacksGameController(gameConfig);
-            const appUIManager = new QuacksUIManager(gameController, window.GAME_ASSETS);
+            const uiManager = new QuacksUIManager(gameController, window.GAME_ASSETS);
             
             const savedChar = getCookie('selectedCharacter');
             
             if (!savedChar) {
                 // Mandatory selection - pauses game start until user picks
-                appUIManager.showCharacterSelect(true);
+                uiManager.showCharacterSelect(true);
             } else {
                 // Pre-selected - setup and start immediately
                 gameController.setupPlayers(savedChar);
                 gameController.startGame();
                 
-                const forceHelp = window.location.href.includes('help=1');
-                const hasSeenHelp = getCookie('hasSeenHelp');
-                if (forceHelp || !hasSeenHelp) {
-                    appUIManager.showHelpModal();
-                    setCookie('hasSeenHelp', 'true', 365);
+                const isHelp = window.location.href.includes('help=1');
+                if (isHelp) {
+                    uiManager.showHelpModal();
                 }
 
                 // Show the bag right away on round 1
-                appUIManager.showBagModal();
+                uiManager.showBagModal();
             }
         };
 
