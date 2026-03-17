@@ -148,6 +148,16 @@
             opacity: 0.5; cursor: not-allowed;
         }
 
+            transform: scale(1.05);
+        }
+        #ui-sack-icon {
+            width: 100%; height: 100%; pointer-events: none;
+        }
+        #ui-bag-count {
+            position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
+            color: white; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none;
+        }
+
         #ui-boomberry-meter {
             position: absolute; top: 10px; right: 10px; z-index: 10;
             background: rgba(0,0,0,0.5); border: 2px solid #4a4e69;
@@ -308,6 +318,12 @@
             </div>
             <div id="tutorial-arrow-sack" class="tutorial-arrow" style="animation: tutorial-poke-right 1.5s infinite;">👉</div>
             <div id="tutorial-arrow-sell" class="tutorial-arrow" style="animation: tutorial-poke-left 1.5s infinite;">👈</div>
+            
+            <div id="ui-sack" title="Sack (Bag)">
+                <div id="ui-sack-icon"></div>
+                <div id="ui-bag-count">0</div>
+            </div>
+
             <canvas id="cauldron-canvas"></canvas>
             <video id="explosion-video" src="assets/explosion.mov" playsinline preload="auto" style="display: none;"></video>
             <video id="bubbling-video" src="assets/cauldron_bubble1.mov" playsinline preload="auto" loop style="display: none;"></video>
@@ -1083,40 +1099,15 @@
                     const clickY = (e.clientY - rect.top) * scaleY;
 
                     if (clickX >= sackX && clickX <= sackX + sackSize &&
-                        clickY >= sackY && clickY <= sackY + sackSize) {
-                        this.handlePlayerDraw(e);
-                    }
-                });
-
-                // Update cursor when hovering over the Sack
-                this.canvas.addEventListener('mousemove', (e) => {
-                    const w = this.canvas.width, h = this.canvas.height;
-                    const baseSize = Math.min(w, h);
-                    const sackSize = baseSize * 0.15;
-                    const sackX = w - sackSize - baseSize * 0.02;
-                    const sackY = h - sackSize - baseSize * 0.02;
-
-                    const rect = this.canvas.getBoundingClientRect();
-                    const scaleX = this.canvas.width / rect.width;
-                    const scaleY = this.canvas.height / rect.height;
-                    
-                    const mouseX = (e.clientX - rect.left) * scaleX;
-                    const mouseY = (e.clientY - rect.top) * scaleY;
-                    
-                    const canDraw = !this.game.humanPlayer.exploded && !this.game.humanPlayer.hasStopped && this.game.humanPlayer.bag.length > 0;
-
-                    if (mouseX >= sackX && mouseX <= sackX + sackSize &&
-                        mouseY >= sackY && mouseY <= sackY + sackSize && 
-                        canDraw) {
-                        this.canvas.style.cursor = 'pointer';
-                    } else {
-                        this.canvas.style.cursor = 'default';
-                    }
-                });
-
-                this.canvas.addEventListener('mouseleave', () => {
-                    this.canvas.style.cursor = 'default';
-                });
+                const sackEl = document.getElementById('ui-sack');
+                if (sackEl) {
+                    sackEl.addEventListener('click', (e) => {
+                        const canDraw = !this.game.humanPlayer.exploded && !this.game.humanPlayer.hasStopped && this.game.humanPlayer.bag.length > 0;
+                        if (canDraw || (this.isDebug && e.shiftKey)) {
+                            this.handlePlayerDraw(e);
+                        }
+                    });
+                }
                 
                 document.getElementById('btn-sell-potion').addEventListener('click', () => {
                     if (this.game.humanPlayer.hasStopped || this.game.humanPlayer.exploded) return;
@@ -1682,14 +1673,21 @@
                     meterText.style.fontSize = `${btnSize * 0.25}px`;
                 }
 
+                    sack.style.width = `${btnSize}px`;
+                    sack.style.height = `${btnSize}px`;
+                }
+                const bagCount = document.getElementById('ui-bag-count');
+                if (bagCount) {
+                    bagCount.style.fontSize = `${btnSize * 0.35}px`;
+                }
+
                 // Tutorial Arrows Positioning
                 const sackArrow = document.getElementById('tutorial-arrow-sack');
                 if (sackArrow) {
-                    const sackSize = baseSize * 0.15;
-                    const sackX = this.canvas.width - sackSize - baseSize * 0.02;
-                    const sackY = this.canvas.height - sackSize - baseSize * 0.02;
-                    sackArrow.style.left = `${sackX - baseSize * 0.12}px`;
-                    sackArrow.style.top = `${sackY + sackSize * 0.25}px`;
+                    sackArrow.style.left = 'auto'; // Remove left positioning if it was there
+                    sackArrow.style.top = 'auto';
+                    sackArrow.style.right = `${10 + btnSize + 15}px`;
+                    sackArrow.style.bottom = `${10 + btnSize * 0.1}px`;
                     sackArrow.style.fontSize = `${btnSize * 0.8}px`;
                 }
 
@@ -1858,39 +1856,12 @@
                         }
                     }
 
-                    // Draw Sack at bottom right
-                    const sackSize = baseSize * 0.15;
-                    const sackX = w - sackSize - baseSize * 0.02;
-                    const sackY = h - sackSize - baseSize * 0.02;
-                    if (!this.drawSprite('UTILS', UTILS_MAP.SACK, sackX, sackY, sackSize, sackSize)) {
-                        // Fallback square
-                        this.ctx.fillStyle = '#6a4c32';
-                        this.ctx.fillRect(sackX, sackY, sackSize, sackSize);
-                    }
-
                     // Calculate display count (subtracting currently animating chips)
                     const displayBagCount = Math.max(0, player.bag.length - this.sackAnimations.length);
                     const bagCountEl = document.getElementById('ui-bag-count');
                     if (bagCountEl && bagCountEl.innerText !== String(displayBagCount)) {
                         bagCountEl.innerText = displayBagCount;
                     }
-
-                    // Draw bag count text over the sack
-                    this.ctx.save();
-                    this.ctx.fillStyle = '#ffffff';
-                    this.ctx.font = `bold ${sackSize * 0.35}px Arial`;
-                    this.ctx.textAlign = 'center';
-                    this.ctx.textBaseline = 'top';
-                    
-                    // Add text shadow for readability, bound to elementAlpha for Safari
-                    this.ctx.shadowColor = `rgba(0, 0, 0, ${0.8 * elementAlpha})`;
-                    this.ctx.shadowOffsetX = 1;
-                    this.ctx.shadowOffsetY = 1;
-                    this.ctx.shadowBlur = 3;
-                    
-                    // Shifted slightly down to visually center on the "bulge" of the sack
-                    this.ctx.fillText(displayBagCount, sackX + sackSize / 2, sackY + sackSize * 0.55);
-                    this.ctx.restore();
 
                     // 4. Draw Track Values (if toggled) - Moved here so chips render on top
                     if (this.showTrackValues) {
@@ -1944,6 +1915,10 @@
                     }
 
                     // NEW: Draw Sack Animations
+                    const sackSize = baseSize * 0.15;
+                    const sackX = w - sackSize - 10; // Corresponds exactly to CSS right: 10px
+                    const sackY = h - sackSize - 10; // Corresponds exactly to CSS bottom: 10px
+                    
                     const now = Date.now();
                     this.sackAnimations = this.sackAnimations.filter(anim => {
                         const age = now - anim.startTime;
@@ -2156,6 +2131,14 @@
                         sackArrow.style.display = 'none';
                         sellArrow.style.display = 'none';
                     }
+                }
+
+                const canDraw = !human.exploded && !human.hasStopped && human.bag.length > 0;
+                
+                const sackEl = document.getElementById('ui-sack');
+                if (sackEl) {
+                    sackEl.style.cursor = canDraw ? 'pointer' : 'default';
+                    document.getElementById('ui-sack-icon').style.cssText = `width: 100%; height: 100%; pointer-events: none; ${getUtilSpriteStyle('SACK')}`;
                 }
 
                 const flaskIcon = document.getElementById('ui-flask-icon');
