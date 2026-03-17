@@ -637,8 +637,13 @@
             { text: "Everyone gains 2 Money.", type: 'immediate', apply: (g) => g.players.forEach(p => p.money += 2) },
             { text: "Everyone moves their droplet forward 1 space.", type: 'immediate', apply: (g) => g.players.forEach(p => p.dropletPosition++) },
             { text: "If you do not explode this round, gain 2 VP.", type: 'conditional', evaluate: (g) => g.players.forEach(p => { if(!p.exploded) p.victoryPoints += 2; }) },
-            { text: "If your white tokens total is exactly 7 when you stop brewing, move your droplet a space forward.", type: 'conditional', evaluate: (g) => g.players.forEach(p => { if(p.currentWhiteValue === 7) p.dropletPosition++; }) },
-            { text: "At the end of the round, refill flask for free.", type: 'conditional', evaluate: (g) => g.players.forEach(p => p.flaskActive = true) }
+            { text: "Stop brewing at exactly 7 white tokens, and move your droplet a space forward.", type: 'conditional', evaluate: (g) => g.players.forEach(p => { if(p.currentWhiteValue === 7) p.dropletPosition++; }) },
+            { text: "At the end of the round, refill flask for free.", type: 'conditional', evaluate: (g) => g.players.forEach(p => p.flaskActive = true) },
+            { text: "The explosion limit is increased to 9 this round.", type: 'immediate', apply: (g) => g.config.explosionThreshold = 9 },
+            { text: "The player(s) with the fewest VP get a Spider token.", type: 'immediate', apply: (g) => {
+                const minVp = Math.min(...g.players.map(p => p.victoryPoints));
+                g.players.forEach(p => { if(p.victoryPoints === minVp) p.inventory.push({ type: INGREDIENTS.GREEN, value: 1 }); });
+            }}
         ];
 
         const BONUS_DIE_FACES = [
@@ -646,7 +651,8 @@
             { text: "2 VP!", icon: "VP", apply: (p) => p.victoryPoints += 2 },
             { text: "1 Ruby!", icon: "RUBY", apply: (p) => p.rubies += 1 },
             { text: "1 Droplet step!", icon: "DROPLET", apply: (p) => p.dropletPosition += 1 },
-            { text: "1 Pumpkin!", isChip: true, typeId: "ORANGE", value: 1, apply: (p) => p.inventory.push({ type: INGREDIENTS.ORANGE, value: 1 }) }
+            { text: "1 Pumpkin!", isChip: true, typeId: "ORANGE", value: 1, apply: (p) => p.inventory.push({ type: INGREDIENTS.ORANGE, value: 1 }) },
+            { text: "1 Toadstool!", isChip: true, typeId: "RED", value: 1, apply: (p) => p.inventory.push({ type: INGREDIENTS.RED, value: 1 }) }
         ];
 
         const INGREDIENT_BOOKS_SET_1 = {
