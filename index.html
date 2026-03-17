@@ -2032,22 +2032,42 @@
                 projectedMoney += trackSpace.money;
                 if (trackSpace.ruby) projectedRuby += 1;
 
-                // Project Purple (Moth) bonuses
-                const mothCount = player.cauldron.filter(c => c.type.id === 'PURPLE').length;
-                if (mothCount >= 3) projectedVP += 2;
-                else if (mothCount >= 1) projectedVP += 1;
+                const bookSet = this.game.config.bookSet || 1;
 
-                // Project Black (Crow Skull) bonuses
-                const skullCount = player.cauldron.filter(c => c.type.id === 'BLACK').length;
-                if (skullCount >= 1) {
-                    projectedVP += 1;
-                    projectedRuby += 1;
-                }
+                if (bookSet === 1) {
+                    // Project Purple (Moth) bonuses
+                    const mothCount = player.cauldron.filter(c => c.type.id === 'PURPLE').length;
+                    if (mothCount >= 3) projectedVP += 2;
+                    else if (mothCount >= 1) projectedVP += 1;
 
-                // Project Green (Spider) bonuses
-                const len = player.cauldron.length;
-                if (len >= 1 && (player.cauldron[len-1].type.id === 'GREEN' || (len >= 2 && player.cauldron[len-2].type.id === 'GREEN'))) {
-                    projectedRuby += 1;
+                    // Project Black (Crow Skull) bonuses
+                    const skullCount = player.cauldron.filter(c => c.type.id === 'BLACK').length;
+                    if (skullCount >= 1) {
+                        projectedVP += 1;
+                        projectedRuby += 1;
+                    }
+
+                    // Project Green (Spider) bonuses
+                    const len = player.cauldron.length;
+                    if (len >= 1 && (player.cauldron[len-1].type.id === 'GREEN' || (len >= 2 && player.cauldron[len-2].type.id === 'GREEN'))) {
+                        projectedRuby += 1;
+                    }
+                } else if (bookSet === 2) {
+                    // Project Blue (Ghost) bonuses
+                    const blueCount = player.cauldron.filter(c => c.type.id === 'BLUE').length;
+                    projectedVP += blueCount;
+                    
+                    // Project Purple (Moth) bonuses
+                    const mothCount = player.cauldron.filter(c => c.type.id === 'PURPLE').length;
+                    if (mothCount === 1) {
+                        projectedVP += 1;
+                    } else if (mothCount === 2) {
+                        projectedVP += 1;
+                        projectedRuby += 1;
+                    } else if (mothCount >= 3) {
+                        projectedVP += 2;
+                        projectedRuby += 1;
+                    }
                 }
 
                 return { vp: projectedVP, money: projectedMoney, rubies: projectedRuby };
