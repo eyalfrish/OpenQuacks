@@ -82,6 +82,12 @@
   "book1_green": "End of Round: Gain 1 Ruby if your last or second-to-last placed chip is a Spider.",
   "book1_purple": "End of Round: 1-2 Moths = 1 VP. 3 or more Moths = 2 VP.",
   "book1_black": "End of Round: If you placed at least 1 Crow Skull, gain 1 VP and 1 Ruby.",
+  "book2_red": "If there are 1 or 2 Pumpkins in your cauldron, move 1 extra space. If 3+, move 2 extra spaces.",
+  "book2_yellow": "If the previous chip was a Boomberry, gain 1 Ruby immediately.",
+  "book2_blue": "End of Round: Gain 1 VP for every Blue chip in your cauldron.",
+  "book2_green": "End of Round: Gain 1 Droplet step if your last placed chip is a Spider.",
+  "book2_purple": "End of Round: 1 Moth = 1 VP. 2 Moths = 1 VP & 1 Ruby. 3+ Moths = 2 VP & 1 Ruby.",
+  "book2_black": "End of Round: If you placed at least 1 Crow Skull, gain 1 Droplet step.",
   "fortune_ruby": "Everyone gains 1 Ruby.",
   "fortune_vp": "Everyone gains 1 VP.",
   "fortune_money": "Everyone gains 2 Money.",
@@ -125,5 +131,13 @@
   "msg_debug_bag": "Shift-click to peek at bag (Debug)",
   "msg_view_bag": "Click to view your bag",
   "msg_bag_debug": "'s bag (Debug)",
-  "msg_sell_modal": "Stop brewing and sell this potion for:"
+  "msg_sell_modal": "Stop brewing and sell this potion for:",
+  "char_witch": "The Witch",
+  "char_wizard": "The Wizard",
+  "char_monk": "The Monk",
+  "char_child": "The Child",
+  "char_princess": "The Princess",
+  "char_voodoo_lady": "The Voodoo Lady",
+  "char_bard": "The Bard",
+  "char_gardener": "The Gardener"
 }

@@ -561,6 +561,7 @@
             };
 
             INGREDIENT_BOOKS_SET_2 = {
+                ORANGE: { description: t('book_orange', "Standard ingredient. Adds value to your brew but has no special effect.") },
                 RED: { 
                     description: t('book2_red', "If there are 1 or 2 Pumpkins in your cauldron, move 1 extra space. If 3+, move 2 extra spaces."),
                     immediate: (p, c) => { 
@@ -845,7 +846,12 @@
                 for(let i=1; i<=this.config.numAIs; i++) {
                     const charId = availableChars[i-1];
                     const aiName = `${t('ui_ai_prefix', 'AI')} ` + charId.split('_').map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
-                    this.players.push(new QuacksPlayer(aiName, false, this, charId));
+                    const charNameKey = 'char_' + charId.toLowerCase();
+                    const fallbackName = charId.split('_').map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
+                    
+                    const localizedCharName = typeof t === 'function' ? t(charNameKey, fallbackName) : fallbackName;
+                    
+                    this.players.push(new QuacksPlayer(`${localizedCharName}`, false, this, charId));
                 }
             }
 
@@ -1264,14 +1270,19 @@
                                 this.playStartAnimation();
                             }
                         } else {
-                            // Swap dynamically mid-game without closing the modal immediately to allow further setting tweaks
+                            // Swap dynamically mid-game
                             const oldChar = this.game.humanPlayer.character;
                             if (oldChar !== charName) {
                                 this.game.humanPlayer.character = charName;
                                 const conflictAI = this.game.players.find(p => !p.isHuman && p.character === charName);
                                 if (conflictAI) {
                                     conflictAI.character = oldChar; // Swap AI to old human char
-                                    conflictAI.name = `${t('ui_ai_prefix', 'AI')} ` + oldChar.split('_').map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
+                                    const charNameKey = 'char_' + oldChar.toLowerCase();
+                                    const fallbackName = oldChar.split('_').map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
+                                    
+                                    const localizedCharName = typeof t === 'function' ? t(charNameKey, fallbackName) : fallbackName;
+                                    
+                                    conflictAI.name = `${localizedCharName}`;
                                 }
                                 this.showSettings(false); // Refresh grid styles
                                 this.updateFullUI();
