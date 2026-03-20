@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Open Quacks</title>
+    <title data-i18n="title">Open Quacks</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧪</text></svg>">
     
     <!-- iOS Web App Support -->
@@ -277,7 +277,7 @@
 
     <!-- Loading Screen -->
     <div id="loading-overlay">
-        <h2>Brewing Assets...</h2>
+        <h2 data-i18n="ui_loading">Brewing Assets...</h2>
         <div class="spinner"></div>
     </div>
 
@@ -285,11 +285,11 @@
         <!-- Main Board Area -->
         <div id="main-board" class="panel">
             <div class="panel-title" style="display: flex; justify-content: space-between; align-items: center;">
-                <span>Day <span id="ui-round">1</span> of 9 <span id="ui-phase" style="font-size: 0.9rem; color: #aaa; margin-left: 10px;">(Brewing)</span></span>
+                <span>Day <span id="ui-round">1</span> of 9 <span id="ui-phase" style="font-size: 0.9rem; color: #aaa; margin-left: 10px;">(<span data-i18n="ui_phase_prefix">Phase:</span> <span data-i18n="phase_brewing">Brewing</span>)</span></span>
                 <div style="display: flex; gap: 5px; margin-left: auto;">
-                    <button id="btn-book" style="width: 24px; height: 24px; padding: 0; border-radius: 4px; background-color: #800080; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex: none;" title="Ingredient Rules">📖</button>
-                    <button id="btn-settings" style="width: 24px; height: 24px; padding: 0; border-radius: 4px; background-color: #6a6e8f; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex: none;" title="Settings">⚙️</button>
-                    <button id="btn-help" style="width: 24px; height: 24px; padding: 0; border-radius: 4px; background-color: #00b4d8; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex: none;" title="How to play">?</button>
+                    <button id="btn-book" style="width: 24px; height: 24px; padding: 0; border-radius: 4px; background-color: #800080; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex: none;" data-i18n-title="tooltip_book" title="Ingredient Rules">📖</button>
+                    <button id="btn-settings" style="width: 24px; height: 24px; padding: 0; border-radius: 4px; background-color: #6a6e8f; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex: none;" data-i18n-title="tooltip_settings" title="Settings">⚙️</button>
+                    <button id="btn-help" style="width: 24px; height: 24px; padding: 0; border-radius: 4px; background-color: #00b4d8; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex: none;" data-i18n-title="tooltip_help" title="How to play">?</button>
                 </div>
             </div>
             <div class="board-sections">
@@ -298,34 +298,34 @@
                 </div>
                 <div class="board-section" id="flask-section" style="justify-content: center;">
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <div id="ui-flask-icon" style="width: 60px; height: 70px; transition: all 0.2s;" title="Flask"></div>
+                        <div id="ui-flask-icon" style="width: 60px; height: 70px; transition: all 0.2s;"></div>
                     </div>
                 </div>
                 <div class="board-section" id="fortune-teller">
-                    <h3>Fortune Teller</h3>
-                    <p id="ui-fortune-text">Drawing card...</p>
+                    <h3 data-i18n="ui_fortune_teller">Fortune Teller</h3>
+                    <p id="ui-fortune-text" data-i18n="ui_drawing_card">Drawing card...</p>
                 </div>
             </div>
         </div>
 
         <!-- Side Panel (Players & Controls) -->
         <div id="side-panel" class="panel">
-            <div class="panel-title">Players</div>
+            <div class="panel-title" data-i18n="ui_players_controls">Players</div>
             <div id="player-list"></div>
         </div>
 
         <!-- Cauldron Canvas -->
         <div id="cauldron-wrapper">
-            <button id="btn-toggle-values" title="Toggle Track Values"><div id="ui-monocle-icon"></div></button>
-            <button id="btn-sell-potion" title="Sell Potion">💲</button>
-            <div id="ui-boomberry-meter" title="Boomberry Explosion Limit">
+            <button id="btn-toggle-values" data-i18n-title="tooltip_toggle_values" title="Toggle Track Values"><div id="ui-monocle-icon"></div></button>
+            <button id="btn-sell-potion" data-i18n-title="tooltip_sell" title="Sell Potion">💲</button>
+            <div id="ui-boomberry-meter" data-i18n-title="tooltip_boomberry_limit" title="Boomberry Explosion Limit">
                 <div id="ui-boomberry-fill"></div>
                 <div id="ui-boomberry-text">0 / 7</div>
             </div>
             <div id="tutorial-arrow-sack" class="tutorial-arrow" style="animation: tutorial-poke-right 1.5s infinite;">👉</div>
             <div id="tutorial-arrow-sell" class="tutorial-arrow" style="animation: tutorial-poke-left 1.5s infinite;">👈</div>
             
-            <div id="ui-sack" title="Sack (Bag)">
+            <div id="ui-sack" data-i18n-title="tooltip_bag" title="Sack (Bag)">
                 <div id="ui-sack-icon"></div>
                 <div id="ui-bag-count">0</div>
             </div>
@@ -339,39 +339,39 @@
     <!-- Modals -->
     <div id="settings-modal" class="modal-overlay" style="z-index: 1008;">
         <div class="modal-content" style="max-width: 400px;">
-            <h2 id="settings-title">⚙️ Settings</h2>
+            <h2 id="settings-title" data-i18n="modal_settings_title">⚙️ Settings</h2>
             
-            <h3 style="color: var(--accent); font-size: 1rem; margin: 15px 0 5px 0; text-align: left;">Select Character</h3>
-            <p style="margin-bottom: 10px; font-size: 0.8em; color: #aaa; text-align: left;">Choose your avatar for this game.</p>
+            <h3 style="color: var(--accent); font-size: 1rem; margin: 15px 0 5px 0; text-align: left;" data-i18n="modal_settings_char">Select Character</h3>
+            <p style="margin-bottom: 10px; font-size: 0.8em; color: #aaa; text-align: left;" data-i18n="modal_char_select_desc">Choose your avatar for this game.</p>
             <div id="char-select-grid" style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                 <!-- Filled via JS -->
             </div>
 
-            <h3 style="color: var(--accent); font-size: 1rem; margin: 20px 0 5px 0; text-align: left;">Ingredient Rules Set</h3>
-            <p style="margin-bottom: 10px; font-size: 0.8em; color: #aaa; text-align: left;">Choose which set of powers the ingredients have.</p>
+            <h3 style="color: var(--accent); font-size: 1rem; margin: 20px 0 5px 0; text-align: left;" data-i18n="modal_settings_rules">Ingredient Rules Set</h3>
+            <p style="margin-bottom: 10px; font-size: 0.8em; color: #aaa; text-align: left;" data-i18n="modal_settings_rules_desc">Choose which set of powers the ingredients have.</p>
             <select id="settings-book-select" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); color: white; border: 1px solid #4a4e69; border-radius: 6px; font-size: 1rem;">
-                <option value="1">Set 1 (Beginner Friendly)</option>
-                <option value="2">Set 2 (Advanced Strategies)</option>
+                <option value="1" data-i18n="settings_set1">Set 1 (Beginner Friendly)</option>
+                <option value="2" data-i18n="settings_set2">Set 2 (Advanced Strategies)</option>
             </select>
 
-            <button id="btn-close-settings" style="background-color: #4a4e69; margin-top: 25px; width: 100%; display: none;">Done</button>
+            <button id="btn-close-settings" style="background-color: #4a4e69; margin-top: 25px; width: 100%; display: none;" data-i18n="btn_done">Done</button>
         </div>
     </div>
 
     <div id="book-modal" class="modal-overlay" style="z-index: 1007;">
         <div class="modal-content" style="max-width: 550px;">
-            <h2>📖 Ingredient Rules</h2>
-            <p style="margin-bottom: 15px; font-size: 0.9em; color: #aaa;">Current active ingredient powers.</p>
+            <h2 data-i18n="modal_book_title">📖 Ingredient Rules</h2>
+            <p style="margin-bottom: 15px; font-size: 0.9em; color: #aaa;" data-i18n="modal_book_desc">Current active ingredient powers.</p>
             <div id="book-rules-list" style="display: flex; flex-direction: column; gap: 12px; text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; max-height: 50vh; overflow-y: auto;">
                 <!-- Filled via JS -->
             </div>
-            <button id="btn-close-book" style="background-color: #4a4e69; margin-top: 15px; width: 100%;">Close</button>
+            <button id="btn-close-book" style="background-color: #4a4e69; margin-top: 15px; width: 100%;" data-i18n="btn_close">Close</button>
         </div>
     </div>
 
     <div id="help-modal" class="modal-overlay" style="z-index: 1007;">
         <div class="modal-content" style="max-width: 550px;">
-            <h2>❓ How to play OpenQuacks ❓</h2>
+            <h2 data-i18n="modal_help_title">❓ How to play OpenQuacks ❓</h2>
             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 20px;">
                 <button id="btn-help-prev" style="flex: none; width: 40px; height: 40px; padding: 0; border-radius: 50%; background-color: #4a4e69; font-size: 1.2rem; margin: 0;">&lt;</button>
                 <div id="help-slide-content" style="flex: 1; margin: 0 15px; font-size: 1.05em; line-height: 1.5; color: #ddd; min-height: 160px; display: flex; flex-direction: column; justify-content: center;">
@@ -380,100 +380,232 @@
                 <button id="btn-help-next" style="flex: none; width: 40px; height: 40px; padding: 0; border-radius: 50%; background-color: #4a4e69; font-size: 1.2rem; margin: 0;">&gt;</button>
             </div>
             <div id="help-slide-indicator" style="margin-top: 15px; font-size: 0.9rem; color: #aaa; font-weight: bold;">1 / 8</div>
-            <button id="btn-close-help" style="background-color: #4caf50; margin-top: 15px;">Got it!</button>
+            <button id="btn-close-help" style="background-color: #4caf50; margin-top: 15px;" data-i18n="btn_got_it">Got it!</button>
         </div>
     </div>
 
     <div id="bonus-die-modal" class="modal-overlay" style="z-index: 1006;">
         <div class="modal-content">
-            <h2>🎲 Bonus Die Roll! 🎲</h2>
-            <p id="bonus-die-desc">You brewed the best potion this round!</p>
+            <h2 data-i18n="modal_die_title">🎲 Bonus Die Roll! 🎲</h2>
+            <p id="bonus-die-desc" data-i18n="modal_die_desc">You brewed the best potion this round!</p>
             <div id="bonus-die-result" style="font-size: 1.5rem; margin: 20px 0; color: var(--accent); font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px;"></div>
-            <button id="btn-bonus-die-ok" style="background-color: #4caf50;">Awesome!</button>
+            <button id="btn-bonus-die-ok" style="background-color: #4caf50;" data-i18n="btn_awesome">Awesome!</button>
         </div>
     </div>
 
     <div id="explosion-modal" class="modal-overlay">
         <div class="modal-content">
-            <h2>💥 Your Cauldron Exploded! 💥</h2>
-            <p>You drew too many Boomberries. You must choose your penalty for this round:</p>
-            <p style="margin: 15px 0; font-size: 0.9em; color: #aaa;">(You may only take Victory Points OR Money to buy ingredients, not both).</p>
+            <h2 data-i18n="modal_exp_title">💥 Your Cauldron Exploded! 💥</h2>
+            <p data-i18n="modal_exp_desc1">You drew too many Boomberries. You must choose your penalty for this round:</p>
+            <p style="margin: 15px 0; font-size: 0.9em; color: #aaa;" data-i18n="modal_exp_desc2">(You may only take Victory Points OR Money to buy ingredients, not both).</p>
             <div>
-                <button id="btn-choose-vp">Take <span id="expl-vp-val">0</span> VP</button>
-                <button id="btn-choose-money" style="display: inline-flex; align-items: center; justify-content: center;">Take <span id="expl-money-val" style="margin: 0 5px;">0</span> <span id="expl-money-icon"></span></button>
+                <button id="btn-choose-vp"><span data-i18n="btn_take">Take</span> <span id="expl-vp-val">0</span> <span data-i18n="vp">VP</span></button>
+                <button id="btn-choose-money" style="display: inline-flex; align-items: center; justify-content: center;"><span data-i18n="btn_take">Take</span> <span id="expl-money-val" style="margin: 0 5px;">0</span> <span id="expl-money-icon"></span></button>
             </div>
         </div>
     </div>
 
     <div id="sell-modal" class="modal-overlay" style="z-index: 1006;">
         <div class="modal-content">
-            <h2>💰 Sell Potion? 💰</h2>
-            <p style="margin-bottom: 15px;">Stop brewing and sell this potion for:</p>
+            <h2 data-i18n="modal_sell_title">💰 Sell Potion? 💰</h2>
+            <p style="margin-bottom: 15px;" data-i18n="modal_sell_desc">Stop brewing and sell this potion for:</p>
             <div id="sell-modal-value" style="display: flex; justify-content: center; align-items: center; font-size: 1.5rem; margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">
                 <!-- Filled by JS -->
             </div>
             <div style="display: flex; gap: 10px; justify-content: center;">
-                <button id="btn-sell-confirm" style="background-color: #4caf50;">Sell Potion</button>
-                <button id="btn-sell-cancel" style="background-color: #4a4e69;">Keep Brewing</button>
+                <button id="btn-sell-confirm" style="background-color: #4caf50;" data-i18n="btn_sell_potion">Sell Potion</button>
+                <button id="btn-sell-cancel" style="background-color: #4a4e69;" data-i18n="btn_keep_brewing">Keep Brewing</button>
             </div>
         </div>
     </div>
 
     <div id="shop-modal" class="modal-overlay">
         <div class="modal-content">
-            <h2>🛒 Shopping!</h2>
+            <h2 data-i18n="modal_shop_title">🛒 Shopping!</h2>
             <div style="display: flex; justify-content: space-around; margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
-                <span style="display: flex; align-items: center;">Money: <strong id="shop-money" style="color: gold; font-size: 1.2rem; margin-left: 5px;">0</strong><span id="shop-money-icon"></span></span>
+                <span style="display: flex; align-items: center;"><span data-i18n="shop_money">Money:</span> <strong id="shop-money" style="color: gold; font-size: 1.2rem; margin-left: 5px;">0</strong><span id="shop-money-icon"></span></span>
                 <span style="display: flex; align-items: center;">
-                    Rubies: <strong id="shop-rubies" style="color: #ff4444; font-size: 1.2rem; margin-left: 5px; margin-right: 5px;">0</strong>
+                    <span data-i18n="shop_rubies">Rubies:</span> <strong id="shop-rubies" style="color: #ff4444; font-size: 1.2rem; margin-left: 5px;">0</strong>
                     <span id="shop-ruby-icon" class="icon-small"></span> 
                 </span>
             </div>
-            <p style="margin-bottom: 10px; font-size: 0.9em;">Buy up to 2 ingredients of different colors. Ruby items have no limits!</p>
+            <p style="margin-bottom: 10px; font-size: 0.9em;" data-i18n="shop_desc">Buy up to 2 ingredients of different colors. Ruby items have no limits!</p>
             <div id="shop-items" class="shop-grid"></div>
             <div style="margin-top: 15px; border-top: 1px solid var(--panel-border); padding-top: 15px;">
-                <button id="btn-finish-buying" style="background-color: #4caf50;">Next Round</button>
+                <button id="btn-finish-buying" style="background-color: #4caf50;" data-i18n="btn_next_round">Next Round</button>
             </div>
         </div>
     </div>
 
     <div id="bag-modal" class="modal-overlay" style="z-index: 1005;">
         <div class="modal-content" style="max-width: 500px;">
-            <h2 id="bag-modal-title" style="display: flex; align-items: center; justify-content: center; gap: 10px;">What's in my bag?</h2>
-            <p style="margin-bottom: 15px; font-size: 0.9em; color: #aaa;">
+            <h2 id="bag-modal-title" style="display: flex; align-items: center; justify-content: center; gap: 10px;"><span data-i18n="modal_bag_title">What's in my bag?</span></h2>
+            <p style="margin-bottom: 15px; font-size: 0.9em; color: #aaa;" data-i18n="modal_bag_desc">
                 These are all the ingredient tokens you own, including those played this round and newly purchased ones.
             </p>
             <div id="bag-items" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; max-height: 40vh; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
                 <!-- Tokens injected here via JS -->
             </div>
-            <button id="btn-close-bag" style="background-color: #4a4e69;">Close</button>
+            <button id="btn-close-bag" style="background-color: #4a4e69;" data-i18n="btn_close">Close</button>
         </div>
     </div>
 
     <div id="debug-draw-modal" class="modal-overlay" style="z-index: 1009;">
         <div class="modal-content" style="max-width: 500px;">
-            <h2 style="color: #ff4444;">🛠️ Cheat: Pick Next Token</h2>
+            <h2 style="color: #ff4444;" data-i18n="modal_debug_title">🛠️ Cheat: Pick Next Token</h2>
             <p style="margin-bottom: 15px; font-size: 0.9em; color: #aaa;">
-                Pick the exact token you want to draw next. <br>
-                <strong>Warning:</strong> Doing this drops your VP to 0!
+                <span data-i18n="modal_debug_desc1">Pick the exact token you want to draw next.</span> <br>
+                <strong data-i18n="modal_debug_warning">Warning:</strong> <span data-i18n="modal_debug_desc2">Doing this drops your VP to 0!</span>
             </p>
             <div id="debug-draw-items" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; max-height: 40vh; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
                 <!-- Tokens injected here via JS -->
             </div>
-            <button id="btn-close-debug-draw" style="background-color: #4a4e69;">Cancel</button>
+            <button id="btn-close-debug-draw" style="background-color: #4a4e69;" data-i18n="btn_cancel">Cancel</button>
         </div>
     </div>
 
     <div id="game-over-modal" class="modal-overlay">
         <div class="modal-content">
-            <h2 id="game-over-title">🏆 Game Over 🏆</h2>
-            <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 10px;">Final Scoring Conversion: Every 5 Money = 1 VP, Every 2 Rubies = 1 VP</p>
+            <h2 id="game-over-title" data-i18n="modal_game_over_title">🏆 Game Over 🏆</h2>
+            <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 10px;" data-i18n="modal_game_over_desc">Final Scoring Conversion: Every 5 Money = 1 VP, Every 2 Rubies = 1 VP</p>
             <div id="final-scores" style="font-size: 1.2rem; margin: 20px 0; line-height: 1.6;"></div>
-            <button id="btn-play-again" style="background-color: #4caf50;">Play Again</button>
+            <button id="btn-play-again" style="background-color: #4caf50;" data-i18n="btn_play_again">Play Again</button>
         </div>
     </div>
 
     <script>
+        // --- I18N Localization ---
+        window.I18N = {};
+        window.t = function(key, defaultStr) {
+            return window.I18N[key] !== undefined ? window.I18N[key] : defaultStr;
+        };
+
+        // Global mutable variables for localized text
+        let INGREDIENTS, TRACK_REWARDS, VP_RAT_SPACES, FORTUNE_CARDS, BONUS_DIE_FACES, INGREDIENT_BOOKS_SET_1, INGREDIENT_BOOKS_SET_2, SHOP_CATALOG;
+
+        function initGameData() {
+            INGREDIENTS = {
+                WHITE:  { id: 'WHITE', name: t('ing_boomberry', 'Boomberry'), color: '#ffffff', textCol: '#000000', values: [1, 2, 3] },
+                ORANGE: { id: 'ORANGE', name: t('ing_pumpkin', 'Pumpkin'), color: '#ff8c00', textCol: '#ffffff', values: [1, 6] },
+                RED:    { id: 'RED', name: t('ing_toadstool', 'Toadstool'), color: '#ff0000', textCol: '#ffffff', values: [1, 2, 4] },
+                YELLOW: { id: 'YELLOW', name: t('ing_mandrake', 'Mandrake'), color: '#ffd700', textCol: '#000000', values: [1, 2, 4] },
+                GREEN:  { id: 'GREEN', name: t('ing_spider', 'Spider'), color: '#008000', textCol: '#ffffff', values: [1, 2, 4] },
+                BLUE:   { id: 'BLUE', name: t('ing_ghost', 'Ghost'), color: '#0000ff', textCol: '#ffffff', values: [1, 4] },
+                PURPLE: { id: 'PURPLE', name: t('ing_moth', 'Moth'), color: '#800080', textCol: '#ffffff', values: [1] },
+                BLACK:  { id: 'BLACK', name: t('ing_crow_skull', 'Crow Skull'), color: '#000000', textCol: '#ffffff', values: [1] },
+                BROWN:  { id: 'BROWN', name: t('ing_bug', 'Bug'), color: '#8b4513', textCol: '#ffffff', values: [0, 1, 2] } // Debugging only
+            };
+
+            TRACK_REWARDS = Array.from({ length: 60 }, (_, i) => ({
+                vp: i >= 10 ? Math.floor((i - 5) / 5) : 0, 
+                money: i === 0 ? 0 : i + Math.floor(i / 3),
+                ruby: (i === 5 || i === 9 || i === 13 || i === 17 || i === 21 || i === 26 || i === 30 || i === 35 || i === 41 || i === 44 || i === 50 || i === 54)
+            }));
+
+            VP_RAT_SPACES = [1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66, 78, 91];
+
+            FORTUNE_CARDS = [
+                { text: t('fortune_ruby', "Everyone gains 1 Ruby."), type: 'immediate', apply: (g) => g.players.forEach(p => p.rubies++) },
+                { text: t('fortune_vp', "Everyone gains 1 VP."), type: 'immediate', apply: (g) => g.players.forEach(p => p.victoryPoints++) },
+                { text: t('fortune_money', "Everyone gains 2 Money."), type: 'immediate', apply: (g) => g.players.forEach(p => p.money += 2) },
+                { text: t('fortune_droplet', "Everyone moves their droplet forward 1 space."), type: 'immediate', apply: (g) => g.players.forEach(p => p.dropletPosition++) },
+                { text: t('fortune_no_explode', "If you do not explode this round, gain 2 VP."), type: 'conditional', evaluate: (g) => g.players.forEach(p => { if(!p.exploded) p.victoryPoints += 2; }) },
+                { text: t('fortune_exactly_seven', "If your white tokens total is exactly 7 when you stop brewing, move your droplet a space forward."), type: 'conditional', evaluate: (g) => g.players.forEach(p => { if(p.currentWhiteValue === 7) p.dropletPosition++; }) },
+                { text: t('fortune_free_flask', "At the end of the round, refill flask for free."), type: 'conditional', evaluate: (g) => g.players.forEach(p => p.flaskActive = true) },
+                { text: t('fortune_explode_limit', "The explosion limit is increased to 9 this round."), type: 'immediate', apply: (g) => g.config.explosionThreshold = 9 },
+                { text: t('fortune_fewest_vp_spider', "The player(s) with the fewest VP get a Spider token."), type: 'immediate', apply: (g) => {
+                    const minVp = Math.min(...g.players.map(p => p.victoryPoints));
+                    g.players.forEach(p => { if(p.victoryPoints === minVp) p.inventory.push({ type: INGREDIENTS.GREEN, value: 1 }); });
+                }}
+            ];
+
+            BONUS_DIE_FACES = [
+                { text: t('die_vp1', "1 VP!"), icon: "VP", apply: (p) => p.victoryPoints += 1 },
+                { text: t('die_vp2', "2 VP!"), icon: "VP", apply: (p) => p.victoryPoints += 2 },
+                { text: t('die_ruby1', "1 Ruby!"), icon: "RUBY", apply: (p) => p.rubies += 1 },
+                { text: t('die_drop1', "1 Droplet step!"), icon: "DROPLET", apply: (p) => p.dropletPosition += 1 },
+                { text: t('die_pump1', "1 Pumpkin Token!"), isChip: true, typeId: "ORANGE", value: 1, apply: (p) => p.inventory.push({ type: INGREDIENTS.ORANGE, value: 1 }) },
+                { text: t('die_toadstool1', "1 Toadstool!"), isChip: true, typeId: "RED", value: 1, apply: (p) => p.inventory.push({ type: INGREDIENTS.RED, value: 1 }) }
+            ];
+
+            INGREDIENT_BOOKS_SET_1 = {
+                RED: { 
+                    description: t('book1_red', "If there is at least 1 Pumpkin in your cauldron, move 1 extra space."),
+                    immediate: (p, c) => { 
+                        if(p.cauldron.some(ch => ch.type.id === 'ORANGE')) {
+                            p.currentBrewValue += 1; 
+                            c.spaceIndex += 1; // Update the actual chip's position on the board
+                        }
+                    } 
+                },
+                YELLOW: { 
+                    description: t('book1_yellow', "If the previous chip was a Boomberry, its white value is cancelled."),
+                    immediate: (p, c) => { if(p.cauldron.length >= 2 && p.cauldron[p.cauldron.length-2].type.id === 'WHITE') p.currentWhiteValue = Math.max(0, p.currentWhiteValue - p.cauldron[p.cauldron.length-2].value); } 
+                },
+                BLUE: { 
+                    description: t('book1_blue', "Draw 1 extra chip. If ingredient, place it for free! If Boomberry, return to bag."),
+                    immediate: (p, c) => { if(p.bag.length > 0) { const idx = Math.floor(Math.random() * p.bag.length); const next = p.bag[idx]; if(next.type.id !== 'WHITE') { p.bag.splice(idx, 1); const np = p.currentBrewValue + next.value; p.cauldron.push({ ...next, spaceIndex: np, drawnAt: Date.now() }); p.currentBrewValue = np; } } } 
+                },
+                GREEN: { 
+                    description: t('book1_green', "End of Round: Gain 1 Ruby if your last or second-to-last placed chip is a Spider."),
+                    endOfRound: (p) => { const len = p.cauldron.length; if(len >= 1 && (p.cauldron[len-1].type.id === 'GREEN' || (len >= 2 && p.cauldron[len-2].type.id === 'GREEN'))) p.rubies += 1; } 
+                },
+                PURPLE: { 
+                    description: t('book1_purple', "End of Round: 1-2 Moths = 1 VP. 3 or more Moths = 2 VP."),
+                    endOfRound: (p) => { const cnt = p.cauldron.filter(c => c.type.id === 'PURPLE').length; if(cnt===1||cnt===2) p.victoryPoints += 1; else if(cnt>=3) p.victoryPoints += 2; } 
+                },
+                BLACK: { 
+                    description: t('book1_black', "End of Round: If you placed at least 1 Crow Skull, gain 1 VP and 1 Ruby."),
+                    endOfRound: (p) => { if(p.cauldron.some(c => c.type.id === 'BLACK')) { p.victoryPoints += 1; p.rubies += 1; } } 
+                }
+            };
+
+            INGREDIENT_BOOKS_SET_2 = {
+                RED: { 
+                    description: t('book2_red', "If there are 1 or 2 Pumpkins in your cauldron, move 1 extra space. If 3+, move 2 extra spaces."),
+                    immediate: (p, c) => { 
+                        const oranges = p.cauldron.filter(ch => ch.type.id === 'ORANGE').length;
+                        if (oranges >= 3) { p.currentBrewValue += 2; c.spaceIndex += 2; }
+                        else if (oranges >= 1) { p.currentBrewValue += 1; c.spaceIndex += 1; }
+                    } 
+                },
+                YELLOW: { 
+                    description: t('book2_yellow', "If the previous chip was a Boomberry, gain 1 Ruby immediately."),
+                    immediate: (p, c) => { if(p.cauldron.length >= 2 && p.cauldron[p.cauldron.length-2].type.id === 'WHITE') p.rubies += 1; } 
+                },
+                BLUE: { 
+                    description: t('book2_blue', "End of Round: Gain 1 VP for every Blue chip in your cauldron."),
+                    endOfRound: (p) => { const count = p.cauldron.filter(ch => ch.type.id === 'BLUE').length; p.victoryPoints += count; } 
+                },
+                GREEN: { 
+                    description: t('book2_green', "End of Round: Gain 1 Droplet step if your last placed chip is a Spider."),
+                    endOfRound: (p) => { const len = p.cauldron.length; if(len >= 1 && p.cauldron[len-1].type.id === 'GREEN') p.dropletPosition += 1; } 
+                },
+                PURPLE: { 
+                    description: t('book2_purple', "End of Round: 1 Moth = 1 VP. 2 Moths = 1 VP & 1 Ruby. 3+ Moths = 2 VP & 1 Ruby."),
+                    endOfRound: (p) => { 
+                        const cnt = p.cauldron.filter(ch => ch.type.id === 'PURPLE').length;
+                        if(cnt === 1) { p.victoryPoints += 1; }
+                        else if(cnt === 2) { p.victoryPoints += 1; p.rubies += 1; }
+                        else if(cnt >= 3) { p.victoryPoints += 2; p.rubies += 1; }
+                    } 
+                },
+                BLACK: { 
+                    description: t('book2_black', "End of Round: If you placed at least 1 Crow Skull, gain 1 Droplet step."),
+                    endOfRound: (p) => { if(p.cauldron.some(c => c.type.id === 'BLACK')) p.dropletPosition += 1; } 
+                }
+            };
+
+            SHOP_CATALOG = [
+                { type: INGREDIENTS.ORANGE, value: 1, cost: 3 }, { type: INGREDIENTS.ORANGE, value: 6, cost: 22 },
+                { type: INGREDIENTS.GREEN, value: 1, cost: 4 }, { type: INGREDIENTS.GREEN, value: 2, cost: 8 }, { type: INGREDIENTS.GREEN, value: 4, cost: 14 },
+                { type: INGREDIENTS.RED, value: 1, cost: 4 }, { type: INGREDIENTS.RED, value: 2, cost: 8 }, { type: INGREDIENTS.RED, value: 4, cost: 14 },
+                { type: INGREDIENTS.YELLOW, value: 1, cost: 5 }, { type: INGREDIENTS.YELLOW, value: 2, cost: 10 }, { type: INGREDIENTS.YELLOW, value: 4, cost: 16 },
+                { type: INGREDIENTS.BLUE, value: 1, cost: 5 }, { type: INGREDIENTS.BLUE, value: 4, cost: 19 },
+                { type: INGREDIENTS.PURPLE, value: 1, cost: 9 }, { type: INGREDIENTS.BLACK, value: 1, cost: 10 }
+            ];
+        }
+
         // --- Cookie Helpers ---
         function setCookie(name, value, days) {
             let expires = "";
@@ -610,133 +742,6 @@
 
 
         /**
-         * 2. CONSTANTS & GAME DATA
-         */
-        const INGREDIENTS = {
-            WHITE:  { id: 'WHITE', name: 'Boomberry', color: '#ffffff', textCol: '#000000', values: [1, 2, 3] },
-            ORANGE: { id: 'ORANGE', name: 'Pumpkin', color: '#ff8c00', textCol: '#ffffff', values: [1, 6] },
-            RED:    { id: 'RED', name: 'Toadstool', color: '#ff0000', textCol: '#ffffff', values: [1, 2, 4] },
-            YELLOW: { id: 'YELLOW', name: 'Mandrake', color: '#ffd700', textCol: '#000000', values: [1, 2, 4] },
-            GREEN:  { id: 'GREEN', name: 'Spider', color: '#008000', textCol: '#ffffff', values: [1, 2, 4] },
-            BLUE:   { id: 'BLUE', name: 'Ghost', color: '#0000ff', textCol: '#ffffff', values: [1, 4] },
-            PURPLE: { id: 'PURPLE', name: 'Moth', color: '#800080', textCol: '#ffffff', values: [1] },
-            BLACK:  { id: 'BLACK', name: 'Crow Skull', color: '#000000', textCol: '#ffffff', values: [1] },
-            BROWN:  { id: 'BROWN', name: 'Bug', color: '#8b4513', textCol: '#ffffff', values: [0, 1, 2] } // Debugging only
-        };
-
-        const TRACK_REWARDS = Array.from({ length: 60 }, (_, i) => ({
-            vp: i >= 10 ? Math.floor((i - 5) / 5) : 0, 
-            money: i === 0 ? 0 : i + Math.floor(i / 3),
-            ruby: (i === 5 || i === 9 || i === 13 || i === 17 || i === 21 || i === 26 || i === 30 || i === 35 || i === 41 || i === 44 || i === 50 || i === 54)
-        }));
-
-        const VP_RAT_SPACES = [1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66, 78, 91];
-
-        const FORTUNE_CARDS = [
-            { text: "Everyone gains 1 Ruby.", type: 'immediate', apply: (g) => g.players.forEach(p => p.rubies++) },
-            { text: "Everyone gains 2 Money.", type: 'immediate', apply: (g) => g.players.forEach(p => p.money += 2) },
-            { text: "Everyone moves their droplet forward 1 space.", type: 'immediate', apply: (g) => g.players.forEach(p => p.dropletPosition++) },
-            { text: "If you do not explode this round, gain 2 VP.", type: 'conditional', evaluate: (g) => g.players.forEach(p => { if(!p.exploded) p.victoryPoints += 2; }) },
-            { text: "Stop brewing at exactly 7 white tokens, and move your droplet a space forward.", type: 'conditional', evaluate: (g) => g.players.forEach(p => { if(p.currentWhiteValue === 7) p.dropletPosition++; }) },
-            { text: "At the end of the round, refill flask for free.", type: 'conditional', evaluate: (g) => g.players.forEach(p => p.flaskActive = true) },
-            { text: "The explosion limit is increased to 9 this round.", type: 'immediate', apply: (g) => g.config.explosionThreshold = 9 },
-            { text: "The player(s) with the fewest VP get a Spider token.", type: 'immediate', apply: (g) => {
-                const minVp = Math.min(...g.players.map(p => p.victoryPoints));
-                g.players.forEach(p => { if(p.victoryPoints === minVp) p.inventory.push({ type: INGREDIENTS.GREEN, value: 1 }); });
-            }}
-        ];
-
-        const BONUS_DIE_FACES = [
-            { text: "1 VP!", icon: "VP", apply: (p) => p.victoryPoints += 1 },
-            { text: "2 VP!", icon: "VP", apply: (p) => p.victoryPoints += 2 },
-            { text: "1 Ruby!", icon: "RUBY", apply: (p) => p.rubies += 1 },
-            { text: "1 Droplet step!", icon: "DROPLET", apply: (p) => p.dropletPosition += 1 },
-            { text: "1 Pumpkin!", isChip: true, typeId: "ORANGE", value: 1, apply: (p) => p.inventory.push({ type: INGREDIENTS.ORANGE, value: 1 }) },
-            { text: "1 Toadstool!", isChip: true, typeId: "RED", value: 1, apply: (p) => p.inventory.push({ type: INGREDIENTS.RED, value: 1 }) }
-        ];
-
-        const INGREDIENT_BOOKS_SET_1 = {
-            WHITE: { description: "Boomberry! If the total value of Boomberries in your cauldron exceeds the explosion limit (usually 7), your cauldron explodes." },
-            ORANGE: { description: "Standard ingredient. Adds value to your brew but has no special effect." },
-            RED: { 
-                description: "If there is at least 1 Pumpkin in your cauldron, move 1 extra space.",
-                immediate: (p, c) => { 
-                    if(p.cauldron.some(ch => ch.type.id === 'ORANGE')) {
-                        p.currentBrewValue += 1; 
-                        c.spaceIndex += 1; // Update the actual chip's position on the board
-                    }
-                } 
-            },
-            YELLOW: { 
-                description: "If the previous chip was a Boomberry, its white value is cancelled.",
-                immediate: (p, c) => { if(p.cauldron.length >= 2 && p.cauldron[p.cauldron.length-2].type.id === 'WHITE') p.currentWhiteValue = Math.max(0, p.currentWhiteValue - p.cauldron[p.cauldron.length-2].value); } 
-            },
-            BLUE: { 
-                description: "Draw 1 extra chip. If ingredient, place it for free! If Boomberry, return to bag.",
-                immediate: (p, c) => { if(p.bag.length > 0) { const idx = Math.floor(Math.random() * p.bag.length); const next = p.bag[idx]; if(next.type.id !== 'WHITE') { p.bag.splice(idx, 1); const np = p.currentBrewValue + next.value; p.cauldron.push({ ...next, spaceIndex: np, drawnAt: Date.now() }); p.currentBrewValue = np; } } } 
-            },
-            GREEN: { 
-                description: "End of Round: Gain 1 Ruby if your last or second-to-last placed chip is a Spider.",
-                endOfRound: (p) => { const len = p.cauldron.length; if(len >= 1 && (p.cauldron[len-1].type.id === 'GREEN' || (len >= 2 && p.cauldron[len-2].type.id === 'GREEN'))) p.rubies += 1; } 
-            },
-            PURPLE: { 
-                description: "End of Round: 1-2 Moths = 1 VP. 3 or more Moths = 2 VP.",
-                endOfRound: (p) => { const cnt = p.cauldron.filter(c => c.type.id === 'PURPLE').length; if(cnt===1||cnt===2) p.victoryPoints += 1; else if(cnt>=3) p.victoryPoints += 2; } 
-            },
-            BLACK: { 
-                description: "End of Round: If you placed at least 1 Crow Skull, gain 1 VP and 1 Ruby.",
-                endOfRound: (p) => { if(p.cauldron.some(c => c.type.id === 'BLACK')) { p.victoryPoints += 1; p.rubies += 1; } } 
-            }
-        };
-
-        const INGREDIENT_BOOKS_SET_2 = {
-            WHITE: { description: "Boomberry! If the total value of Boomberries in your cauldron exceeds the explosion limit (usually 7), your cauldron explodes." },
-            ORANGE: { description: "Standard ingredient. Adds value to your brew but has no special effect." },
-            RED: { 
-                description: "If there are 1 or 2 Pumpkins in your cauldron, move 1 extra space. If 3+, move 2 extra spaces.",
-                immediate: (p, c) => { 
-                    const oranges = p.cauldron.filter(ch => ch.type.id === 'ORANGE').length;
-                    if (oranges >= 3) { p.currentBrewValue += 2; c.spaceIndex += 2; }
-                    else if (oranges >= 1) { p.currentBrewValue += 1; c.spaceIndex += 1; }
-                } 
-            },
-            YELLOW: { 
-                description: "If the previous chip was a Boomberry, gain 1 Ruby immediately.",
-                immediate: (p, c) => { if(p.cauldron.length >= 2 && p.cauldron[p.cauldron.length-2].type.id === 'WHITE') p.rubies += 1; } 
-            },
-            BLUE: { 
-                description: "End of Round: Gain 1 VP for every Blue chip in your cauldron.",
-                endOfRound: (p) => { const count = p.cauldron.filter(ch => ch.type.id === 'BLUE').length; p.victoryPoints += count; } 
-            },
-            GREEN: { 
-                description: "End of Round: Gain 1 Droplet step if your last placed chip is a Spider.",
-                endOfRound: (p) => { const len = p.cauldron.length; if(len >= 1 && p.cauldron[len-1].type.id === 'GREEN') p.dropletPosition += 1; } 
-            },
-            PURPLE: { 
-                description: "End of Round: 1 Moth = 1 VP. 2 Moths = 1 VP & 1 Ruby. 3+ Moths = 2 VP & 1 Ruby.",
-                endOfRound: (p) => { 
-                    const cnt = p.cauldron.filter(ch => ch.type.id === 'PURPLE').length;
-                    if(cnt === 1) { p.victoryPoints += 1; }
-                    else if(cnt === 2) { p.victoryPoints += 1; p.rubies += 1; }
-                    else if(cnt >= 3) { p.victoryPoints += 2; p.rubies += 1; }
-                } 
-            },
-            BLACK: { 
-                description: "End of Round: If you placed at least 1 Crow Skull, gain 1 Droplet step.",
-                endOfRound: (p) => { if(p.cauldron.some(c => c.type.id === 'BLACK')) p.dropletPosition += 1; } 
-            }
-        };
-
-        const SHOP_CATALOG = [
-            { type: INGREDIENTS.ORANGE, value: 1, cost: 3 }, { type: INGREDIENTS.ORANGE, value: 6, cost: 22 },
-            { type: INGREDIENTS.GREEN, value: 1, cost: 4 }, { type: INGREDIENTS.GREEN, value: 2, cost: 8 }, { type: INGREDIENTS.GREEN, value: 4, cost: 14 },
-            { type: INGREDIENTS.RED, value: 1, cost: 4 }, { type: INGREDIENTS.RED, value: 2, cost: 8 }, { type: INGREDIENTS.RED, value: 4, cost: 14 },
-            { type: INGREDIENTS.YELLOW, value: 1, cost: 5 }, { type: INGREDIENTS.YELLOW, value: 2, cost: 10 }, { type: INGREDIENTS.YELLOW, value: 4, cost: 16 },
-            { type: INGREDIENTS.BLUE, value: 1, cost: 5 }, { type: INGREDIENTS.BLUE, value: 4, cost: 19 },
-            { type: INGREDIENTS.PURPLE, value: 1, cost: 9 }, { type: INGREDIENTS.BLACK, value: 1, cost: 10 }
-        ];
-
-        /**
          * 3. GAME LOGIC & STATE
          */
         class QuacksPlayer {
@@ -825,7 +830,7 @@
             setupPlayers(humanCharName) {
                 humanCharName = humanCharName || 'WITCH';
                 this.players = []; // Reset players list
-                this.humanPlayer = new QuacksPlayer('You', true, this, humanCharName);
+                this.humanPlayer = new QuacksPlayer(t('ui_you', 'You'), true, this, humanCharName);
                 this.players.push(this.humanPlayer);
                 
                 const allChars = ['WITCH', 'WIZARD', 'MONK', 'CHILD', 'PRINCESS', 'VOODOO_LADY', 'BARD', 'GARDENER'];
@@ -839,7 +844,7 @@
                 
                 for(let i=1; i<=this.config.numAIs; i++) {
                     const charId = availableChars[i-1];
-                    const aiName = "The " + charId.split('_').map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
+                    const aiName = `${t('ui_ai_prefix', 'AI')} ` + charId.split('_').map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
                     this.players.push(new QuacksPlayer(aiName, false, this, charId));
                 }
             }
@@ -974,7 +979,7 @@
                         p.convertedVP = Math.floor(p.money / 5) + Math.floor(p.rubies / 2);
                         p.victoryPoints += p.convertedVP; 
                     });
-                    if (this.uiManager) { this.uiManager.showGameOver(); document.getElementById('ui-phase').innerText = `(Game Over)`; }
+                    if (this.uiManager) { this.uiManager.showGameOver(); document.getElementById('ui-phase').innerText = `(${t('phase_evaluation', 'Evaluation')})`; }
                     return;
                 }
                 
@@ -1137,7 +1142,10 @@
                     document.getElementById('sell-modal').style.display = 'none';
                 });
 
-                document.getElementById('ui-flask-icon').addEventListener('click', () => { if(this.game.humanPlayer.useFlask()) this.updateFullUI(); });
+                const flaskIconEl = document.getElementById('ui-flask-icon');
+                if (flaskIconEl) {
+                    flaskIconEl.addEventListener('click', () => { if(this.game.humanPlayer.useFlask()) this.updateFullUI(); });
+                }
 
                 document.getElementById('btn-choose-vp').addEventListener('click', () => { this.game.humanPlayer.victoryPoints += this.game.humanPlayer.roundVP; document.getElementById('explosion-modal').style.display = 'none'; this.startBuyingPhase(); });
                 document.getElementById('btn-choose-money').addEventListener('click', () => { this.game.humanPlayer.money += this.game.humanPlayer.roundMoney; document.getElementById('explosion-modal').style.display = 'none'; this.startBuyingPhase(); });
@@ -1263,7 +1271,7 @@
                                 const conflictAI = this.game.players.find(p => !p.isHuman && p.character === charName);
                                 if (conflictAI) {
                                     conflictAI.character = oldChar; // Swap AI to old human char
-                                    conflictAI.name = "The " + oldChar.split('_').map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
+                                    conflictAI.name = `${t('ui_ai_prefix', 'AI')} ` + oldChar.split('_').map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
                                 }
                                 this.showSettings(false); // Refresh grid styles
                                 this.updateFullUI();
@@ -1340,25 +1348,25 @@
                 
                 const slides = [
                     {
-                        text: "Press the SACK to draw random ingredients into your cauldron.",
+                        text: t('help_slide_1', "Press the SACK to draw random ingredients into your cauldron."),
                         html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px;">
                             <div style="width: 60px; height: 60px; ${getUtilSpriteStyle('SACK')}"></div>
                         </div>`
                     },
                     {
-                        text: "Press the 💲 button to stop brewing and sell your potion. Sell before drawing too many Boomberries (white tokens), or your cauldron will explode!",
+                        text: t('help_slide_2', "Press the 💲 button to stop brewing and sell your potion. Sell before drawing too many Boomberries (white tokens), or your cauldron will explode!"),
                         html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; font-weight: bold; font-size: 1.5rem;">
                             8 x <div class="chip-icon" style="${getChipSpriteStyle('WHITE', 1)}"></div> = <span style="font-size: 2rem; margin-left: 5px;">💥</span>
                         </div>`
                     },
                     {
-                        text: "Ingredients you draw from your bag get added from the blue droplet, in an outward spiral. The more you add, the more rewards you get!",
+                        text: t('help_slide_3', "Ingredients you draw from your bag get added from the blue droplet, in an outward spiral. The more you add, the more rewards you get!"),
                         html: `<div style="display: flex; align-items: center; justify-content: center; margin-top: 15px;">
                             <img src="assets/spiral_demo.png" alt="Spiral Demo" style="max-height: 140px; border-radius: 8px; border: 2px solid var(--panel-border);">
                         </div>`
                     },
                     {
-                        text: "At the end of each day, spend money to buy more ingredients. These ingredients make your brew more powerful!",
+                        text: t('help_slide_4', "At the end of each day, spend money to buy more ingredients. These ingredients make your brew more powerful!"),
                         html: `<div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; flex-wrap: wrap;">
                             <div class="chip-icon" style="${getChipSpriteStyle('ORANGE', 1)}"></div>
                             <div class="chip-icon" style="${getChipSpriteStyle('RED', 1)}"></div>
@@ -1370,7 +1378,7 @@
                         </div>`
                     },
                     {
-                        text: "Use the FLASK to take back a boomberry into your bag. You may only use the flask immediately after drawing a boomberry, and you cannot use the flask if your brew exploded! You can refill your flask for a price.",
+                        text: t('help_slide_5', "Use the FLASK to take back a boomberry into your bag. You may only use the flask immediately after drawing a boomberry, and you cannot use the flask if your brew exploded! You can refill your flask for a price."),
                         html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; font-weight: bold;">
                             <div style="width:30px; height:45px; ${getUtilSpriteStyle('FLASK_EMPTY')}"></div> + 
                             <div style="width:25px; height:25px; ${getUtilSpriteStyle('RUBY')}"></div> + 
@@ -1379,7 +1387,7 @@
                         </div>`
                     },
                     {
-                        text: "The DROPLET is where you start brewing from. Adding droplets makes your brew more valuable, but they cost rubies!",
+                        text: t('help_slide_6', "The DROPLET is where you start brewing from. Adding droplets makes your brew more valuable, but they cost rubies!"),
                         html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; font-weight: bold;">
                             <div style="width:25px; height:25px; ${getUtilSpriteStyle('RUBY')}"></div> + 
                             <div style="width:25px; height:25px; ${getUtilSpriteStyle('RUBY')}"></div> = 
@@ -1387,13 +1395,13 @@
                         </div>`
                     },
                     {
-                        text: "Get free RAT TAILS if you are far behind the leader. These ingredients give you a temporary boost, so you could catch up with your opponents!",
+                        text: t('help_slide_7', "Get free RAT TAILS if you are far behind the leader. These ingredients give you a temporary boost, so you could catch up with your opponents!"),
                         html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px;">
                             <div style="width:40px; height:40px; ${getUtilSpriteStyle('RAT')}"></div>
                         </div>`
                     },
                     {
-                        text: "The game goes on for 9 rounds. At the end of the last day, whoever has the most VP is the winner!",
+                        text: t('help_slide_8', "The game goes on for 9 rounds. At the end of the last day, whoever has the most VP is the winner!"),
                         html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; font-size: 3rem;">🏆</div>`
                     }
                 ];
@@ -1436,9 +1444,9 @@
                 const titleEl = document.getElementById('game-over-title');
                 
                 if (sortedPlayers[0] === this.game.humanPlayer) {
-                    titleEl.innerText = "🏆 You win! 🏆";
+                    titleEl.innerText = t('ui_you_win', "🏆 You win! 🏆");
                 } else {
-                    titleEl.innerText = "🏆 Game Over 🏆";
+                    titleEl.innerText = t('modal_game_over_title', "🏆 Game Over 🏆");
                 }
 
                 const scores = sortedPlayers.map((p, i) => {
@@ -1457,12 +1465,12 @@
                                 <div style="width: 55px; height: 70px; border-radius: 50%; border: 2px solid ${isWinner ? 'gold' : '#666'}; ${faceStyle}"></div>
                                 <span>${isWinner ? '👑 ' : ''}${p.name}</span>
                             </div>
-                            <strong style="color: var(--accent); font-size: 1.2em;">${p.victoryPoints} VP</strong>
+                            <strong style="color: var(--accent); font-size: 1.2em;">${p.victoryPoints} ${t('vp', 'VP')}</strong>
                         </div>
                         <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #aaa; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 5px;">
-                            <span>Base: <strong style="color: #f5f5f5;">${baseVP}</strong></span>
-                            <span style="display: flex; align-items: center;">Money <span style="width: 14px; height: 14px; display: inline-block; margin: 0 4px; ${getUtilSpriteStyle('COIN')}"></span> (${p.money}): <strong style="color: gold; margin-left: 2px;">+${moneyVP}</strong></span>
-                            <span>Rubies (${p.rubies}): <strong style="color: #ff4444;">+${rubyVP}</strong></span>
+                            <span>${t('base', 'Base:')} <strong style="color: #f5f5f5;">${baseVP}</strong></span>
+                            <span style="display: flex; align-items: center;">${t('money', 'Money')} <span style="width: 14px; height: 14px; display: inline-block; margin: 0 4px; ${getUtilSpriteStyle('COIN')}"></span> (${p.money}): <strong style="color: gold; margin-left: 2px;">+${moneyVP}</strong></span>
+                            <span>${t('ruby_plural', 'Rubies')} (${p.rubies}): <strong style="color: #ff4444;">+${rubyVP}</strong></span>
                         </div>
                     </div>`;
                 }).join('');
@@ -1470,17 +1478,16 @@
                 document.getElementById('final-scores').innerHTML = scores; document.getElementById('game-over-modal').style.display = 'flex';
             }
 
-            showBagModal(player) {
-                player = player !== undefined ? player : null;
+            showBagModal(player = null) {
                 const p = player || this.game.humanPlayer;
                 const container = document.getElementById('bag-items');
                 container.innerHTML = '';
                 
                 const titleEl = document.getElementById('bag-modal-title');
                 if (p.isHuman) {
-                    titleEl.innerHTML = `<span style="width: 30px; height: 30px; display: inline-block; ${getUtilSpriteStyle('SACK')}"></span> What's in my bag?`;
+                    titleEl.innerHTML = `<span style="width: 30px; height: 30px; display: inline-block; ${getUtilSpriteStyle('SACK')}"></span> ${t('modal_bag_title', "What's in my bag?")}`;
                 } else {
-                    titleEl.innerHTML = `<span style="width: 30px; height: 30px; display: inline-block; ${getUtilSpriteStyle('SACK')}"></span> ${p.name}'s bag (Debug)`;
+                    titleEl.innerHTML = `<span style="width: 30px; height: 30px; display: inline-block; ${getUtilSpriteStyle('SACK')}"></span> ${p.name}${t('msg_bag_debug', "'s bag (Debug)")}`;
                 }
 
                 // Sort inventory for better visualization (by type, then value)
@@ -1559,11 +1566,11 @@
                     
                     const book = this.game.books[item.type.id];
                     let desc = book ? book.description : "";
-                    if (item.type.id === 'ORANGE') desc = "Standard ingredient. Adds value to your brew but has no special effect.";
+                    if (item.type.id === 'ORANGE') desc = t('book_orange', "Standard ingredient. Adds value to your brew but has no special effect.");
                     
                     el.innerHTML = `<div class="chip-icon" style="${chipStyle || `background-color: ${item.type.color};`}">${!chipStyle ? item.value : ''}</div>
                                     <div style="font-size: 0.8em; font-weight: bold;">${item.type.name}</div>
-                                    <div style="font-size: 0.9em; color: gold; display: flex; align-items: center; justify-content: center;">Cost: ${item.cost} <span style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; ${getUtilSpriteStyle('COIN')}"></span></div>
+                                    <div style="font-size: 0.9em; color: gold; display: flex; align-items: center; justify-content: center;">${t('cost', 'Cost:')} ${item.cost} <span style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; ${getUtilSpriteStyle('COIN')}"></span></div>
                                     <div class="tooltip">${desc}</div>`;
 
                     if (!disabled) el.addEventListener('click', () => { if (h.buyChip(item.type, item.value, item.cost)) { this.shopCart.push(item); this.renderShopUI(); } });
@@ -1578,9 +1585,9 @@
                 dropletEl.className = `shop-item ${!canAffordDroplet ? 'disabled' : ''}`;
                 dropletEl.innerHTML = `
                     <div style="width: 25px; height: 35px; ${getUtilSpriteStyle('DROPLET')}"></div>
-                    <div style="font-size: 0.8em; font-weight: bold;">Droplet</div>
-                    <div style="font-size: 0.9em; color: #ff4444; display: flex; align-items: center; justify-content: center;">Cost: 2 <span style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; ${getUtilSpriteStyle('RUBY')}"></span></div>
-                    <div class="tooltip">Move your starting droplet forward by 1 space permanently. Can be purchased multiple times.</div>
+                    <div style="font-size: 0.8em; font-weight: bold;">${t('shop_drop_title', 'Droplet Upgrade')}</div>
+                    <div style="font-size: 0.9em; color: #ff4444;">${t('cost', 'Cost:')} 2 ${t('ruby_plural', 'Rubies')}</div>
+                    <div class="tooltip">${t('shop_drop_desc', 'Move your starting droplet forward by 1 space permanently. Can be purchased multiple times.')}</div>
                 `;
                 if (canAffordDroplet) {
                     dropletEl.addEventListener('click', () => {
@@ -1597,9 +1604,9 @@
                 flaskEl.className = `shop-item ${!canAffordFlask ? 'disabled' : ''}`;
                 flaskEl.innerHTML = `
                     <div style="width: 25px; height: 35px; ${getUtilSpriteStyle(h.flaskActive ? 'FLASK_FULL' : 'FLASK_EMPTY')}"></div>
-                    <div style="font-size: 0.8em; font-weight: bold;">Refill Flask</div>
-                    <div style="font-size: 0.9em; color: #ff4444; display: flex; align-items: center; justify-content: center;">Cost: 2 <span style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; ${getUtilSpriteStyle('RUBY')}"></span></div>
-                    <div class="tooltip">${h.flaskActive ? 'Your flask is already full.' : 'Refill your empty flask so it can be used again.'}</div>
+                    <div style="font-size: 0.8em; font-weight: bold;">${t('shop_flask_title', 'Refill Flask')}</div>
+                    <div style="font-size: 0.9em; color: #ff4444;">${t('cost', 'Cost:')} 2 ${t('ruby_plural', 'Rubies')}</div>
+                    <div class="tooltip">${h.flaskActive ? t('shop_flask_desc_full', 'Your flask is already full.') : t('shop_flask_desc_empty', 'Refill your empty flask so it can be used again.')}</div>
                 `;
                 if (canAffordFlask) {
                     flaskEl.addEventListener('click', () => {
@@ -1616,9 +1623,9 @@
                 bagEl.className = `shop-item ${!canAffordBag ? 'disabled' : ''}`;
                 bagEl.innerHTML = `
                     <div style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; ${getUtilSpriteStyle('SACK')}"></div>
-                    <div style="font-size: 0.8em; font-weight: bold;">View Bag</div>
-                    <div style="font-size: 0.9em; color: #ff4444; display: flex; align-items: center; justify-content: center;">Cost: 1 <span style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; ${getUtilSpriteStyle('RUBY')}"></span></div>
-                    <div class="tooltip">Peek inside your bag to see all your tokens (played, unplayed, and newly purchased).</div>
+                    <div style="font-size: 0.8em; font-weight: bold;">${t('shop_bag_view', 'View Bag')}</div>
+                    <div style="font-size: 0.9em; color: #ff4444;">${t('cost', 'Cost:')} 1 ${t('ruby_singular', 'Ruby')}</div>
+                    <div class="tooltip">${t('shop_bag_desc', 'Peek inside your bag to see all your tokens (played, unplayed, and newly purchased).')}</div>
                 `;
                 if (canAffordBag) {
                     bagEl.addEventListener('click', () => {
@@ -2062,7 +2069,7 @@
                 const humanMood = getPlayerMood(human);
                 document.getElementById('ui-human-face').style.cssText = `width: 70px; height: 90px; border-radius: 8px; border: 2px solid var(--panel-border); background-color: rgba(0,0,0,0.5); ${getCharacterSpriteStyle(human.character, humanMood)}`;
 
-                document.getElementById('ui-phase').innerText = `(Phase: ${this.game.phase})`;
+                document.getElementById('ui-phase').innerText = `(${t('ui_phase_prefix', 'Phase:')} ${t('phase_' + this.game.phase.toLowerCase(), this.game.phase)})`;
                 document.getElementById('ui-round').innerText = this.game.round;
                 if (this.game.currentFortuneCard) document.getElementById('ui-fortune-text').innerText = `"${this.game.currentFortuneCard.text}"`;
 
@@ -2083,11 +2090,11 @@
                     if (eligibleForDie && !sellBtn.disabled) {
                         sellBtn.style.boxShadow = '0 0 15px gold, inset 0 0 5px gold';
                         sellBtn.style.borderColor = 'gold';
-                        sellBtn.title = "Sell Potion (Currently winning Bonus Die!)";
+                        sellBtn.title = t('tooltip_sell_winning', "Sell Potion (Currently winning Bonus Die!)");
                     } else {
                         sellBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.5)';
                         sellBtn.style.borderColor = '#4a4e69';
-                        sellBtn.title = "Sell Potion";
+                        sellBtn.title = t('tooltip_sell', "Sell Potion");
                     }
                 }
 
@@ -2139,35 +2146,29 @@
                     document.getElementById('ui-sack-icon').style.cssText = `width: 100%; height: 100%; pointer-events: none; ${getUtilSpriteStyle('SACK')}`;
                 }
 
-                const flaskIcon = document.getElementById('ui-flask-icon');
+                const flaskIconEl = document.getElementById('ui-flask-icon');
                 const lastChip = human.cauldron[human.cauldron.length - 1];
                 const canFlask = human.flaskActive && !human.exploded && !human.hasStopped && human.cauldron.length > 0 && lastChip && lastChip.type.id === 'WHITE';
                 
-                if (flaskIcon) {
+                if (flaskIconEl) {
                     let flipDeg = human.flaskActive ? '0deg' : '180deg';
                     let transformStyle = `transform: rotateY(${flipDeg})${canFlask ? ' scale(1.05)' : ''};`;
                     let filterStyle = canFlask ? 'filter: drop-shadow(0 0 8px #00b4d8);' : '';
-                    flaskIcon.style.cssText = `width: 60px; height: 70px; cursor: ${canFlask ? 'pointer' : 'default'}; transition: transform 0.4s ease, filter 0.2s ease; ${transformStyle} ${filterStyle} ${getUtilSpriteStyle(human.flaskActive ? 'FLASK_FULL' : 'FLASK_EMPTY')}`;
-                    flaskIcon.title = canFlask ? "Click to use Flask and return the last Boomberry to your bag!" : (!human.flaskActive ? "Flask is empty." : "Can only be used immediately after drawing a Boomberry.");
-                }
-
-                // Keep ruby icon in shop rendered if visible
-                const shopRubyIcon = document.getElementById('ui-icon-ruby');
-                if (shopRubyIcon) {
-                    shopRubyIcon.style.cssText = `width: 20px; height: 20px; display: inline-block; ${getUtilSpriteStyle('RUBY')}`;
+                    flaskIconEl.style.cssText = `width: 60px; height: 70px; cursor: ${canFlask ? 'pointer' : 'default'}; transition: transform 0.4s ease, filter 0.2s ease; ${transformStyle} ${filterStyle} ${getUtilSpriteStyle(human.flaskActive ? 'FLASK_FULL' : 'FLASK_EMPTY')}`;
+                    flaskIconEl.title = canFlask ? t('msg_flask_ready', "Click to use Flask and return the last Boomberry to your bag!") : (!human.flaskActive ? t('msg_flask_empty', "Flask is empty.") : t('msg_flask_invalid', "Can only be used immediately after drawing a Boomberry."));
                 }
 
                 const playerListEl = document.getElementById('player-list'); 
                 if (playerListEl) playerListEl.innerHTML = ''; 
                 this.game.players.forEach(player => {
-                    const status = player.exploded ? "EXPLODED!" : (player.hasStopped ? "Finished" : "Brewing...");
+                    const status = player.exploded ? t('status_exploded', "EXPLODED!") : (player.hasStopped ? t('status_finished', "Finished") : t('status_brewing', "Brewing..."));
                     const card = document.createElement('div'); card.className = 'player-card';
                     
                     const pRewards = this.getProjectedRewards(player);
                     const pMood = getPlayerMood(player);
                     const pFaceStyle = getCharacterSpriteStyle(player.character, pMood);
                     
-                    let brewHtml = `<div style="display: flex; align-items: center; margin: 3px 0;">Brew Value: `;
+                    let brewHtml = `<div style="display: flex; align-items: center; margin: 3px 0;">${t('ui_brew_value', 'Brew Value:')} `;
                     if (pRewards.vp > 0) {
                         brewHtml += `<span style="color: #f5f5f5; margin-left: 5px;">${pRewards.vp}</span><span style="width: 16px; height: 16px; display: inline-block; margin-left: 2px; margin-right: 5px; ${getUtilSpriteStyle('VP')}"></span>`;
                     }
@@ -2186,16 +2187,16 @@
                             <div style="flex: 1;">
                                 <strong>${player.name}</strong>
                                 <div style="font-size: 0.9em; margin-top: 5px;">
-                                    <div>VP: ${player.victoryPoints} | Rubies: ${player.rubies}</div>
+                                    <div>${t('vp', 'VP')}: ${player.victoryPoints} | ${t('ruby_plural', 'Rubies')}: ${player.rubies}</div>
                                     ${brewHtml}
-                                    <div style="color: ${player.exploded ? '#ff4444' : '#aaaaaa'}">Status: ${status}</div>
+                                    <div style="color: ${player.exploded ? '#ff4444' : '#aaaaaa'}">${status}</div>
                                 </div>
                             </div>
                         </div>`;
                     
                     if (this.isDebug) {
                         card.style.cursor = 'pointer';
-                        card.title = "Shift-click to peek at bag (Debug)";
+                        card.title = t('msg_debug_bag', "Shift-click to peek at bag (Debug)");
                         card.addEventListener('click', (e) => {
                             if (e.shiftKey) {
                                 this.showBagModal(player);
@@ -2209,6 +2210,41 @@
         }
 
         window.onload = async () => {
+            // --- I18N Loading ---
+            window.I18N = {};
+            window.t = function(key, defaultStr) {
+                return window.I18N[key] !== undefined ? window.I18N[key] : defaultStr;
+            };
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const lang = urlParams.get('lang');
+            if (lang) {
+                try {
+                    const response = await fetch(`lang/${lang}.json`);
+                    if (response.ok) {
+                        window.I18N = await response.json();
+                    }
+                } catch (e) {
+                    console.warn(`Could not load translations for lang=${lang}`, e);
+                }
+            }
+
+            // Apply static DOM translations
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (window.I18N[key]) {
+                    el.innerHTML = window.I18N[key];
+                }
+            });
+            document.querySelectorAll('[data-i18n-title]').forEach(el => {
+                const key = el.getAttribute('data-i18n-title');
+                if (window.I18N[key]) {
+                    el.title = window.I18N[key];
+                }
+            });
+
+            initGameData();
+
             // 1. Initialize AssetManager and wait for graphics
             const assetManager = new AssetManager();
             window.GAME_ASSETS = await assetManager.loadAll();
