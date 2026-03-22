@@ -287,8 +287,8 @@
             <div class="panel-title" style="display: flex; justify-content: space-between; align-items: center;">
                 <span>Day <span id="ui-round">1</span> of 9 <span id="ui-phase" style="font-size: 0.9rem; color: #aaa; margin-left: 10px;">(<span data-i18n="ui_phase_prefix">Phase:</span> <span data-i18n="phase_brewing">Brewing</span>)</span></span>
                 <div style="display: flex; gap: 5px; margin-left: auto;">
-                    <button id="btn-lang" style="width: 24px; height: 24px; padding: 0; border-radius: 4px; background-color: #800080; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex: none;" title="Language">🇺🇸</button>
                     <button id="btn-book" style="width: 24px; height: 24px; padding: 0; border-radius: 4px; background-color: #800080; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex: none;" data-i18n-title="tooltip_book" title="Ingredient Rules">📖</button>
+                    <button id="btn-lang" style="width: 24px; height: 24px; padding: 0; border-radius: 4px; background-color: #6a6e8f; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex: none;" title="Language">🇺🇸</button>
                     <button id="btn-settings" style="width: 24px; height: 24px; padding: 0; border-radius: 4px; background-color: #6a6e8f; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex: none;" data-i18n-title="tooltip_settings" title="Settings">⚙️</button>
                     <button id="btn-help" style="width: 24px; height: 24px; padding: 0; border-radius: 4px; background-color: #00b4d8; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex: none;" data-i18n-title="tooltip_help" title="How to play">?</button>
                 </div>
@@ -326,7 +326,7 @@
             <div id="tutorial-arrow-sack" class="tutorial-arrow" style="animation: tutorial-poke-right 1.5s infinite;">👉</div>
             <div id="tutorial-arrow-sell" class="tutorial-arrow" style="animation: tutorial-poke-left 1.5s infinite;">👈</div>
             
-            <div id="ui-sack" data-i18n-title="tooltip_bag" title="Sack (Bag)">
+            <div id="ui-sack" data-i18n-title="tooltip_bag" title="Draw a random ingredient from bag">
                 <div id="ui-sack-icon"></div>
                 <div id="ui-bag-count">0</div>
             </div>
@@ -541,6 +541,7 @@
 
             INGREDIENT_BOOKS_SET_1 = {
                 ORANGE: { description: t('book_orange', "Standard ingredient. Adds value to your brew but has no special effect.") },
+                WHITE: { description: t('book_white', "If the total value of Boomberries in your cauldron exceeds the explosion limit (usually 7), your cauldron explodes.") },
                 RED: { 
                     description: t('book1_red', "If there is at least 1 Pumpkin in your cauldron, move 1 extra space."),
                     immediate: (p, c) => { 
@@ -574,6 +575,7 @@
 
             INGREDIENT_BOOKS_SET_2 = {
                 ORANGE: { description: t('book_orange', "Standard ingredient. Adds value to your brew but has no special effect.") },
+                WHITE: { description: t('book_white', "If the total value of Boomberries in your cauldron exceeds the explosion limit (usually 7), your cauldron explodes.") },
                 RED: { 
                     description: t('book2_red', "If there are 1 or 2 Pumpkins in your cauldron, move 1 extra space. If 3+, move 2 extra spaces."),
                     immediate: (p, c) => { 
