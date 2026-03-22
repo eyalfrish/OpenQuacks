@@ -124,6 +124,7 @@
   "help_slide_6": "The DROPLET is where you start brewing from. Adding droplets makes your brew more valuable, but they cost rubies!",
   "help_slide_7": "Get free RAT TAILS if you are far behind the leader. These ingredients give you a temporary boost, so you could catch up with your opponents!",
   "help_slide_8": "The game goes on for 9 rounds. At the end of the last day, whoever has the most VP is the winner!",
+  "tooltip_book": "Ingredient Rules",
   "tooltip_toggle_values": "Toggle Track Values",
   "tooltip_sell": "Sell Potion",
   "tooltip_sell_winning": "Sell Potion (Currently winning Bonus Die!)",
@@ -145,5 +146,7 @@
   "char_princess": "The Princess",
   "char_voodoo_lady": "The Voodoo Lady",
   "char_bard": "The Bard",
-  "char_gardener": "The Gardener"
+  "char_gardener": "The Gardener",
+  "settings_set1": "Set 1 (Beginner)",
+  "settings_set2": "Set 2 (Advanced)"
 }
