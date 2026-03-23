@@ -23,6 +23,7 @@
   "vp": "PV",
   "modal_settings_title": "⚙️ Ajustes",
   "modal_settings_char": "Seleccionar Personaje",
+  "modal_char_select_title": "🎭 Elige tu personaje",
   "modal_char_select_desc": "Elige tu avatar.",
   "modal_settings_rules": "Reglas de Ingredientes",
   "modal_settings_rules_desc": "Elige las potencias.",

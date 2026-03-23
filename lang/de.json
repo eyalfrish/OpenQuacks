@@ -23,6 +23,7 @@
   "vp": "Siegpunkte",
   "modal_settings_title": "⚙️ Einstellungen",
   "modal_settings_char": "Charakter auswählen",
+  "modal_char_select_title": "🎭 Wähle deinen Charakter",
   "modal_char_select_desc": "Wähle deinen Avatar für dieses Spiel.",
   "modal_settings_rules": "Zutaten-Regelsatz",
   "modal_settings_rules_desc": "Wähle aus, welche Kräfte die Zutaten haben.",

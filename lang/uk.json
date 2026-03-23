@@ -23,6 +23,7 @@
   "vp": "ПО",
   "modal_settings_title": "⚙️ Налаштування",
   "modal_settings_char": "Оберіть персонажа",
+  "modal_char_select_title": "🎭 Оберіть свого персонажа",
   "modal_char_select_desc": "Оберіть свій аватар для цієї гри.",
   "modal_settings_rules": "Набір правил інгредієнтів",
   "modal_settings_rules_desc": "Оберіть, які властивості матимуть інгредієнти.",
