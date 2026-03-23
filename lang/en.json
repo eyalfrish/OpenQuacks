@@ -23,6 +23,7 @@
   "vp": "VP",
   "modal_settings_title": "⚙️ Settings",
   "modal_settings_char": "Select Character",
+  "modal_char_select_title": "🎭 Select Your Character",
   "modal_char_select_desc": "Choose your avatar for this game.",
   "modal_settings_rules": "Ingredient Rules Set",
   "modal_settings_rules_desc": "Choose which set of powers the ingredients have.",
