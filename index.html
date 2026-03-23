@@ -528,6 +528,14 @@
                 { id: 'fortune_fewest_vp_spider', text: t('fortune_fewest_vp_spider', "The player(s) with the fewest VP get a Spider token."), type: 'immediate', apply: (g) => {
                     const minVp = Math.min(...g.players.map(p => p.victoryPoints));
                     g.players.forEach(p => { if(p.victoryPoints === minVp) p.inventory.push({ type: INGREDIENTS.GREEN, value: 1 }); });
+                    g.players.forEach(p => { 
+                        if(p.victoryPoints === minVp) {
+                            p.inventory.push({ type: INGREDIENTS.GREEN, value: 1 });
+                            if (p.isHuman && g.uiManager) {
+                                g.uiManager.queueSackAnimation({ typeId: 'GREEN', value: 1, color: INGREDIENTS.GREEN.color, textCol: INGREDIENTS.GREEN.textCol });
+                            }
+                        }
+                    });
                 }}
             ];
 
@@ -536,8 +544,14 @@
                 { text: t('die_vp2', "2 VP!"), icon: "VP", apply: (p) => p.victoryPoints += 2 },
                 { text: t('die_ruby1', "1 Ruby!"), icon: "RUBY", apply: (p) => p.rubies += 1 },
                 { text: t('die_drop1', "1 Droplet step!"), icon: "DROPLET", apply: (p) => p.dropletPosition += 1 },
-                { text: t('die_pump1', "1 Pumpkin Token!"), isChip: true, typeId: "ORANGE", value: 1, apply: (p) => p.inventory.push({ type: INGREDIENTS.ORANGE, value: 1 }) },
-                { text: t('die_toadstool1', "1 Toadstool!"), isChip: true, typeId: "RED", value: 1, apply: (p) => p.inventory.push({ type: INGREDIENTS.RED, value: 1 }) }
+                { text: t('die_pump1', "1 Pumpkin Token!"), isChip: true, typeId: "ORANGE", value: 1, apply: (p) => {
+                    p.inventory.push({ type: INGREDIENTS.ORANGE, value: 1 });
+                    if (p.isHuman && p.game.uiManager) p.game.uiManager.queueSackAnimation({ typeId: 'ORANGE', value: 1, color: INGREDIENTS.ORANGE.color, textCol: INGREDIENTS.ORANGE.textCol });
+                } },
+                { text: t('die_toadstool1', "1 Toadstool!"), isChip: true, typeId: "RED", value: 1, apply: (p) => {
+                    p.inventory.push({ type: INGREDIENTS.RED, value: 1 });
+                    if (p.isHuman && p.game.uiManager) p.game.uiManager.queueSackAnimation({ typeId: 'RED', value: 1, color: INGREDIENTS.RED.color, textCol: INGREDIENTS.RED.textCol });
+                } }
             ];
 
             INGREDIENT_BOOKS_SET_1 = {
@@ -890,11 +904,15 @@
             startRound() {
                 this.phase = 'Brewing';
                 this.config.explosionThreshold = 7; // Reset threshold in case it was altered
+                this.config.orangeExtraSpace = false; // Reset the extra space flag
                 
                 // Day 6 specific rule: Everyone gets a new White-1 token before the round begins
                 if (this.round === 6) {
                     this.players.forEach(p => {
                         p.inventory.push({ type: INGREDIENTS.WHITE, value: 1 });
+                        if (p.isHuman && this.uiManager) {
+                            this.uiManager.queueSackAnimation({ typeId: 'WHITE', value: 1, color: '#ffffff', textCol: '#000000' });
+                        }
                     });
                 }
 
@@ -909,8 +927,8 @@
 
                 if(this.uiManager) {
                     this.uiManager.updateFullUI();
-                    if (this.round === 6) {
-                        this.uiManager.animateToSack({ typeId: 'WHITE', value: 1, color: '#ffffff', textCol: '#000000' });
+                    if (this.round > 1 || this.uiManager.hasPlayedStartAnimation) {
+                        this.uiManager.playQueuedSackAnimations();
                     }
                 }
 
@@ -1036,6 +1054,7 @@
                 this.wrapper = document.getElementById('cauldron-wrapper');
                 this.spiralSpaces = []; this.shopCart = [];
                 this.sackAnimations = [];
+                this.pendingSackAnimations = [];
                 this.helpSlideIndex = 0;
                 this.showTrackValues = false;
                 this.hasPlayedStartAnimation = false;
@@ -1056,6 +1075,17 @@
             startAnimationLoop() {
                 const loop = () => { this.renderCanvas(); requestAnimationFrame(loop); };
                 loop();
+            }
+
+            queueSackAnimation(chipDef) {
+                this.pendingSackAnimations.push(chipDef);
+            }
+
+            playQueuedSackAnimations() {
+                this.pendingSackAnimations.forEach((chipDef, i) => {
+                    this.animateToSack(chipDef, i * 200);
+                });
+                this.pendingSackAnimations = [];
             }
 
             animateToSack(chipDef, delay = 0) {
@@ -1082,9 +1112,10 @@
                     { typeId: 'GREEN', value: 1, color: '#008000', textCol: '#ffffff' }
                 ];
                 
-                startChips.forEach((chip, i) => {
-                    this.animateToSack(chip, i * 150);
+                startChips.forEach((chip) => {
+                    this.queueSackAnimation(chip);
                 });
+                this.playQueuedSackAnimations();
             }
 
             playExplosionVideo() {
@@ -1185,7 +1216,22 @@
 
                 document.getElementById('btn-choose-vp').addEventListener('click', () => { this.game.humanPlayer.victoryPoints += this.game.humanPlayer.roundVP; document.getElementById('explosion-modal').style.display = 'none'; this.startBuyingPhase(); });
                 document.getElementById('btn-choose-money').addEventListener('click', () => { this.game.humanPlayer.money += this.game.humanPlayer.roundMoney; document.getElementById('explosion-modal').style.display = 'none'; this.startBuyingPhase(); });
-                document.getElementById('btn-finish-buying').addEventListener('click', () => { document.getElementById('shop-modal').style.display = 'none'; this.game.endRound(); });
+                
+                document.getElementById('btn-finish-buying').addEventListener('click', () => { 
+                    document.getElementById('shop-modal').style.display = 'none'; 
+                    
+                    // Queue the items bought during this shopping phase into the sack
+                    this.shopCart.forEach((item) => {
+                        this.queueSackAnimation({ 
+                            typeId: item.type.id, 
+                            value: item.value, 
+                            color: item.type.color, 
+                            textCol: item.type.textCol 
+                        });
+                    });
+
+                    this.game.endRound(); 
+                });
                 
                 document.getElementById('btn-close-bag').addEventListener('click', () => { document.getElementById('bag-modal').style.display = 'none'; });
                 document.getElementById('btn-close-debug-draw').addEventListener('click', () => { document.getElementById('debug-draw-modal').style.display = 'none'; });
@@ -1614,7 +1660,12 @@
                                     <div style="font-size: 0.9em; color: gold; display: flex; align-items: center; justify-content: center;">${t('cost', 'Cost:')} ${item.cost} <span style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; ${getUtilSpriteStyle('COIN')}"></span></div>
                                     <div class="tooltip">${desc}</div>`;
 
-                    if (!disabled) el.addEventListener('click', () => { if (h.buyChip(item.type, item.value, item.cost)) { this.shopCart.push(item); this.renderShopUI(); } });
+                    if (!disabled) el.addEventListener('click', () => { 
+                        if (h.buyChip(item.type, item.value, item.cost)) { 
+                            this.shopCart.push(item); 
+                            this.renderShopUI(); 
+                        } 
+                    });
                     shopItems.appendChild(el);
                 });
 
