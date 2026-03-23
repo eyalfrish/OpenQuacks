@@ -527,7 +527,6 @@
                 { id: 'fortune_explode_limit', text: t('fortune_explode_limit', "The explosion limit is increased to 9 this round."), type: 'immediate', apply: (g) => g.config.explosionThreshold = 9 },
                 { id: 'fortune_fewest_vp_spider', text: t('fortune_fewest_vp_spider', "The player(s) with the fewest VP get a Spider token."), type: 'immediate', apply: (g) => {
                     const minVp = Math.min(...g.players.map(p => p.victoryPoints));
-                    g.players.forEach(p => { if(p.victoryPoints === minVp) p.inventory.push({ type: INGREDIENTS.GREEN, value: 1 }); });
                     g.players.forEach(p => { 
                         if(p.victoryPoints === minVp) {
                             p.inventory.push({ type: INGREDIENTS.GREEN, value: 1 });
