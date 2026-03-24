@@ -37,6 +37,7 @@
   "modal_exp_title": "💥 Your Cauldron Exploded! 💥",
   "modal_exp_desc1": "You drew too many Boomberries. You must choose your penalty for this round:",
   "modal_exp_desc2": "(You may only take Victory Points OR Money to buy ingredients, not both).",
+  "modal_lang_title": "🌐 Select Language",
   "modal_sell_title": "💰 Sell Potion? 💰",
   "modal_sell_desc": "Stop brewing and sell this potion for:",
   "btn_sell_potion": "Sell Potion",
