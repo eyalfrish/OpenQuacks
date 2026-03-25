@@ -2396,7 +2396,6 @@
             // 3. Boot Game and Check Character Selection
             const savedBookSet = parseInt(getCookie('selectedBookSet')) || 1;
             const gameConfig = { numAIs: 2, bookSet: savedBookSet }; 
-            const gameController = new QuacksGameController(gameConfig);
             const gameController = new GameController(gameConfig);
             const uiManager = new QuacksUIManager(gameController, window.GAME_ASSETS);
             
