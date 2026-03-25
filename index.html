@@ -871,9 +871,15 @@
                 this.bag.push({ type: lastChip.type, value: lastChip.value });
                 this.flaskActive = false; return true;
             }
+
+            getExplosionProbability(explosionThreshold) {
+                if (this.bag.length === 0) return 0;
+                const deadlyChips = this.bag.filter(c => c.type.id === 'WHITE' && (this.currentWhiteValue + c.value > explosionThreshold)).length;
+                return deadlyChips / this.bag.length;
+            }
         }
 
-        class QuacksGameController {
+        class GameController {
             constructor(config) {
                 this.config = { totalRounds: 9, numAIs: 2, explosionThreshold: 7, bookSet: 1, orangeExtraSpace: false, ...config };
                 this.round = 1; this.phase = 'Brewing'; this.players = []; 
@@ -946,13 +952,27 @@
             }
             
             async runAIBrewing(p) {
+                const riskThresholds = {
+                    'WIZARD': 0.25,
+                    'WITCH': 0.25,
+                    'MONK': 0.1,
+                    'PRINCESS': 0.1,
+                    'CHILD': 0.5,
+                    'GARDENER': 0.5,
+                    'BARD': 0.3,
+                    'VOODOO_LADY': 0.3
+                };
+
                 while (!p.hasStopped && !p.exploded && p.bag.length > 0) {
                     await new Promise(resolve => setTimeout(resolve, 500));
                     
                     // Break out if game state has fundamentally changed while awaiting
                     if (this.phase !== 'Brewing' || p.hasStopped || p.exploded) break;
 
-                    if (p.currentWhiteValue >= this.config.explosionThreshold - 1) { 
+                    const thresholdT = riskThresholds[p.character] !== undefined ? riskThresholds[p.character] : 0.25;
+                    const probExplode = p.getExplosionProbability(this.config.explosionThreshold);
+
+                    if (probExplode >= thresholdT) { 
                         p.hasStopped = true; 
                     } else {
                         p.drawChip();
@@ -1128,6 +1148,7 @@
             playExplosionVideo() {
                 return new Promise((resolve) => {
                     const vid = document.getElementById('explosion-video');
+                    if (!vid) return resolve();
                     vid.currentTime = 0;
                     
                     vid.onerror = () => { resolve(); };
@@ -1392,7 +1413,16 @@
                     closeBtn.onclick = () => { document.getElementById('char-select-modal').style.display = 'none'; };
                 }
                 
-                document.getElementById('char-select-modal').style.display = 'flex';
+                const modal = document.getElementById('char-select-modal');
+                if (modal) {
+                    // Allow closing the modal by clicking on the overlay background (if not mandatory)
+                    modal.onclick = (e) => {
+                        if (e.target === modal && !isMandatory) {
+                            modal.style.display = 'none';
+                        }
+                    };
+                    modal.style.display = 'flex';
+                }
             }
 
             showSettings() {
@@ -2367,6 +2397,7 @@
             const savedBookSet = parseInt(getCookie('selectedBookSet')) || 1;
             const gameConfig = { numAIs: 2, bookSet: savedBookSet }; 
             const gameController = new QuacksGameController(gameConfig);
+            const gameController = new GameController(gameConfig);
             const uiManager = new QuacksUIManager(gameController, window.GAME_ASSETS);
             
             const savedChar = getCookie('selectedCharacter');
