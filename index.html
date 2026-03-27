@@ -304,6 +304,7 @@
                 <div class="board-section" id="flask-section" style="justify-content: center;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div id="ui-flask-icon" style="width: 60px; height: 70px; transition: all 0.2s;"></div>
+                        <button id="btn-meditation" style="display: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5rem; padding: 0; background-color: #f6aa1c; border: 2px solid var(--panel-border); cursor: pointer;" data-i18n-title="tooltip_meditation" title="Meditation: increase explosion limit by +3">🧘</button>
                     </div>
                 </div>
                 <div class="board-section" id="fortune-teller">
@@ -675,7 +676,7 @@
                 } 
             };
             CHARACTER_POWERS = {
-                WITCH: defaultPower, WIZARD: defaultPower, MONK: defaultPower, CHILD: defaultPower,
+                WITCH: defaultPower, WIZARD: defaultPower, MONK: {}, CHILD: defaultPower,
                 PRINCESS: defaultPower, VOODOO_LADY: defaultPower, BARD: defaultPower, GARDENER: defaultPower
             };
         }
@@ -841,6 +842,7 @@
                 this.hasStopped = false;
                 this.specialPowerUsed = false;
                 this.specialPowerActive = false;
+                this.explosionLimitOffset = 0;
 
                 const startChips = [
                     { type: INGREDIENTS.WHITE, value: 1 }, { type: INGREDIENTS.WHITE, value: 1 },
@@ -856,6 +858,7 @@
                 this.bag = [...this.inventory]; this.cauldron = []; this.exploded = false;
                 this.explodedAt = null;
                 this.specialPowerActive = false;
+                this.explosionLimitOffset = 0;
                 this.currentBrewValue = this.dropletPosition + this.ratTails;
                 this.currentWhiteValue = 0; this.hasStopped = false;
             }
@@ -883,7 +886,8 @@
                 const book = this.game.books[chip.type.id];
                 if (book && book.immediate) book.immediate(this, placedChip);
 
-                if (this.currentWhiteValue > this.game.config.explosionThreshold) { 
+                const currentThreshold = this.game.config.explosionThreshold + (this.explosionLimitOffset || 0);
+                if (this.currentWhiteValue > currentThreshold) { 
                     this.exploded = true; 
                     this.explodedAt = Date.now();
                     this.hasStopped = true; 
@@ -1011,9 +1015,15 @@
                     if (this.phase !== 'Brewing' || p.hasStopped || p.exploded) break;
 
                     const thresholdT = riskThresholds[p.character] !== undefined ? riskThresholds[p.character] : 0.25;
-                    const probExplode = p.getExplosionProbability(this.config.explosionThreshold);
+                    const currentThreshold = this.config.explosionThreshold + (p.explosionLimitOffset || 0);
+                    const probExplode = p.getExplosionProbability(currentThreshold);
 
                     if (probExplode >= thresholdT) { 
+                        if (this.config.useCharacterPowers && p.character === 'MONK' && !p.specialPowerUsed) {
+                            p.specialPowerUsed = true;
+                            p.explosionLimitOffset = 3;
+                            continue; // Skip the stop, re-evaluate with the new threshold next tick
+                        }
                         p.hasStopped = true; 
                     } else {
                         p.drawChip();
@@ -1285,6 +1295,15 @@
 
                 document.getElementById('btn-choose-vp').addEventListener('click', () => { this.game.humanPlayer.victoryPoints += this.game.humanPlayer.roundVP; document.getElementById('explosion-modal').style.display = 'none'; this.startBuyingPhase(); });
                 document.getElementById('btn-choose-money').addEventListener('click', () => { this.game.humanPlayer.money += this.game.humanPlayer.roundMoney; document.getElementById('explosion-modal').style.display = 'none'; this.startBuyingPhase(); });
+                document.getElementById('btn-meditation')?.addEventListener('click', () => {
+                    const h = this.game.humanPlayer;
+                    if (this.game.config.useCharacterPowers && h.character === 'MONK' && !h.specialPowerUsed && !h.exploded && !h.hasStopped) {
+                        h.specialPowerUsed = true;
+                        h.explosionLimitOffset = 3;
+                        this.updateFullUI();
+                    }
+                });
+
                 
                 document.getElementById('btn-finish-buying')?.addEventListener('click', () => { 
                     const shopModal = document.getElementById('shop-modal');
@@ -1490,6 +1509,7 @@
                         const val = e.target.checked;
                         setCookie('useCharacterPowers', val ? '1' : '0', 365);
                         this.game.config.useCharacterPowers = val;
+                        this.updateFullUI();
                     };
                 }
 
@@ -2334,7 +2354,7 @@
                 }
 
                 // Boomberry Progress Bar Updates
-                const maxThreshold = this.game.config.explosionThreshold;
+                const maxThreshold = this.game.config.explosionThreshold + (human.explosionLimitOffset || 0);
                 const currentWhite = human.currentWhiteValue;
                 const fillPercent = Math.min(100, (currentWhite / maxThreshold) * 100);
                 
@@ -2391,6 +2411,16 @@
                     let filterStyle = canFlask ? 'filter: drop-shadow(0 0 8px #00b4d8);' : '';
                     flaskIconEl.style.cssText = `width: 60px; height: 70px; cursor: ${canFlask ? 'pointer' : 'default'}; transition: transform 0.4s ease, filter 0.2s ease; ${transformStyle} ${filterStyle} ${getUtilSpriteStyle(human.flaskActive ? 'FLASK_FULL' : 'FLASK_EMPTY')}`;
                     flaskIconEl.title = canFlask ? t('msg_flask_ready', "Click to use Flask and return the last Boomberry to your bag!") : (!human.flaskActive ? t('msg_flask_empty', "Flask is empty.") : t('msg_flask_invalid', "Can only be used immediately after drawing a Boomberry."));
+                }
+                
+                // Meditation Button Logic
+                const medBtn = document.getElementById('btn-meditation');
+                if (medBtn) {
+                    if (this.game.config.useCharacterPowers && human.character === 'MONK' && !human.specialPowerUsed && !human.hasStopped && !human.exploded && this.game.phase === 'Brewing') {
+                        medBtn.style.display = 'block';
+                    } else {
+                        medBtn.style.display = 'none';
+                    }
                 }
 
                 const playerListEl = document.getElementById('player-list'); 
