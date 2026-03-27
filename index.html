@@ -1767,7 +1767,7 @@
                 dropletEl.innerHTML = `
                     <div style="width: 25px; height: 35px; ${getUtilSpriteStyle('DROPLET')}"></div>
                     <div style="font-size: 0.8em; font-weight: bold;">${t('shop_drop_title', 'Droplet Upgrade')}</div>
-                    <div style="font-size: 0.9em; color: #ff4444;">${t('cost', 'Cost:')} 2 ${t('ruby_plural', 'Rubies')}</div>
+                    <div style="font-size: 0.9em; color: #ff4444; display: flex; align-items: center; justify-content: center;">${t('cost', 'Cost:')} 2 <span style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; ${getUtilSpriteStyle('RUBY')}"></span></div>
                     <div class="tooltip">${t('shop_drop_desc', 'Move your starting droplet forward by 1 space permanently. Can be purchased multiple times.')}</div>
                 `;
                 if (canAffordDroplet) {
@@ -1786,7 +1786,7 @@
                 flaskEl.innerHTML = `
                     <div style="width: 25px; height: 35px; ${getUtilSpriteStyle(h.flaskActive ? 'FLASK_FULL' : 'FLASK_EMPTY')}"></div>
                     <div style="font-size: 0.8em; font-weight: bold;">${t('shop_flask_title', 'Refill Flask')}</div>
-                    <div style="font-size: 0.9em; color: #ff4444;">${t('cost', 'Cost:')} 2 ${t('ruby_plural', 'Rubies')}</div>
+                    <div style="font-size: 0.9em; color: #ff4444; display: flex; align-items: center; justify-content: center;">${t('cost', 'Cost:')} 2 <span style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; ${getUtilSpriteStyle('RUBY')}"></span></div>
                     <div class="tooltip">${h.flaskActive ? t('shop_flask_desc_full', 'Your flask is already full.') : t('shop_flask_desc_empty', 'Refill your empty flask so it can be used again.')}</div>
                 `;
                 if (canAffordFlask) {
@@ -1805,7 +1805,7 @@
                 bagEl.innerHTML = `
                     <div style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; ${getUtilSpriteStyle('SACK')}"></div>
                     <div style="font-size: 0.8em; font-weight: bold;">${t('shop_bag_view', 'View Bag')}</div>
-                    <div style="font-size: 0.9em; color: #ff4444;">${t('cost', 'Cost:')} 1 ${t('ruby_singular', 'Ruby')}</div>
+                    <div style="font-size: 0.9em; color: #ff4444; display: flex; align-items: center; justify-content: center;">${t('cost', 'Cost:')} 1 <span style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; ${getUtilSpriteStyle('RUBY')}"></span></div>
                     <div class="tooltip">${t('shop_bag_desc', 'Peek inside your bag to see all your tokens (played, unplayed, and newly purchased).')}</div>
                 `;
                 if (canAffordBag) {
