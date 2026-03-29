@@ -188,7 +188,7 @@
             direction: ltr; /* Ensure numbers don't flip in RTL */
         }
 
-        /* --- Tutorial Arrows --- */
+        /* --- Tutorial & Animations --- */
         .tutorial-arrow {
             position: absolute;
             z-index: 20;
@@ -203,6 +203,15 @@
         @keyframes tutorial-poke-left {
             0%, 100% { transform: translateX(0); opacity: 0.5; }
             50% { transform: translateX(-10px); opacity: 1; }
+        }
+
+        @keyframes flip-vertical {
+            0% { transform: scaleY(1); }
+            50% { transform: scaleY(0); }
+            100% { transform: scaleY(1); }
+        }
+        .flip-vertical {
+            animation: flip-vertical 0.4s ease-in-out;
         }
 
         /* --- Modal & Shop Styles --- */
@@ -305,6 +314,9 @@
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div id="ui-flask-icon" style="width: 60px; height: 70px; transition: all 0.2s;"></div>
                         <button id="btn-meditation" style="display: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5rem; padding: 0; background-color: #f6aa1c; border: 2px solid var(--panel-border); cursor: pointer;" data-i18n-title="tooltip_meditation" title="Meditation: increase explosion limit by +3">🧘</button>
+                        <button id="btn-miracle-gro" style="display: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5rem; padding: 0; background-color: #2a9d8f; border: 2px solid var(--panel-border); cursor: pointer;" data-i18n-title="tooltip_miracle_gro" title="Gardener's miracle grow">
+                            <div id="ui-miracle-gro-icon" style="width: 100%; height: 100%;"></div>
+                        </button>
                     </div>
                 </div>
                 <div class="board-section" id="fortune-teller">
@@ -476,6 +488,17 @@
                 <!-- Tokens injected here via JS -->
             </div>
             <button id="btn-close-bag" style="background-color: #4a4e69;" data-i18n="btn_close">Close</button>
+        </div>
+    </div>
+
+    <div id="miracle-gro-modal" class="modal-overlay" style="z-index: 1008;">
+        <div class="modal-content" style="max-width: 500px;">
+            <h2 data-i18n="modal_miracle_gro_title">🧑‍🌾 Gardener's Miracle Grow</h2>
+            <p style="margin-bottom: 15px; font-size: 0.9em; color: #aaa;" data-i18n="modal_miracle_gro_desc">Upgrade up to 2 tokens, of different colors.</p>
+            <div id="miracle-gro-items" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; max-height: 40vh; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+                <!-- Tokens injected here via JS -->
+            </div>
+            <button id="btn-close-miracle-gro" style="background-color: #4a4e69;" data-i18n="btn_done">Done</button>
         </div>
     </div>
 
@@ -677,7 +700,7 @@
             };
             CHARACTER_POWERS = {
                 WITCH: defaultPower, WIZARD: defaultPower, MONK: {}, CHILD: defaultPower,
-                PRINCESS: defaultPower, VOODOO_LADY: defaultPower, BARD: defaultPower, GARDENER: defaultPower
+                PRINCESS: defaultPower, VOODOO_LADY: defaultPower, BARD: {}, GARDENER: {}
             };
         }
 
@@ -710,7 +733,8 @@
             CAULDRON_BG: 'assets/cauldron_board.png',
             CHIPS: 'assets/tokens.png',
             UTILS: 'assets/utils.png',
-            CHARACTERS: 'assets/characters.png'
+            CHARACTERS: 'assets/characters.png',
+            UTILS_EXP: 'assets/utils_exp.png'
         };
 
         // Exact fractional coordinates for the 6x4 layout
@@ -754,6 +778,10 @@
             MONOCLE     : { x: 0.68, y: 0.06, w: 0.15, h: 0.42 }
         };
 
+        const UTILS_EXP_MAP = {
+            WATERING_CAN: { x: 0, y: 0, w: 1, h: 1 }
+        };
+
         // 8x4 Grid Constants for Characters
         const CHAR_ROW = { 'WIZARD': 0, 'WITCH': 1, 'BARD': 2, 'CHILD': 3, 'PRINCESS': 4, 'VOODOO_LADY': 5, 'GARDENER': 6, 'MONK': 7 };
         const MOOD_COL = { 'SMIRK': 0, 'CONCERN': 1, 'DISAPPOINTMENT': 2, 'TRIUMPHANT': 3 };
@@ -791,6 +819,14 @@
             const posX = def.w < 1 ? (def.x / (1 - def.w)) * 100 : 0;
             const posY = def.h < 1 ? (def.y / (1 - def.h)) * 100 : 0;
             return `background-image: url('${ASSET_PATHS.UTILS}'); background-size: ${100/def.w}% ${100/def.h}%; background-position: ${posX}% ${posY}%; background-repeat: no-repeat;`;
+        }
+        
+        function getUtilExpSpriteStyle(utilKey) {
+            const def = UTILS_EXP_MAP[utilKey];
+            if (!def) return '';
+            const posX = def.w < 1 ? (def.x / (1 - def.w)) * 100 : 0;
+            const posY = def.h < 1 ? (def.y / (1 - def.h)) * 100 : 0;
+            return `background-image: url('${ASSET_PATHS.UTILS_EXP}'); background-size: ${100/def.w}% ${100/def.h}%; background-position: ${posX}% ${posY}%; background-repeat: no-repeat;`;
         }
         
         function getCharacterSpriteStyle(charName, moodName) {
@@ -1007,6 +1043,25 @@
                     'BARD': 0.3,
                     'VOODOO_LADY': 0.3
                 };
+
+                // AI Gardener Power Logic
+                if (this.config.useCharacterPowers && p.character === 'GARDENER' && !p.specialPowerUsed && this.phase === 'Brewing') {
+                    p.specialPowerUsed = true;
+                    let upgradedColors = [];
+                    const plantTypes = ['WHITE', 'ORANGE', 'RED', 'YELLOW'];
+                    const upgradeMap = { 'WHITE_1': 2, 'WHITE_2': 3, 'ORANGE_1': 6, 'RED_1': 2, 'RED_2': 4, 'YELLOW_1': 2, 'YELLOW_2': 4 };
+                    
+                    // Sort by value ascending so AI upgrades lowest value chips first
+                    const plants = p.inventory.filter(item => plantTypes.includes(item.type.id)).sort((a, b) => a.value - b.value);
+                    for (let item of plants) {
+                        if (upgradedColors.length >= 2) break;
+                        const key = `${item.type.id}_${item.value}`;
+                        if (upgradeMap[key] && !upgradedColors.includes(item.type.id)) {
+                            item.value = upgradeMap[key];
+                            upgradedColors.push(item.type.id);
+                        }
+                    }
+                }
 
                 while (!p.hasStopped && !p.exploded && p.bag.length > 0) {
                     await new Promise(resolve => setTimeout(resolve, 500));
@@ -1293,8 +1348,6 @@
                     flaskIconEl.addEventListener('click', () => { if(this.game.humanPlayer.useFlask()) this.updateFullUI(); });
                 }
 
-                document.getElementById('btn-choose-vp').addEventListener('click', () => { this.game.humanPlayer.victoryPoints += this.game.humanPlayer.roundVP; document.getElementById('explosion-modal').style.display = 'none'; this.startBuyingPhase(); });
-                document.getElementById('btn-choose-money').addEventListener('click', () => { this.game.humanPlayer.money += this.game.humanPlayer.roundMoney; document.getElementById('explosion-modal').style.display = 'none'; this.startBuyingPhase(); });
                 document.getElementById('btn-meditation')?.addEventListener('click', () => {
                     const h = this.game.humanPlayer;
                     if (this.game.config.useCharacterPowers && h.character === 'MONK' && !h.specialPowerUsed && !h.exploded && !h.hasStopped) {
@@ -1304,6 +1357,28 @@
                     }
                 });
 
+                document.getElementById('btn-miracle-gro')?.addEventListener('click', () => {
+                    const h = this.game.humanPlayer;
+                    if (this.game.config.useCharacterPowers && h.character === 'GARDENER' && !h.specialPowerUsed && !h.exploded && !h.hasStopped) {
+                        h.specialPowerUsed = true; // Use it up
+                        this.showMiracleGroModal();
+                        this.updateFullUI(); // Hide button
+                    }
+                });
+
+                document.getElementById('btn-choose-vp')?.addEventListener('click', () => { 
+                    this.game.humanPlayer.victoryPoints += this.game.humanPlayer.roundVP; 
+                    const expModal = document.getElementById('explosion-modal');
+                    if (expModal) expModal.style.display = 'none'; 
+                    this.startBuyingPhase(); 
+                });
+                
+                document.getElementById('btn-choose-money')?.addEventListener('click', () => { 
+                    this.game.humanPlayer.money += this.game.humanPlayer.roundMoney; 
+                    const expModal = document.getElementById('explosion-modal');
+                    if (expModal) expModal.style.display = 'none'; 
+                    this.startBuyingPhase(); 
+                });
                 
                 document.getElementById('btn-finish-buying')?.addEventListener('click', () => { 
                     const shopModal = document.getElementById('shop-modal');
@@ -1323,11 +1398,24 @@
                     this.game.endRound(); 
                 });
                 
-                document.getElementById('btn-close-bag').addEventListener('click', () => { document.getElementById('bag-modal').style.display = 'none'; });
-                document.getElementById('btn-close-debug-draw').addEventListener('click', () => { document.getElementById('debug-draw-modal').style.display = 'none'; });
+                document.getElementById('btn-close-bag')?.addEventListener('click', () => { 
+                    const bagModal = document.getElementById('bag-modal');
+                    if (bagModal) bagModal.style.display = 'none'; 
+                });
 
-                document.getElementById('btn-bonus-die-ok').addEventListener('click', () => { 
-                    document.getElementById('bonus-die-modal').style.display = 'none'; 
+                document.getElementById('btn-close-miracle-gro')?.addEventListener('click', () => { 
+                    const miracleModal = document.getElementById('miracle-gro-modal');
+                    if (miracleModal) miracleModal.style.display = 'none'; 
+                });
+                
+                document.getElementById('btn-close-debug-draw')?.addEventListener('click', () => { 
+                    const debugModal = document.getElementById('debug-draw-modal');
+                    if (debugModal) debugModal.style.display = 'none'; 
+                });
+
+                document.getElementById('btn-bonus-die-ok')?.addEventListener('click', () => { 
+                    const dieModal = document.getElementById('bonus-die-modal');
+                    if (dieModal) dieModal.style.display = 'none'; 
                     this.game.continueEvaluationPhase(); 
                 });
 
@@ -1409,7 +1497,81 @@
                     container.appendChild(el);
                 });
 
-                document.getElementById('debug-draw-modal').style.display = 'flex';
+                const modal = document.getElementById('debug-draw-modal');
+                if (modal) modal.style.display = 'flex';
+            }
+
+            showMiracleGroModal() {
+                const h = this.game.humanPlayer;
+                const container = document.getElementById('miracle-gro-items');
+                if (!container) return;
+                container.innerHTML = '';
+                
+                let upgradedColors = [];
+                const plantTypes = ['WHITE', 'ORANGE', 'RED', 'YELLOW'];
+                const upgradeMap = { 
+                    'WHITE_1': 2, 'WHITE_2': 3, 
+                    'ORANGE_1': 6, 
+                    'RED_1': 2, 'RED_2': 4, 
+                    'YELLOW_1': 2, 'YELLOW_2': 4 
+                };
+
+                // Get all plant tokens from inventory
+                const plants = h.inventory.filter(item => plantTypes.includes(item.type.id));
+                plants.sort((a,b) => a.type.id.localeCompare(b.type.id));
+
+                const elements = plants.map(item => {
+                    const el = document.createElement('div');
+                    el.className = 'chip-icon';
+                    container.appendChild(el);
+                    return { el, item };
+                });
+
+                const updateView = () => {
+                    elements.forEach(({ el, item }) => {
+                        const key = `${item.type.id}_${item.value}`;
+                        const canUpgrade = !!upgradeMap[key] && upgradedColors.length < 2 && !upgradedColors.includes(item.type.id);
+                        
+                        const chipStyle = getChipSpriteStyle(item.type.id, item.value);
+                        el.style.cssText = `width: 50px; height: 50px; transition: opacity 0.2s; ${chipStyle || `background-color: ${item.type.color};`}`;
+                        if (!chipStyle) {
+                            el.innerText = item.value;
+                            el.style.color = item.type.textCol;
+                        } else {
+                            el.innerText = '';
+                        }
+                        
+                        el.style.cursor = canUpgrade ? 'pointer' : 'not-allowed';
+                        el.style.opacity = canUpgrade ? '1' : '0.5';
+
+                        el.onclick = canUpgrade ? () => {
+                            upgradedColors.push(item.type.id);
+                            el.classList.add('flip-vertical');
+                            
+                            setTimeout(() => {
+                                // We replace the object itself in inventory & bag so it doesn't break references in cauldron
+                                const invIndex = h.inventory.indexOf(item);
+                                if (invIndex !== -1) {
+                                    h.inventory[invIndex] = { type: item.type, value: upgradeMap[key] };
+                                }
+                                
+                                const bagIndex = h.bag.indexOf(item);
+                                if (bagIndex !== -1) {
+                                    h.bag[bagIndex] = { type: item.type, value: upgradeMap[key] };
+                                }
+                                
+                                item.value = upgradeMap[key]; // Update local item for UI re-render
+                                
+                                updateView(); // re-evaluates all disabled states
+                                setTimeout(() => el.classList.remove('flip-vertical'), 200);
+                            }, 200); // Trigger the swap at 90 degrees (halfway through 0.4s animation)
+                        } : null;
+                    });
+                };
+
+                updateView();
+                const modal = document.getElementById('miracle-gro-modal');
+                if (modal) modal.style.display = 'flex';
             }
 
             showCharacterSelect(isMandatory = false) {
@@ -2413,13 +2575,31 @@
                     flaskIconEl.title = canFlask ? t('msg_flask_ready', "Click to use Flask and return the last Boomberry to your bag!") : (!human.flaskActive ? t('msg_flask_empty', "Flask is empty.") : t('msg_flask_invalid', "Can only be used immediately after drawing a Boomberry."));
                 }
                 
-                // Meditation Button Logic
+                // Meditation Button Logic (Monk)
                 const medBtn = document.getElementById('btn-meditation');
                 if (medBtn) {
                     if (this.game.config.useCharacterPowers && human.character === 'MONK' && !human.specialPowerUsed && !human.hasStopped && !human.exploded && this.game.phase === 'Brewing') {
                         medBtn.style.display = 'block';
                     } else {
                         medBtn.style.display = 'none';
+                    }
+                }
+
+                // Miracle Gro Button Logic (Gardener)
+                const mgBtn = document.getElementById('btn-miracle-gro');
+                const mgIcon = document.getElementById('ui-miracle-gro-icon');
+                if (mgBtn && mgIcon) {
+                    if (this.game.config.useCharacterPowers && human.character === 'GARDENER' && !human.specialPowerUsed && !human.hasStopped && !human.exploded && this.game.phase === 'Brewing') {
+                        mgBtn.style.display = 'block';
+                        if (this.assets.UTILS_EXP && this.assets.UTILS_EXP.naturalWidth > 0) {
+                            mgIcon.style.cssText = `width: 100%; height: 100%; ${getUtilExpSpriteStyle('WATERING_CAN')}`;
+                            mgIcon.innerText = '';
+                        } else {
+                            mgIcon.style.cssText = `width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;`;
+                            mgIcon.innerText = '💧';
+                        }
+                    } else {
+                        mgBtn.style.display = 'none';
                     }
                 }
 
