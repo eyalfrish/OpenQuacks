@@ -317,6 +317,9 @@
                         <button id="btn-miracle-gro" style="display: none; width: 70px; height: 70px; border-radius: 50%; font-size: 1.5rem; padding: 0; background-color: #2a9d8f; border: 2px solid var(--panel-border); cursor: pointer;" data-i18n-title="tooltip_miracle_gro" title="Gardener's miracle grow">
                             <div id="ui-miracle-gro-icon" style="width: 100%; height: 100%;"></div>
                         </button>
+                        <button id="btn-sugar-rush" style="display: none; width: 70px; height: 70px; border-radius: 50%; font-size: 1.5rem; padding: 0; background-color: #ff007f; border: 2px solid var(--panel-border); cursor: pointer;" data-i18n-title="tooltip_sugar_rush" title="Sugar Rush: Once per game, peek at 5 tokens!">
+                            <div id="ui-sugar-rush-icon" style="width: 100%; height: 100%;"></div>
+                        </button>
                     </div>
                 </div>
                 <div class="board-section" id="fortune-teller">
@@ -499,6 +502,17 @@
                 <!-- Tokens injected here via JS -->
             </div>
             <button id="btn-close-miracle-gro" style="background-color: #4a4e69;" data-i18n="btn_done">Done</button>
+        </div>
+    </div>
+
+    <div id="sugar-rush-modal" class="modal-overlay" style="z-index: 1008;">
+        <div class="modal-content" style="max-width: 500px;">
+            <h2 data-i18n="modal_sugar_rush_title">🍭 Sugar Rush!</h2>
+            <p style="margin-bottom: 15px; font-size: 0.9em; color: #aaa;" data-i18n="modal_sugar_rush_desc">Pick the tokens you want to play, in order.</p>
+            <div id="sugar-rush-items" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; max-height: 40vh; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+                <!-- Tokens injected here via JS -->
+            </div>
+            <button id="btn-close-sugar-rush" style="background-color: #4caf50;" data-i18n="btn_done">Done</button>
         </div>
     </div>
 
@@ -699,7 +713,7 @@
                 } 
             };
             CHARACTER_POWERS = {
-                WITCH: defaultPower, WIZARD: defaultPower, MONK: {}, CHILD: defaultPower,
+                WITCH: defaultPower, WIZARD: defaultPower, MONK: {}, CHILD: {},
                 PRINCESS: {}, VOODOO_LADY: defaultPower, BARD: {}, GARDENER: {}
             };
         }
@@ -779,7 +793,8 @@
         };
 
         const UTILS_EXP_MAP = {
-            WATERING_CAN: { x: 0, y: 0, w: 1, h: 1 }
+            WATERING_CAN: { x: 0, y: 0, w: 0.5, h: 1 },
+            LOLLIPOP: { x: 0.5, y: 0, w: 0.5, h: 1 }
         };
 
         // 8x4 Grid Constants for Characters
@@ -1366,6 +1381,15 @@
                     }
                 });
 
+                document.getElementById('btn-sugar-rush')?.addEventListener('click', () => {
+                    const h = this.game.humanPlayer;
+                    if (this.game.config.useCharacterPowers && h.character === 'CHILD' && !h.specialPowerUsed && !h.exploded && !h.hasStopped) {
+                        h.specialPowerUsed = true; // Use it up
+                        this.showSugarRushModal();
+                        this.updateFullUI(); // Hide button
+                    }
+                });
+
                 document.getElementById('btn-choose-vp')?.addEventListener('click', () => { 
                     this.game.humanPlayer.victoryPoints += this.game.humanPlayer.roundVP; 
                     const expModal = document.getElementById('explosion-modal');
@@ -1572,6 +1596,89 @@
                 updateView();
                 const modal = document.getElementById('miracle-gro-modal');
                 if (modal) modal.style.display = 'flex';
+            }
+
+            showSugarRushModal() {
+                const h = this.game.humanPlayer;
+                const container = document.getElementById('sugar-rush-items');
+                if (!container) return;
+                
+                let bagCopy = [...h.bag];
+                for (let i = bagCopy.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [bagCopy[i], bagCopy[j]] = [bagCopy[j], bagCopy[i]];
+                }
+                const peekTokens = bagCopy.slice(0, 5);
+                
+                let selectedTokens = []; // array of { chipObj, order }
+                
+                const updateView = () => {
+                    container.innerHTML = '';
+                    peekTokens.forEach(item => {
+                        const el = document.createElement('div');
+                        el.className = 'chip-icon';
+                        el.style.position = 'relative';
+                        
+                        const chipStyle = getChipSpriteStyle(item.type.id, item.value);
+                        el.style.cssText = `width: 50px; height: 50px; cursor: pointer; transition: transform 0.1s; ${chipStyle || `background-color: ${item.type.color};`}`;
+                        if (!chipStyle) {
+                            el.innerText = item.value;
+                            el.style.color = item.type.textCol;
+                        }
+                        
+                        const selIndex = selectedTokens.findIndex(s => s.chipObj === item);
+                        if (selIndex !== -1) {
+                            const overlay = document.createElement('div');
+                            overlay.style.cssText = `position: absolute; top: -5px; right: -5px; width: 20px; height: 20px; background: var(--accent); color: white; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #1a1a2e; font-weight: bold;`;
+                            overlay.innerText = selectedTokens[selIndex].order;
+                            el.appendChild(overlay);
+                            el.style.transform = 'scale(0.9)';
+                            el.style.opacity = '0.8';
+                        }
+                        
+                        el.onclick = () => {
+                            if (selIndex !== -1) {
+                                selectedTokens.splice(selIndex, 1);
+                                selectedTokens.forEach((s, idx) => s.order = idx + 1);
+                            } else {
+                                selectedTokens.push({ chipObj: item, order: selectedTokens.length + 1 });
+                            }
+                            updateView();
+                        };
+                        container.appendChild(el);
+                    });
+                };
+                
+                updateView();
+                
+                const doneBtn = document.getElementById('btn-close-sugar-rush');
+                if (doneBtn) {
+                    doneBtn.onclick = async () => {
+                        document.getElementById('sugar-rush-modal').style.display = 'none';
+                        
+                        selectedTokens.sort((a,b) => a.order - b.order);
+                        for (let sel of selectedTokens) {
+                            if (h.exploded || h.hasStopped) break;
+                            
+                            let currentIndex = h.bag.indexOf(sel.chipObj);
+                            if (currentIndex !== -1) {
+                                const wasExploded = h.exploded;
+                                h.drawChip(currentIndex);
+                                this.updateFullUI();
+                                
+                                if (!wasExploded && h.exploded) {
+                                    await this.playExplosionVideo();
+                                }
+                            }
+                        }
+                        
+                        if (h.exploded || h.hasStopped) {
+                            this.game.checkBrewingPhaseEnd();
+                        }
+                    };
+                }
+                
+                document.getElementById('sugar-rush-modal').style.display = 'flex';
             }
 
             showCharacterSelect(isMandatory = false) {
@@ -2079,7 +2186,7 @@
                 bagEl.innerHTML = `
                     <div style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; ${getUtilSpriteStyle('SACK')}"></div>
                     <div style="font-size: 0.8em; font-weight: bold;">${t('shop_bag_view', 'View Bag')}</div>
-                    <div style="font-size: 0.9em; color: #ff4444; display: flex; align-items: center; justify-content: center;">${t('cost', 'Cost:')} ${bagCost === 0 ? 'Free' : bagCost + ' <span style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; ' + getUtilSpriteStyle('RUBY') + '"></span>'}</div>
+                    <div style="font-size: 0.9em; color: #ff4444; display: flex; align-items: center; justify-content: center;">${t('cost', 'Cost:')} ${bagCost === 0 ? t('shop_free', 'Free') : bagCost + ' <span style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; ' + getUtilSpriteStyle('RUBY') + '"></span>'}</div>
                     <div class="tooltip">${t('shop_bag_desc', 'Peek inside your bag to see all your tokens (played, unplayed, and newly purchased).')}</div>
                 `;
                 if (canAffordBag) {
@@ -2642,6 +2749,24 @@
                         }
                     } else {
                         mgBtn.style.display = 'none';
+                    }
+                }
+
+                // Sugar Rush Button Logic (Child)
+                const srBtn = document.getElementById('btn-sugar-rush');
+                const srIcon = document.getElementById('ui-sugar-rush-icon');
+                if (srBtn && srIcon) {
+                    if (this.game.config.useCharacterPowers && human.character === 'CHILD' && !human.specialPowerUsed && !human.hasStopped && !human.exploded && this.game.phase === 'Brewing') {
+                        srBtn.style.display = 'block';
+                        if (this.assets.UTILS_EXP && this.assets.UTILS_EXP.naturalWidth > 0) {
+                            srIcon.style.cssText = `width: 100%; height: 100%; ${getUtilExpSpriteStyle('LOLLIPOP')}`;
+                            srIcon.innerText = '';
+                        } else {
+                            srIcon.style.cssText = `width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;`;
+                            srIcon.innerText = '🍭';
+                        }
+                    } else {
+                        srBtn.style.display = 'none';
                     }
                 }
 
