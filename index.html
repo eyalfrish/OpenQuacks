@@ -314,7 +314,7 @@
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div id="ui-flask-icon" style="width: 60px; height: 70px; transition: all 0.2s;"></div>
                         <button id="btn-meditation" style="display: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5rem; padding: 0; background-color: #f6aa1c; border: 2px solid var(--panel-border); cursor: pointer;" data-i18n-title="tooltip_meditation" title="Meditation: increase explosion limit by +3">🧘</button>
-                        <button id="btn-miracle-gro" style="display: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5rem; padding: 0; background-color: #2a9d8f; border: 2px solid var(--panel-border); cursor: pointer;" data-i18n-title="tooltip_miracle_gro" title="Gardener's miracle grow">
+                        <button id="btn-miracle-gro" style="display: none; width: 70px; height: 70px; border-radius: 50%; font-size: 1.5rem; padding: 0; background-color: #2a9d8f; border: 2px solid var(--panel-border); cursor: pointer;" data-i18n-title="tooltip_miracle_gro" title="Gardener's miracle grow">
                             <div id="ui-miracle-gro-icon" style="width: 100%; height: 100%;"></div>
                         </button>
                     </div>
@@ -470,7 +470,7 @@
                     <span id="shop-ruby-icon" class="icon-small"></span></span> 
                 </span>
             </div>
-            <p style="margin-bottom: 10px; font-size: 0.9em;" data-i18n="shop_desc">Buy up to 2 ingredients of different colors. Ruby items have no limits!</p>
+            <p id="shop-desc-text" style="margin-bottom: 10px; font-size: 0.9em;" data-i18n="shop_desc">Buy up to 2 ingredients of different colors. Ruby items have no limits!</p>
             <div id="shop-items" class="shop-grid"></div>
             <div style="margin-top: 15px; border-top: 1px solid var(--panel-border); padding-top: 15px;">
                 <button id="btn-finish-buying" style="background-color: #4caf50;" data-i18n="btn_next_round">Next Round</button>
@@ -700,7 +700,7 @@
             };
             CHARACTER_POWERS = {
                 WITCH: defaultPower, WIZARD: defaultPower, MONK: {}, CHILD: defaultPower,
-                PRINCESS: defaultPower, VOODOO_LADY: defaultPower, BARD: {}, GARDENER: {}
+                PRINCESS: {}, VOODOO_LADY: defaultPower, BARD: {}, GARDENER: {}
             };
         }
 
@@ -1891,7 +1891,18 @@
                             p.specialPowerUsed = true;
                             p.specialPowerActive = true;
                         }
-                        const discount = p.specialPowerActive ? 1 : 0;
+
+                        // AI Princess Power Logic
+                        if (this.game.config.useCharacterPowers && p.character === 'PRINCESS' && !p.specialPowerUsed) {
+                            // Princess waits for late game or when she's rich to maximize doubling!
+                            if (this.game.round >= 8 || p.money >= 20) {
+                                p.specialPowerUsed = true;
+                                p.specialPowerActive = true;
+                                p.money *= 2;
+                            }
+                        }
+
+                        const discount = (p.character === 'BARD' && p.specialPowerActive) ? 1 : 0;
                         const dropCost = Math.max(1, 2 - discount); // Floor at 1 to prevent infinite loops for AI
 
                         // AI constantly buys droplets as long as it has enough rubies
@@ -1901,8 +1912,10 @@
                         }
 
                         let boughtColors = [];
-                        // AI can buy up to 2 chips
-                        for (let i = 0; i < 2; i++) {
+                        const maxBuys = (p.character === 'PRINCESS' && p.specialPowerActive) ? 3 : 2;
+                        
+                        // AI can buy up to 2 chips (or 3 for Princess)
+                        for (let i = 0; i < maxBuys; i++) {
                             // Find all available ingredients that the AI can afford, hasn't bought the color of yet, and are unlocked this round
                             const available = SHOP_CATALOG.filter(item => {
                                 if (item.type.id === 'YELLOW' && this.game.round <= 2) return false;
@@ -1938,13 +1951,21 @@
                 shopItems.innerHTML = '';
                 
                 const cartColors = this.shopCart.map(c => c.type.id);
-                const discount = h.specialPowerActive ? 1 : 0;
+                const discount = (h.character === 'BARD' && h.specialPowerActive) ? 1 : 0;
+                const maxBuys = (h.character === 'PRINCESS' && h.specialPowerActive) ? 3 : 2;
+                
+                const shopDescEl = document.getElementById('shop-desc-text');
+                if (shopDescEl) {
+                    shopDescEl.innerText = (h.character === 'PRINCESS' && h.specialPowerActive) ? 
+                        t('shop_desc_princess', 'Buy up to 3 ingredients of different colors. Ruby items have no limits!') : 
+                        t('shop_desc', 'Buy up to 2 ingredients of different colors. Ruby items have no limits!');
+                }
                 
                 SHOP_CATALOG.forEach(item => {
                     if ((item.type.id === 'YELLOW' && this.game.round <= 2) || (item.type.id === 'BLUE' && this.game.round <= 3)) return;
                     
                     const el = document.createElement('div');
-                    const disabled = h.money < item.cost || this.shopCart.length >= 2 || cartColors.includes(item.type.id);
+                    const disabled = h.money < item.cost || this.shopCart.length >= maxBuys || cartColors.includes(item.type.id);
                     el.className = `shop-item ${disabled ? 'disabled' : ''}`;
                     
                     const chipStyle = getChipSpriteStyle(item.type.id, item.value);
@@ -1970,14 +1991,14 @@
                 // --- Special Ruby Upgrades ---
 
                 // 0. Bard's Charm Power
-                if (this.game.config.useCharacterPowers && h.character === 'BARD' && !h.specialPowerUsed) {
+                if (this.game.config.useCharacterPowers && h.character === 'BARD' && (!h.specialPowerUsed || h.specialPowerActive)) {
                     const bardEl = document.createElement('div');
                     bardEl.className = `shop-item ${h.specialPowerActive ? 'disabled' : ''}`;
                     bardEl.innerHTML = `
                         <div style="font-size: 2rem; display: flex; align-items: center; justify-content: center; width: 35px; height: 35px; margin-bottom: 5px;">🪕</div>
-                        <div style="font-size: 0.8em; font-weight: bold;">Bard's Charm</div>
-                        <div style="font-size: 0.9em; color: #ff4444;">${t('cost', 'Cost:')} Free</div>
-                        <div class="tooltip">Charm the shopkeeper! Get a 1-Ruby discount on all Ruby upgrades this round. (Once per game)</div>
+                        <div style="font-size: 0.8em; font-weight: bold;">${t('shop_bard_title', "Bard's Charm")}</div>
+                        <div style="font-size: 0.9em; color: #ff4444;">${t('cost', 'Cost:')} ${t('shop_free', 'Free')}</div>
+                        <div class="tooltip">${t('shop_bard_desc', 'Charm the shopkeeper! Get a 1-Ruby discount on all Ruby upgrades this round. (Once per game)')}</div>
                     `;
                     if (!h.specialPowerActive) {
                         bardEl.addEventListener('click', () => {
@@ -1987,6 +2008,27 @@
                         });
                     }
                     shopItems.appendChild(bardEl);
+                }
+
+                // 0.1 Princess's Royal Decree Power
+                if (this.game.config.useCharacterPowers && h.character === 'PRINCESS' && (!h.specialPowerUsed || h.specialPowerActive)) {
+                    const princessEl = document.createElement('div');
+                    princessEl.className = `shop-item ${h.specialPowerActive ? 'disabled' : ''}`;
+                    princessEl.innerHTML = `
+                        <div style="font-size: 2rem; display: flex; align-items: center; justify-content: center; width: 35px; height: 35px; margin-bottom: 5px;">👑</div>
+                        <div style="font-size: 0.8em; font-weight: bold;">${t('shop_princess_title', 'Royal Decree')}</div>
+                        <div style="font-size: 0.9em; color: #ff4444;">${t('cost', 'Cost:')} ${t('shop_free', 'Free')}</div>
+                        <div class="tooltip">${t('shop_princess_desc', 'Double your current money and buy up to 3 ingredients instead of 2! (Once per game)')}</div>
+                    `;
+                    if (!h.specialPowerActive) {
+                        princessEl.addEventListener('click', () => {
+                            h.specialPowerUsed = true;
+                            h.specialPowerActive = true;
+                            h.money *= 2;
+                            this.renderShopUI();
+                        });
+                    }
+                    shopItems.appendChild(princessEl);
                 }
 
                 // 1. Droplet Upgrade
