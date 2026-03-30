@@ -762,7 +762,7 @@
             ACHIEVEMENTS_DEF = {
                 'MEGA_PUMPKIN': { titleKey: 'ach_mega_pumpkin_title', defaultTitle: 'Mega Pumpkin', descKey: 'ach_mega_pumpkin_desc', defaultDesc: 'Purchase a pumpkin 6 token' },
                 'POINT_MAXXING': { titleKey: 'ach_point_maxxing_title', defaultTitle: 'Point Maxxing', descKey: 'ach_point_maxxing_desc', defaultDesc: 'Win a game with more than 70 points as any character' },
-                'KABOOM': { titleKey: 'ach_kaboom_title', defaultTitle: 'Kaboom!', descKey: 'ach_kaboom_desc', defaultDesc: 'Explode with 18 boomberries in your cauldron' },
+                'KABOOM': { titleKey: 'ach_kaboom_title', defaultTitle: 'Kaboom!', descKey: 'ach_kaboom_desc', defaultDesc: 'Explode with 15 boomberries in your cauldron' },
                 'TIE_FIGHTER': { titleKey: 'ach_tie_fighter_title', defaultTitle: 'Tie Fighter', descKey: 'ach_tie_fighter_desc', defaultDesc: 'Win a 3-way tie breaker' },
                 'BIG_SPENDER': { titleKey: 'ach_big_spender_title', defaultTitle: 'Big Spender', descKey: 'ach_big_spender_desc', defaultDesc: 'Spend more than 56 coins in the shop' },
                 'META_CHARLATAN': { titleKey: 'ach_meta_charlatan_title', defaultTitle: 'Meta-charlatan', descKey: 'ach_meta_charlatan_desc', defaultDesc: 'Place a token using the debug draw dialog.' }
@@ -2995,7 +2995,7 @@
                 if (!human) return;
 
                 // Check Kaboom Achievement
-                if (human.exploded && human.currentWhiteValue >= 18) {
+                if (human.exploded && human.currentWhiteValue >= 15) {
                     this.unlockAchievement('KABOOM');
                 }
 
