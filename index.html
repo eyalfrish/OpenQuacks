@@ -448,9 +448,12 @@
             <h2 data-i18n="modal_exp_title">💥 Your Cauldron Exploded! 💥</h2>
             <p data-i18n="modal_exp_desc1">You drew too many Boomberries. You must choose your penalty for this round:</p>
             <p style="margin: 15px 0; font-size: 0.9em; color: #aaa;" data-i18n="modal_exp_desc2">(You may only take Victory Points OR Money to buy ingredients, not both).</p>
-            <div>
-                <button id="btn-choose-vp"><span data-i18n="btn_take">Take</span> <span id="expl-vp-val">0</span> <span data-i18n="vp">VP</span></button>
-                <button id="btn-choose-money" style="display: inline-flex; align-items: center; justify-content: center;"><span data-i18n="btn_take">Take</span> <span id="expl-money-val" style="margin: 0 5px;">0</span> <span id="expl-money-icon"></span></button>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="btn-choose-vp"><span data-i18n="btn_take">Take</span> <span id="expl-vp-val">0</span> <span data-i18n="vp">VP</span></button>
+                    <button id="btn-choose-money" style="display: inline-flex; align-items: center; justify-content: center;"><span data-i18n="btn_take">Take</span> <span id="expl-money-val" style="margin: 0 5px;">0</span> <span id="expl-money-icon"></span></button>
+                </div>
+                <button id="btn-witch-brew" style="display: none; background-color: #800080;" data-i18n-title="tooltip_witch_brew" title="Once per game, you may keep both money and VP after exploding, and roll the bonus die">🧙‍♀️ <span data-i18n="btn_witch_brew">Witch's Brew</span></button>
             </div>
         </div>
     </div>
@@ -724,16 +727,8 @@
                 { type: INGREDIENTS.PURPLE, value: 1, cost: 9 }, { type: INGREDIENTS.BLACK, value: 1, cost: 10 }
             ];
 
-            const defaultPower = { 
-                applyStart: (p) => {
-                    p.inventory.push({ type: INGREDIENTS.YELLOW, value: 1 });
-                    if (p.isHuman && p.game.uiManager) {
-                        p.game.uiManager.queueSackAnimation({ typeId: 'YELLOW', value: 1, color: INGREDIENTS.YELLOW.color, textCol: INGREDIENTS.YELLOW.textCol });
-                    }
-                } 
-            };
             CHARACTER_POWERS = {
-                WITCH: defaultPower, WIZARD: {}, MONK: {}, CHILD: {},
+                WITCH: {}, WIZARD: {}, MONK: {}, CHILD: {},
                 PRINCESS: {}, VOODOO_LADY: {}, BARD: {}, GARDENER: {}
             };
         }
@@ -1225,7 +1220,17 @@
                     });
                     if (p.roundRuby) p.rubies += 1;
                     if (!p.isHuman) {
-                        if (p.exploded) { if (this.round > 6) p.victoryPoints += p.roundVP; else p.money += p.roundMoney; }
+                        if (p.exploded) { 
+                            if (this.config.useCharacterPowers && p.character === 'WITCH' && !p.specialPowerUsed) {
+                                p.specialPowerUsed = true;
+                                p.victoryPoints += p.roundVP;
+                                p.money += p.roundMoney;
+                                const face = BONUS_DIE_FACES[Math.floor(Math.random() * BONUS_DIE_FACES.length)];
+                                face.apply(p);
+                            } else {
+                                if (this.round > 6) p.victoryPoints += p.roundVP; else p.money += p.roundMoney; 
+                            }
+                        }
                         else { p.victoryPoints += p.roundVP; p.money += p.roundMoney; }
                     }
                 });
@@ -1271,6 +1276,7 @@
                 this.helpSlideIndex = 0;
                 this.showTrackValues = false;
                 this.hasPlayedStartAnimation = false;
+                this.isWitchBonusDie = false;
                 
                 this.isDebug = window.location.href.includes('debug=1');
 
@@ -1428,6 +1434,20 @@
                     flaskIconEl.addEventListener('click', () => { if(this.game.humanPlayer.useFlask()) this.updateFullUI(); });
                 }
 
+                document.getElementById('btn-witch-brew').addEventListener('click', () => {
+                    const h = this.game.humanPlayer;
+                    h.specialPowerUsed = true;
+                    h.victoryPoints += h.roundVP;
+                    h.money += h.roundMoney;
+                    document.getElementById('explosion-modal').style.display = 'none';
+
+                    const face = BONUS_DIE_FACES[Math.floor(Math.random() * BONUS_DIE_FACES.length)];
+                    face.apply(h);
+
+                    this.isWitchBonusDie = true;
+                    this.showBonusDieModal(face, h.roundMoney);
+                });
+
                 document.getElementById('btn-meditation')?.addEventListener('click', () => {
                     const h = this.game.humanPlayer;
                     if (this.game.config.useCharacterPowers && h.character === 'MONK' && !h.specialPowerUsed && !h.exploded && !h.hasStopped) {
@@ -1505,23 +1525,20 @@
                     }
                 });
 
-                document.getElementById('btn-choose-vp')?.addEventListener('click', () => { 
+                document.getElementById('btn-choose-vp').addEventListener('click', () => { 
                     this.game.humanPlayer.victoryPoints += this.game.humanPlayer.roundVP; 
-                    const expModal = document.getElementById('explosion-modal');
-                    if (expModal) expModal.style.display = 'none'; 
+                    document.getElementById('explosion-modal').style.display = 'none'; 
                     this.startBuyingPhase(); 
                 });
                 
-                document.getElementById('btn-choose-money')?.addEventListener('click', () => { 
+                document.getElementById('btn-choose-money').addEventListener('click', () => { 
                     this.game.humanPlayer.money += this.game.humanPlayer.roundMoney; 
-                    const expModal = document.getElementById('explosion-modal');
-                    if (expModal) expModal.style.display = 'none'; 
+                    document.getElementById('explosion-modal').style.display = 'none'; 
                     this.startBuyingPhase(); 
                 });
                 
-                document.getElementById('btn-finish-buying')?.addEventListener('click', () => { 
-                    const shopModal = document.getElementById('shop-modal');
-                    if (shopModal) shopModal.style.display = 'none'; 
+                document.getElementById('btn-finish-buying').addEventListener('click', () => { 
+                    document.getElementById('shop-modal').style.display = 'none'; 
                     this.game.humanPlayer.specialPowerActive = false; // Reset charm at end of shop phase
                     
                     // Queue the items bought during this shopping phase into the sack
@@ -1537,9 +1554,8 @@
                     this.game.endRound(); 
                 });
                 
-                document.getElementById('btn-close-bag')?.addEventListener('click', () => { 
-                    const bagModal = document.getElementById('bag-modal');
-                    if (bagModal) bagModal.style.display = 'none'; 
+                document.getElementById('btn-close-bag').addEventListener('click', () => { 
+                    document.getElementById('bag-modal').style.display = 'none'; 
                 });
 
                 document.getElementById('btn-close-miracle-gro')?.addEventListener('click', () => { 
@@ -1552,10 +1568,14 @@
                     if (debugModal) debugModal.style.display = 'none'; 
                 });
 
-                document.getElementById('btn-bonus-die-ok')?.addEventListener('click', () => { 
-                    const dieModal = document.getElementById('bonus-die-modal');
-                    if (dieModal) dieModal.style.display = 'none'; 
-                    this.game.continueEvaluationPhase(); 
+                document.getElementById('btn-bonus-die-ok').addEventListener('click', () => { 
+                    document.getElementById('bonus-die-modal').style.display = 'none'; 
+                    if (this.isWitchBonusDie) {
+                        this.isWitchBonusDie = false;
+                        this.startBuyingPhase();
+                    } else {
+                        this.game.continueEvaluationPhase(); 
+                    }
                 });
 
                 document.getElementById('btn-settings').addEventListener('click', () => { this.showSettings(); });
@@ -2137,8 +2157,18 @@
             }
 
             showExplosionModal(vp, money) {
-                document.getElementById('expl-vp-val').innerText = vp; document.getElementById('expl-money-val').innerText = money;
+                document.getElementById('expl-vp-val').innerText = vp; 
+                document.getElementById('expl-money-val').innerText = money;
                 document.getElementById('expl-money-icon').style.cssText = `width: 20px; height: 20px; display: inline-block; ${getUtilSpriteStyle('COIN')}`;
+                
+                const h = this.game.humanPlayer;
+                const witchBtn = document.getElementById('btn-witch-brew');
+                if (this.game.config.useCharacterPowers && h.character === 'WITCH' && !h.specialPowerUsed) {
+                    witchBtn.style.display = 'block';
+                } else {
+                    witchBtn.style.display = 'none';
+                }
+
                 document.getElementById('explosion-modal').style.display = 'flex';
             }
 
