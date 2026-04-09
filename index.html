@@ -369,7 +369,7 @@
 
             <div id="achievement-toast" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center;">
                 <div class="toast-animate">
-                    <div style="font-size: 4rem; margin-bottom: 10px;">🏆</div>
+                    <div id="toast-icon" style="width: 80px; height: 80px; margin: 0 auto 10px auto; font-size: 4rem; display: flex; align-items: center; justify-content: center;">🏆</div>
                     <h2 id="toast-title" style="color: gold; font-size: 1.8rem; margin-bottom: 10px; font-weight: bold;">Achievement Unlocked!</h2>
                     <p id="toast-desc" style="font-size: 1.2rem; color: #ddd;"></p>
                 </div>
@@ -802,7 +802,8 @@
             CHIPS: 'assets/tokens.png',
             UTILS: 'assets/utils.png',
             CHARACTERS: 'assets/characters.png',
-            UTILS_EXP: 'assets/utils_exp.png'
+            UTILS_EXP: 'assets/utils_exp.png',
+            ACHIEVEMENTS: 'assets/achievements.png'
         };
 
         // Exact fractional coordinates for the 6x4 layout
@@ -851,6 +852,17 @@
             LOLLIPOP: { x: 0.5, y: 0, w: 0.5, h: 0.5 },
             SKULL: { x: 0, y: 0.5, w: 0.5, h: 0.5 },
             WIZARD_HAT: { x: 0.5, y: 0.5, w: 0.5, h: 0.5 }
+        };
+
+        const ACHIEVEMENT_MAP = {
+            'MEGA_PUMPKIN':    { x: 0/4, y: 0/2, w: 1/4, h: 1/2 },
+            'POINT_MAXXING':   { x: 1/4, y: 0/2, w: 1/4, h: 1/2 },
+            'KABOOM':          { x: 2/4, y: 0/2, w: 1/4, h: 1/2 },
+            'TIE_FIGHTER':     { x: 3/4, y: 0/2, w: 1/4, h: 1/2 },
+            'BIG_SPENDER':     { x: 0/4, y: 1/2, w: 1/4, h: 1/2 },
+            'META_CHARLATAN':  { x: 1/4, y: 1/2, w: 1/4, h: 1/2 },
+            'STAY_HYDRATED':   { x: 2/4, y: 1/2, w: 1/4, h: 1/2 },
+            'RAT_VICHYSSOISE': { x: 3/4, y: 1/2, w: 1/4, h: 1/2 }
         };
 
         // 8x4 Grid Constants for Characters
@@ -917,6 +929,22 @@
                 'PRINCESS': '👸', 'VOODOO_LADY': '🧟‍♀️', 'BARD': '🪕', 'GARDENER': '🧑‍🌾'
             };
             return CHAR_EMOJIS[charName] || '👤';
+        }
+
+        function getAchievementSpriteStyle(achId) {
+            const def = ACHIEVEMENT_MAP[achId];
+            if (!def) return '';
+            const posX = def.w < 1 ? (def.x / (1 - def.w)) * 100 : 0;
+            const posY = def.h < 1 ? (def.y / (1 - def.h)) * 100 : 0;
+            return `background-image: url('${ASSET_PATHS.ACHIEVEMENTS}'); background-size: ${100/def.w}% ${100/def.h}%; background-position: ${posX}% ${posY}%; background-repeat: no-repeat;`;
+        }
+
+        function getAchievementFallbackEmoji(achId) {
+            const EMOJIS = {
+                'MEGA_PUMPKIN': '🎃', 'POINT_MAXXING': '💯', 'KABOOM': '💥', 'TIE_FIGHTER': '⚔️',
+                'BIG_SPENDER': '💸', 'META_CHARLATAN': '🛠️', 'STAY_HYDRATED': '💧', 'RAT_VICHYSSOISE': '🐀'
+            };
+            return EMOJIS[achId] || '🏆';
         }
 
         // --- Helper to determine the mood of a player based on state ---
@@ -1365,6 +1393,16 @@
                 document.getElementById('toast-title').innerText = `${t('ach_unlocked', 'Achievement Unlocked:')} ${t(def.titleKey, def.defaultTitle)}`;
                 document.getElementById('toast-desc').innerText = t(def.descKey, def.defaultDesc);
 
+                const iconEl = document.getElementById('toast-icon');
+                const spriteStyle = getAchievementSpriteStyle(id);
+                if (window.GAME_ASSETS && window.GAME_ASSETS.ACHIEVEMENTS && window.GAME_ASSETS.ACHIEVEMENTS.naturalWidth > 0 && spriteStyle) {
+                    iconEl.style.cssText = `width: 100px; height: 100px; margin: 0 auto 15px auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(255,215,0,0.4); ${spriteStyle}`;
+                    iconEl.innerText = '';
+                } else {
+                    iconEl.style.cssText = `width: 80px; height: 80px; margin: 0 auto 10px auto; font-size: 4rem; display: flex; align-items: center; justify-content: center;`;
+                    iconEl.innerText = getAchievementFallbackEmoji(id);
+                }
+
                 const toast = document.getElementById('achievement-toast');
                 toast.style.display = 'flex';
                 setTimeout(() => { toast.style.display = 'none'; }, 4000);
@@ -1382,16 +1420,25 @@
                     const fallbackName = data.char.split('_').map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
                     const localizedCharName = t(charNameKey, fallbackName);
 
+                    const spriteStyle = getAchievementSpriteStyle(id);
+                    const hasSprite = window.GAME_ASSETS && window.GAME_ASSETS.ACHIEVEMENTS && window.GAME_ASSETS.ACHIEVEMENTS.naturalWidth > 0 && spriteStyle;
+                    const iconHtml = hasSprite 
+                        ? `<div style="width: 60px; height: 60px; border-radius: 8px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.5); ${spriteStyle}"></div>`
+                        : `<div style="width: 60px; height: 60px; flex-shrink: 0; font-size: 3rem; display: flex; align-items: center; justify-content: center;">${getAchievementFallbackEmoji(id)}</div>`;
+
                     const itemDiv = document.createElement('div');
-                    itemDiv.style.cssText = "background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; border-left: 4px solid gold;";
+                    itemDiv.style.cssText = "background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; border-left: 4px solid gold; display: flex; gap: 15px; align-items: center;";
                     itemDiv.innerHTML = `
-                        <h3 style="color: gold; margin-bottom: 5px; font-size: 1.1rem;">${t(def.titleKey, def.defaultTitle)}</h3>
-                        <p style="font-size: 0.9rem; color: #ddd; margin-bottom: 8px;">${t(def.descKey, def.defaultDesc)}</p>
-                        <div style="font-size: 0.8rem; color: #aaa; display: flex; gap: 15px; flex-wrap: wrap;">
-                            <span>📅 ${t('ach_date', 'Date:')} ${data.date}</span>
-                            <span>🎭 ${t('ach_char', 'Character:')} ${localizedCharName}</span>
-                            <span>📖 ${t('ach_set', 'Rules Set:')} ${data.set}</span>
-                            <span>✨ ${t('ach_powers', 'Powers:')} ${data.powers}</span>
+                        ${iconHtml}
+                        <div style="flex: 1;">
+                            <h3 style="color: gold; margin-bottom: 5px; font-size: 1.1rem;">${t(def.titleKey, def.defaultTitle)}</h3>
+                            <p style="font-size: 0.9rem; color: #ddd; margin-bottom: 8px;">${t(def.descKey, def.defaultDesc)}</p>
+                            <div style="font-size: 0.8rem; color: #aaa; display: flex; gap: 15px; flex-wrap: wrap;">
+                                <span>📅 ${t('ach_date', 'Date:')} ${data.date}</span>
+                                <span>🎭 ${t('ach_char', 'Character:')} ${localizedCharName}</span>
+                                <span>📖 ${t('ach_set', 'Rules Set:')} ${data.set}</span>
+                                <span>✨ ${t('ach_powers', 'Powers:')} ${data.powers}</span>
+                            </div>
                         </div>
                     `;
                     listEl.appendChild(itemDiv);
