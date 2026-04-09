@@ -939,6 +939,7 @@
                 this.character = charName;
                 this.victoryPoints = 0; this.rubies = 0; this.money = 0;
                 this.flaskActive = true; this.dropletPosition = 0; this.ratTails = 0;
+                this.displayDropletPosition = 0;
                 this.inventory = []; this.bag = []; this.cauldron = [];
                 
                 // Explicitly initialize round states here to prevent UI errors on first load
@@ -1100,6 +1101,7 @@
                     this.uiManager.updateFullUI();
                     if (this.round > 1 || this.uiManager.hasPlayedStartAnimation) {
                         this.uiManager.playQueuedSackAnimations();
+                        this.uiManager.playDropletAnimation();
                     }
                 }
 
@@ -1318,6 +1320,10 @@
                 this.spiralSpaces = []; this.shopCart = [];
                 this.sackAnimations = [];
                 this.pendingSackAnimations = [];
+                this.isAnimatingDroplet = false;
+                this.dropletAnimStartPos = 0;
+                this.dropletAnimEndPos = 0;
+                this.dropletAnimStartTime = 0;
                 this.helpSlideIndex = 0;
                 this.showTrackValues = false;
                 this.hasPlayedStartAnimation = false;
@@ -1418,6 +1424,18 @@
                 });
             }
 
+            playDropletAnimation() {
+                const p = this.game.humanPlayer;
+                if (p && p.displayDropletPosition !== undefined && p.displayDropletPosition !== p.dropletPosition) {
+                    this.dropletAnimStartPos = p.displayDropletPosition;
+                    this.dropletAnimEndPos = p.dropletPosition;
+                    this.dropletAnimStartTime = Date.now();
+                    this.isAnimatingDroplet = true;
+                } else if (p && p.displayDropletPosition === undefined) {
+                    p.displayDropletPosition = p.dropletPosition;
+                }
+            }
+
             playStartAnimation() {
                 if (this.hasPlayedStartAnimation) return;
                 this.hasPlayedStartAnimation = true;
@@ -1438,6 +1456,7 @@
                     this.queueSackAnimation(chip);
                 });
                 this.playQueuedSackAnimations();
+                this.playDropletAnimation();
             }
 
             playExplosionVideo() {
@@ -2794,18 +2813,69 @@
                     });
 
                     // 3. Draw Droplet & Rat
-                    if(this.spiralSpaces[player.dropletPosition]) {
-                        const dp = this.spiralSpaces[player.dropletPosition];
-                        if(!this.drawSprite('UTILS', UTILS_MAP.DROPLET, dp.x - dropletOffset, dp.y - dropletOffset, dropletSize, dropletSize)) {
-                            this.ctx.beginPath(); this.ctx.arc(dp.x, dp.y, dropletSize * 0.4, 0, Math.PI * 2);
+                    let currentDropletIndex = player.displayDropletPosition !== undefined ? player.displayDropletPosition : player.dropletPosition;
+                    
+                    if (this.isAnimatingDroplet) {
+                        const now = Date.now();
+                        const progress = Math.min(1.0, (now - this.dropletAnimStartTime) / 1000.0);
+                        const ease = 1 - Math.pow(1 - progress, 3); // Cubic ease-out
+                        
+                        currentDropletIndex = this.dropletAnimStartPos + (this.dropletAnimEndPos - this.dropletAnimStartPos) * ease;
+                        
+                        if (progress >= 1.0) {
+                            this.isAnimatingDroplet = false;
+                            player.displayDropletPosition = player.dropletPosition;
+                            currentDropletIndex = player.dropletPosition;
+                        }
+                    } else {
+                        if (player.displayDropletPosition === undefined) {
+                            player.displayDropletPosition = player.dropletPosition;
+                        }
+                    }
+
+                    const idxFloor = Math.floor(currentDropletIndex);
+                    const idxCeil = Math.ceil(currentDropletIndex);
+                    const tIdx = currentDropletIndex - idxFloor;
+
+                    let dpX = 0, dpY = 0;
+                    if (idxFloor === idxCeil || !this.spiralSpaces[idxCeil]) {
+                        const dp = this.spiralSpaces[idxFloor] || this.spiralSpaces[this.spiralSpaces.length - 1];
+                        if (dp) { dpX = dp.x; dpY = dp.y; }
+                    } else {
+                        const p1 = this.spiralSpaces[idxFloor];
+                        const p2 = this.spiralSpaces[idxCeil];
+                        dpX = p1.x + (p2.x - p1.x) * tIdx;
+                        dpY = p1.y + (p2.y - p1.y) * tIdx;
+                    }
+
+                    if (dpX !== 0 && dpY !== 0) {
+                        if(!this.drawSprite('UTILS', UTILS_MAP.DROPLET, dpX - dropletOffset, dpY - dropletOffset, dropletSize, dropletSize)) {
+                            this.ctx.beginPath(); this.ctx.arc(dpX, dpY, dropletSize * 0.4, 0, Math.PI * 2);
                             this.ctx.fillStyle = '#00b4d8'; this.ctx.fill();
                         }
                     }
 
-                    if(player.ratTails > 0 && this.spiralSpaces[player.dropletPosition + player.ratTails]) {
-                        const rp = this.spiralSpaces[player.dropletPosition + player.ratTails];
-                        if(!this.drawSprite('UTILS', UTILS_MAP.RAT, rp.x - ratOffset, rp.y - ratOffset, ratSize, ratSize)) {
-                            this.ctx.font = `${ratSize * 0.6}px Arial`; this.ctx.fillText('🐀', rp.x - ratOffset*0.5, rp.y + ratOffset*0.5);
+                    if(player.ratTails > 0) {
+                        const ratIndex = currentDropletIndex + player.ratTails;
+                        const rFloor = Math.floor(ratIndex);
+                        const rCeil = Math.ceil(ratIndex);
+                        const rT = ratIndex - rFloor;
+
+                        let rpX = 0, rpY = 0;
+                        if (rFloor === rCeil || !this.spiralSpaces[rCeil]) {
+                            const rp = this.spiralSpaces[rFloor] || this.spiralSpaces[this.spiralSpaces.length - 1];
+                            if (rp) { rpX = rp.x; rpY = rp.y; }
+                        } else {
+                            const p1 = this.spiralSpaces[rFloor];
+                            const p2 = this.spiralSpaces[rCeil];
+                            rpX = p1.x + (p2.x - p1.x) * rT;
+                            rpY = p1.y + (p2.y - p1.y) * rT;
+                        }
+
+                        if (rpX !== 0 && rpY !== 0) {
+                            if(!this.drawSprite('UTILS', UTILS_MAP.RAT, rpX - ratOffset, rpY - ratOffset, ratSize, ratSize)) {
+                                this.ctx.font = `${ratSize * 0.6}px Arial`; this.ctx.fillText('🐀', rpX - ratOffset*0.5, rpY + ratOffset*0.5);
+                            }
                         }
                     }
 
