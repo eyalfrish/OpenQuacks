@@ -3310,6 +3310,13 @@
                 }
             });
 
+            // --- iOS/iPhone Video Audio Fix ---
+            // iPhones strictly block unmuted programmatic video playback, especially for looping background videos. 
+            // We mute the bubbling video specifically on iPhone so the visual animations still work.
+            if (/iPhone/i.test(navigator.userAgent)) {
+                document.getElementById('bubbling-video').muted = true;
+            }
+
             initGameData();
 
             // 1. Initialize AssetManager and wait for graphics
