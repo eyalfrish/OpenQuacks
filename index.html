@@ -355,6 +355,7 @@
         <div id="cauldron-wrapper">
             <button id="btn-toggle-values" data-i18n-title="tooltip_toggle_values" title="Toggle Track Values"><div id="ui-monocle-icon"></div></button>
             <button id="btn-sell-potion" data-i18n-title="tooltip_sell" title="Sell Potion">💲</button>
+            <div id="ui-live-brew-value" dir="ltr" style="position: absolute; left: 10px; z-index: 10; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 6px; border: 1px solid #4a4e69; display: flex; align-items: center; pointer-events: none; transition: opacity 0.2s; opacity: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
             <div id="ui-boomberry-meter" data-i18n-title="tooltip_boomberry_limit" title="Boomberry Explosion Limit">
                 <div id="ui-boomberry-fill"></div>
                 <div id="ui-boomberry-text" dir="ltr">0 / 7</div>
@@ -2679,6 +2680,12 @@
                     sellBtn.style.fontSize = `${btnSize * 0.5}px`;
                 }
 
+                const liveBrew = document.getElementById('ui-live-brew-value');
+                if (liveBrew) {
+                    liveBrew.style.bottom = `${10 + btnSize + 10}px`; // Place it exactly 10px above the dynamically sized sell button
+                    liveBrew.style.fontSize = `${btnSize * 0.25}px`;
+                }
+
                 const meter = document.getElementById('ui-boomberry-meter');
                 if (meter) {
                     meter.style.width = `${baseSize * 0.3}px`;
@@ -3157,6 +3164,29 @@
                 const fortuneEl = document.getElementById('ui-fortune-text');
                 if (fortuneEl && this.game.currentFortuneCard) {
                     fortuneEl.innerText = `"${this.game.currentFortuneCard.text}"`;
+                }
+
+                const humanRewards = this.getProjectedRewards(human);
+
+                const liveBrewEl = document.getElementById('ui-live-brew-value');
+                if (liveBrewEl) {
+                    if (human.exploded || human.hasStopped) {
+                        liveBrewEl.style.opacity = '0';
+                    } else {
+                        liveBrewEl.style.opacity = '1';
+                        let brewHtml = ``;
+                        if (humanRewards.vp > 0) {
+                            brewHtml += `<strong style="color: #f5f5f5;">${humanRewards.vp}</strong><span style="width: 1.2em; height: 1.2em; display: inline-block; margin-left: 2px; margin-right: 6px; ${getUtilSpriteStyle('VP')}"></span>`;
+                        }
+                        brewHtml += `<strong style="color: gold;">${humanRewards.money}</strong><span style="width: 1.2em; height: 1.2em; display: inline-block; margin-left: 2px; margin-right: 6px; ${getUtilSpriteStyle('COIN')}"></span>`;
+                        if (humanRewards.rubies > 0) {
+                            if (humanRewards.rubies > 1) {
+                                brewHtml += `<strong style="color: #ff4444;">${humanRewards.rubies}</strong>`;
+                            }
+                            brewHtml += `<span style="width: 1.2em; height: 1.2em; display: inline-block; margin-left: 2px; ${getUtilSpriteStyle('RUBY')}"></span>`;
+                        }
+                        liveBrewEl.innerHTML = brewHtml;
+                    }
                 }
 
                 const sellBtn = document.getElementById('btn-sell-potion');
