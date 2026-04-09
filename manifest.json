@@ -2,7 +2,7 @@
   "name": "Open Quacks",
   "short_name": "Open Quacks",
   "description": "A single-player potion brewing adventure!",
-  "start_url": "./index.html",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#1a1a2e",
   "theme_color": "#1a1a2e",
