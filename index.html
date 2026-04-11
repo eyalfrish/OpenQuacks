@@ -1651,6 +1651,10 @@
                         // Scroll modal to bottom so the button is fully visible before positioning tooltip
                         targetEl.scrollIntoView({ block: 'nearest' });
                     }
+                } else if (this.tutorialStep === 5) {
+                    targetEl = document.getElementById('ui-sack');
+                    text = t('tut_step5', "Your bag now has more ingredients! Keep brewing and selling potions to get the highest score by Day 9.");
+                    pos = 'top';
                 }
 
                 if (targetEl) {
@@ -1699,6 +1703,12 @@
                     return;
                 }
                 
+                if (this.tutorialStep === 5) {
+                    this.tutorialStep = 0;
+                    setCookie('hasSeenHelp', 'true', 365);
+                    this.updateTutorialUI();
+                }
+
                 const wasExploded = this.game.humanPlayer.exploded;
                 this.game.humanPlayer.drawChip(); 
 
@@ -1902,10 +1912,10 @@
                 });
                 
                 document.getElementById('btn-finish-buying').addEventListener('click', () => { 
+                    let advanceTutorial = false;
                     if (this.tutorialStep === 4) {
-                        this.tutorialStep = 0;
-                        setCookie('hasSeenHelp', 'true', 365);
-                        this.updateTutorialUI();
+                        this.tutorialStep = 5;
+                        advanceTutorial = true;
                     }
 
                     document.getElementById('shop-modal').style.display = 'none'; 
@@ -1922,6 +1932,10 @@
                     });
 
                     this.game.endRound(); 
+
+                    if (advanceTutorial) {
+                        setTimeout(() => this.updateTutorialUI(), 500); // Wait for the new round setup and UI rendering
+                    }
                 });
                 
                 document.getElementById('btn-close-bag').addEventListener('click', () => { 
