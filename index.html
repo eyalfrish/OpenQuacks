@@ -3407,6 +3407,20 @@
                         const card = document.createElement('div'); card.className = 'player-card';
                         
                         const pRewards = this.getProjectedRewards(player);
+                        
+                        // Apply AI Explosion Choices to displayed rewards (only zeroing the track rewards, not token bonuses!)
+                        if (!player.isHuman && player.exploded) {
+                            const witchPowerAvailable = this.game.config.useCharacterPowers && player.character === 'WITCH' && !player.specialPowerUsed;
+                            if (!witchPowerAvailable) {
+                                const trackSpace = TRACK_REWARDS[Math.min(player.currentBrewValue || 0, TRACK_REWARDS.length - 1)];
+                                if (this.game.round > 6) {
+                                    pRewards.money -= trackSpace.money; // AI gives up track money late game
+                                } else {
+                                    pRewards.vp -= trackSpace.vp; // AI gives up track VP early game
+                                }
+                            }
+                        }
+
                         const pMood = getPlayerMood(player);
                         const pFaceStyle = getCharacterSpriteStyle(player.character, pMood);
                         const emojiStr = (window.GAME_ASSETS && window.GAME_ASSETS.CHARACTERS && window.GAME_ASSETS.CHARACTERS.naturalWidth > 0) ? '' : getCharacterFallbackEmoji(player.character);
