@@ -212,6 +212,8 @@
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0,0,0,0.75); z-index: 2000;
             display: none; pointer-events: auto;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
         }
         .tutorial-highlight {
             z-index: 2001 !important;
@@ -247,7 +249,8 @@
             max-width: 250px; text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             pointer-events: none;
-            transition: top 0.3s, left 0.3s, bottom 0.3s, right 0.3s;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
         }
 
         /* --- Modal & Shop Styles --- */
@@ -1593,19 +1596,36 @@
                 });
                 
                 if (this.tutorialStep === 0) {
-                    overlay.style.display = 'none';
-                    tooltip.style.display = 'none';
+                    overlay.style.opacity = '0';
+                    tooltip.style.opacity = '0';
+                    setTimeout(() => {
+                        if (this.tutorialStep === 0) {
+                            overlay.style.display = 'none';
+                            tooltip.style.display = 'none';
+                        }
+                    }, 300);
                     return;
+                }
+                
+                if (tooltip.style.display === 'none' || tooltip.style.display === '') {
+                    tooltip.style.display = 'block';
                 }
                 
                 // The overlay blocks all interactions on the page. We conditionally hide it if a modal is managing the dark background.
                 if (this.tutorialStep === 2.5 || this.tutorialStep === 3 || this.tutorialStep === 4) {
-                    overlay.style.display = 'none';
+                    overlay.style.opacity = '0';
+                    setTimeout(() => {
+                        if (this.tutorialStep === 2.5 || this.tutorialStep === 3 || this.tutorialStep === 4) {
+                            overlay.style.display = 'none';
+                        }
+                    }, 300);
                 } else {
-                    overlay.style.display = 'block';
+                    if (overlay.style.display === 'none' || overlay.style.display === '') {
+                        overlay.style.display = 'block';
+                    }
+                    void overlay.offsetWidth; // force reflow
+                    overlay.style.opacity = '1';
                 }
-                
-                tooltip.style.display = 'block';
                 
                 let targetEl, text, pos;
 
@@ -1665,6 +1685,9 @@
                     }
                     this.positionTooltip(targetEl, tooltip, text, pos);
                 }
+                
+                void tooltip.offsetWidth; // force reflow
+                tooltip.style.opacity = '1';
             }
 
             positionTooltip(targetEl, tooltipEl, text, pos) {
