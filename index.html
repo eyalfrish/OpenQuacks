@@ -227,9 +227,14 @@
         #ui-sack.tutorial-highlight {
             background-color: transparent !important;
             border-radius: 50%;
+            z-index: 2002 !important;
         }
         #btn-sell-potion.tutorial-highlight {
             background-color: rgba(0,0,0,0.9) !important;
+            z-index: 2002 !important;
+        }
+        #ui-boomberry-meter.tutorial-highlight {
+            z-index: 2002 !important;
         }
         @keyframes pulse-glow {
             from { box-shadow: 0 0 10px 2px rgba(255, 215, 0, 0.8); }
@@ -238,7 +243,7 @@
         #tutorial-tooltip {
             position: fixed;
             background: #fff; color: #000; padding: 12px 18px; border-radius: 8px;
-            font-weight: bold; font-size: 1.05rem; z-index: 2002;
+            font-weight: bold; font-size: 1.05rem; z-index: 2003;
             max-width: 250px; text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             pointer-events: none;
@@ -400,7 +405,7 @@
                 </div>
             </div>
 
-            <canvas id="cauldron-canvas"></canvas>
+            <canvas id="cauldron-canvas" style="border-radius: 8px;"></canvas>
             <video id="explosion-video" src="assets/explosion.mov" playsinline preload="auto" style="display: none;"></video>
             <video id="bubbling-video" src="assets/cauldron_bubble1.mov" playsinline preload="auto" loop style="display: none;"></video>
         </div>
@@ -1584,6 +1589,7 @@
                 // Clear previous highlights
                 document.querySelectorAll('.tutorial-highlight').forEach(el => {
                     el.classList.remove('tutorial-highlight', 'tutorial-relative');
+                    if (el.id === 'cauldron-canvas') el.style.position = '';
                 });
                 
                 if (this.tutorialStep === 0) {
@@ -1607,10 +1613,26 @@
                     targetEl = document.getElementById('ui-sack');
                     text = t('tut_step1', "Tap the sack to draw your first ingredient!");
                     pos = 'top';
+                } else if (this.tutorialStep === 1.5) {
+                    targetEl = document.getElementById('ui-sack');
+                    text = t('tut_step15', "Ingredients you draw are added to your cauldron. Keep tapping the sack to brew your potion!");
+                    pos = 'top';
+                    const canvasEl = document.getElementById('cauldron-canvas');
+                    if (canvasEl) {
+                        canvasEl.classList.add('tutorial-highlight');
+                        canvasEl.style.position = 'relative'; // Ensure z-index applies
+                    }
                 } else if (this.tutorialStep === 2) {
                     targetEl = document.getElementById('btn-sell-potion');
                     text = t('tut_step2', "Great job! You can keep drawing, but if you draw too many Boomberries, you explode! Let's play it safe and click Sell.");
                     pos = 'right';
+                    const canvasEl = document.getElementById('cauldron-canvas');
+                    if (canvasEl) {
+                        canvasEl.classList.add('tutorial-highlight');
+                        canvasEl.style.position = 'relative';
+                    }
+                    const boomMeter = document.getElementById('ui-boomberry-meter');
+                    if (boomMeter) boomMeter.classList.add('tutorial-highlight');
                 } else if (this.tutorialStep === 2.5) {
                     targetEl = document.getElementById('btn-sell-confirm');
                     text = t('tut_step25', "Confirm selling your potion!");
@@ -1625,6 +1647,10 @@
                     targetEl = document.getElementById('btn-finish-buying');
                     text = t('tut_step4', "Click Next Round to continue and start Day 2!");
                     pos = 'top';
+                    if (targetEl) {
+                        // Scroll modal to bottom so the button is fully visible before positioning tooltip
+                        targetEl.scrollIntoView({ block: 'nearest' });
+                    }
                 }
 
                 if (targetEl) {
@@ -1675,13 +1701,17 @@
                 
                 const wasExploded = this.game.humanPlayer.exploded;
                 this.game.humanPlayer.drawChip(); 
-                this.updateFullUI();
 
-                if (this.tutorialStep === 1 && this.game.humanPlayer.cauldron.length >= 3) {
+                if (this.tutorialStep === 1 && this.game.humanPlayer.cauldron.length === 1) {
+                    this.tutorialStep = 1.5;
+                    this.updateTutorialUI();
+                } else if ((this.tutorialStep === 1 || this.tutorialStep === 1.5) && this.game.humanPlayer.cauldron.length >= 3) {
                     this.tutorialStep = 2;
                     this.updateTutorialUI();
                 }
                 
+                this.updateFullUI();
+
                 // If the latest draw caused an explosion, play the video before triggering the evaluation phase
                 if (!wasExploded && this.game.humanPlayer.exploded) {
                     await this.playExplosionVideo();
@@ -1713,6 +1743,7 @@
                 
                 document.getElementById('btn-sell-potion').addEventListener('click', () => {
                     if (this.game.humanPlayer.hasStopped || this.game.humanPlayer.exploded) return;
+                    if (this.tutorialStep === 1 || this.tutorialStep === 1.5) return; // Block selling prematurely
                     
                     if (this.tutorialStep === 2) {
                         this.tutorialStep = 2.5;
@@ -3363,7 +3394,7 @@
 
                 const sellBtn = document.getElementById('btn-sell-potion');
                 if (sellBtn) {
-                    sellBtn.disabled = human.exploded || human.hasStopped;
+                    sellBtn.disabled = human.exploded || human.hasStopped || this.tutorialStep === 1 || this.tutorialStep === 1.5;
                     
                     // Bonus Die Indicator Logic (Glow the sell button)
                     const nonExploded = this.game.players.filter(p => !p.exploded);
