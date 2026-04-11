@@ -189,23 +189,7 @@
             direction: ltr; /* Ensure numbers don't flip in RTL */
         }
 
-        /* --- Tutorial & Animations --- */
-        .tutorial-arrow {
-            position: absolute;
-            z-index: 20;
-            pointer-events: none;
-            display: none;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-        }
-        @keyframes tutorial-poke-right {
-            0%, 100% { transform: translateX(0); opacity: 0.5; }
-            50% { transform: translateX(10px); opacity: 1; }
-        }
-        @keyframes tutorial-poke-left {
-            0%, 100% { transform: translateX(0); opacity: 0.5; }
-            50% { transform: translateX(-10px); opacity: 1; }
-        }
-
+        /* --- Animations --- */
         @keyframes flip-vertical {
             0% { transform: scaleY(1); }
             50% { transform: scaleY(0); }
@@ -221,6 +205,44 @@
         }
         .toast-animate {
             animation: toast-pop 0.3s ease-out forwards;
+        }
+
+        /* --- Tutorial Styles --- */
+        #tutorial-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.75); z-index: 2000;
+            display: none; pointer-events: auto;
+        }
+        .tutorial-highlight {
+            z-index: 2001 !important;
+            box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.8) !important;
+            border-color: gold !important;
+            animation: pulse-glow 1.5s infinite alternate;
+            pointer-events: auto !important;
+        }
+        .tutorial-relative {
+            position: relative !important;
+            background-color: var(--panel-bg);
+        }
+        #ui-sack.tutorial-highlight {
+            background-color: transparent !important;
+            border-radius: 50%;
+        }
+        #btn-sell-potion.tutorial-highlight {
+            background-color: rgba(0,0,0,0.9) !important;
+        }
+        @keyframes pulse-glow {
+            from { box-shadow: 0 0 10px 2px rgba(255, 215, 0, 0.8); }
+            to { box-shadow: 0 0 25px 10px rgba(255, 215, 0, 1); }
+        }
+        #tutorial-tooltip {
+            position: fixed;
+            background: #fff; color: #000; padding: 12px 18px; border-radius: 8px;
+            font-weight: bold; font-size: 1.05rem; z-index: 2002;
+            max-width: 250px; text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            pointer-events: none;
+            transition: top 0.3s, left 0.3s, bottom 0.3s, right 0.3s;
         }
 
         /* --- Modal & Shop Styles --- */
@@ -303,6 +325,10 @@
         <div class="spinner"></div>
     </div>
 
+    <!-- Tutorial Elements -->
+    <div id="tutorial-overlay"></div>
+    <div id="tutorial-tooltip" style="display: none;"></div>
+
     <div id="game-container">
         <!-- Main Board Area -->
         <div id="main-board" class="panel">
@@ -360,8 +386,6 @@
                 <div id="ui-boomberry-fill"></div>
                 <div id="ui-boomberry-text" dir="ltr">0 / 7</div>
             </div>
-            <div id="tutorial-arrow-sack" class="tutorial-arrow" style="animation: tutorial-poke-right 1.5s infinite;">👉</div>
-            <div id="tutorial-arrow-sell" class="tutorial-arrow" style="animation: tutorial-poke-left 1.5s infinite;">👈</div>
             
             <div id="ui-sack" data-i18n-title="tooltip_bag" title="Draw a random ingredient from bag">
                 <div id="ui-sack-icon"></div>
@@ -1380,6 +1404,7 @@
                 this.showTrackValues = false;
                 this.hasPlayedStartAnimation = false;
                 this.isWitchBonusDie = false;
+                this.tutorialStep = 0; // State for interactive onboarding
                 
                 this.isDebug = window.location.href.includes('debug=1');
                 this.unlockedAchievements = JSON.parse(getCookie('quacks_achievements') || '{}');
@@ -1552,6 +1577,93 @@
                 });
             }
 
+            updateTutorialUI() {
+                const overlay = document.getElementById('tutorial-overlay');
+                const tooltip = document.getElementById('tutorial-tooltip');
+                
+                // Clear previous highlights
+                document.querySelectorAll('.tutorial-highlight').forEach(el => {
+                    el.classList.remove('tutorial-highlight', 'tutorial-relative');
+                });
+                
+                if (this.tutorialStep === 0) {
+                    overlay.style.display = 'none';
+                    tooltip.style.display = 'none';
+                    return;
+                }
+                
+                // The overlay blocks all interactions on the page. We conditionally hide it if a modal is managing the dark background.
+                if (this.tutorialStep === 2.5 || this.tutorialStep === 3 || this.tutorialStep === 4) {
+                    overlay.style.display = 'none';
+                } else {
+                    overlay.style.display = 'block';
+                }
+                
+                tooltip.style.display = 'block';
+                
+                let targetEl, text, pos;
+
+                if (this.tutorialStep === 1) {
+                    targetEl = document.getElementById('ui-sack');
+                    text = t('tut_step1', "Tap the sack to draw your first ingredient!");
+                    pos = 'top';
+                } else if (this.tutorialStep === 2) {
+                    targetEl = document.getElementById('btn-sell-potion');
+                    text = t('tut_step2', "Great job! You can keep drawing, but if you draw too many Boomberries, you explode! Let's play it safe and click Sell.");
+                    pos = 'right';
+                } else if (this.tutorialStep === 2.5) {
+                    targetEl = document.getElementById('btn-sell-confirm');
+                    text = t('tut_step25', "Confirm selling your potion!");
+                    pos = 'top';
+                } else if (this.tutorialStep === 3) {
+                    const shopItems = document.querySelectorAll('.shop-item');
+                    targetEl = Array.from(shopItems).find(el => el.innerText.includes('Pumpkin') || el.innerText.includes('Cost: 3') || el.innerText.includes('3'));
+                    if (!targetEl && shopItems.length > 0) targetEl = shopItems[0];
+                    text = t('tut_step3', "You earned Money! Buy this Pumpkin to make your bag stronger for the next round.");
+                    pos = 'bottom';
+                } else if (this.tutorialStep === 4) {
+                    targetEl = document.getElementById('btn-finish-buying');
+                    text = t('tut_step4', "Click Next Round to continue and start Day 2!");
+                    pos = 'top';
+                }
+
+                if (targetEl) {
+                    targetEl.classList.add('tutorial-highlight');
+                    // Add safe positioning context so z-index functions correctly above overlays
+                    if (targetEl.id === 'btn-sell-confirm' || targetEl.id === 'btn-finish-buying' || targetEl.classList.contains('shop-item')) {
+                        targetEl.classList.add('tutorial-relative');
+                    }
+                    this.positionTooltip(targetEl, tooltip, text, pos);
+                }
+            }
+
+            positionTooltip(targetEl, tooltipEl, text, pos) {
+                tooltipEl.innerText = text;
+                const rect = targetEl.getBoundingClientRect();
+                
+                // Reset styling
+                tooltipEl.style.top = 'auto'; tooltipEl.style.bottom = 'auto';
+                tooltipEl.style.left = 'auto'; tooltipEl.style.right = 'auto';
+                tooltipEl.style.transform = 'none';
+
+                const offset = 20;
+
+                // Simple collision-aware dynamic placement relative to element
+                if (pos === 'top') {
+                    tooltipEl.style.bottom = `${window.innerHeight - rect.top + offset}px`;
+                    tooltipEl.style.left = `${rect.left + rect.width/2}px`;
+                    tooltipEl.style.transform = `translateX(-50%)`;
+                } else if (pos === 'bottom') {
+                    tooltipEl.style.top = `${rect.bottom + offset}px`;
+                    tooltipEl.style.left = `${rect.left + rect.width/2}px`;
+                    tooltipEl.style.transform = `translateX(-50%)`;
+                } else if (pos === 'right') {
+                    tooltipEl.style.top = `${rect.top + rect.height/2}px`;
+                    tooltipEl.style.left = `${rect.right + offset}px`;
+                    tooltipEl.style.transform = `translateY(-50%)`;
+                }
+            }
+
             async handlePlayerDraw(e) {
                 const canDraw = !this.game.humanPlayer.exploded && !this.game.humanPlayer.hasStopped && this.game.humanPlayer.bag.length > 0;
                 if (!canDraw) return;
@@ -1564,6 +1676,11 @@
                 const wasExploded = this.game.humanPlayer.exploded;
                 this.game.humanPlayer.drawChip(); 
                 this.updateFullUI();
+
+                if (this.tutorialStep === 1 && this.game.humanPlayer.cauldron.length >= 3) {
+                    this.tutorialStep = 2;
+                    this.updateTutorialUI();
+                }
                 
                 // If the latest draw caused an explosion, play the video before triggering the evaluation phase
                 if (!wasExploded && this.game.humanPlayer.exploded) {
@@ -1577,11 +1694,16 @@
             }
 
             bindEvents() {
-                window.addEventListener('resize', () => this.handleResize());
+                window.addEventListener('resize', () => {
+                    this.handleResize();
+                    if (this.tutorialStep > 0) this.updateTutorialUI();
+                });
 
                 const sackEl = document.getElementById('ui-sack');
                 if (sackEl) {
                     sackEl.addEventListener('click', (e) => {
+                        if (this.tutorialStep === 2) return; // Prevent drawing if they need to click Sell in tutorial
+                        
                         const canDraw = !this.game.humanPlayer.exploded && !this.game.humanPlayer.hasStopped && this.game.humanPlayer.bag.length > 0;
                         if (canDraw || (this.isDebug && e.shiftKey)) {
                             this.handlePlayerDraw(e);
@@ -1591,6 +1713,12 @@
                 
                 document.getElementById('btn-sell-potion').addEventListener('click', () => {
                     if (this.game.humanPlayer.hasStopped || this.game.humanPlayer.exploded) return;
+                    
+                    if (this.tutorialStep === 2) {
+                        this.tutorialStep = 2.5;
+                        this.updateTutorialUI();
+                    }
+
                     const h = this.game.humanPlayer;
                     const humanRewards = this.getProjectedRewards(h);
                     
@@ -1611,6 +1739,10 @@
                 });
 
                 document.getElementById('btn-sell-confirm').addEventListener('click', () => {
+                    if (this.tutorialStep === 2.5) {
+                        this.tutorialStep = 3;
+                    }
+                    
                     document.getElementById('sell-modal').style.display = 'none';
                     this.game.humanPlayer.hasStopped = true; 
                     this.updateFullUI(); 
@@ -1618,12 +1750,16 @@
                 });
 
                 document.getElementById('btn-sell-cancel').addEventListener('click', () => {
+                    if (this.tutorialStep > 0) return; // Disable cancel during tutorial
                     document.getElementById('sell-modal').style.display = 'none';
                 });
 
                 const flaskIconEl = document.getElementById('ui-flask-icon');
                 if (flaskIconEl) {
-                    flaskIconEl.addEventListener('click', () => { if(this.game.humanPlayer.useFlask()) this.updateFullUI(); });
+                    flaskIconEl.addEventListener('click', () => { 
+                        if (this.tutorialStep > 0) return;
+                        if(this.game.humanPlayer.useFlask()) this.updateFullUI(); 
+                    });
                 }
 
                 document.getElementById('btn-witch-brew').addEventListener('click', () => {
@@ -1641,6 +1777,7 @@
                 });
 
                 document.getElementById('btn-meditation')?.addEventListener('click', () => {
+                    if (this.tutorialStep > 0) return;
                     const h = this.game.humanPlayer;
                     if (this.game.config.useCharacterPowers && h.character === 'MONK' && !h.specialPowerUsed && !h.exploded && !h.hasStopped) {
                         h.specialPowerUsed = true;
@@ -1650,6 +1787,7 @@
                 });
 
                 document.getElementById('btn-miracle-gro')?.addEventListener('click', () => {
+                    if (this.tutorialStep > 0) return;
                     const h = this.game.humanPlayer;
                     if (this.game.config.useCharacterPowers && h.character === 'GARDENER' && !h.specialPowerUsed && !h.exploded && !h.hasStopped) {
                         h.specialPowerUsed = true; // Use it up
@@ -1659,6 +1797,7 @@
                 });
 
                 document.getElementById('btn-sugar-rush')?.addEventListener('click', () => {
+                    if (this.tutorialStep > 0) return;
                     const h = this.game.humanPlayer;
                     if (this.game.config.useCharacterPowers && h.character === 'CHILD' && !h.specialPowerUsed && !h.exploded && !h.hasStopped) {
                         h.specialPowerUsed = true; // Use it up
@@ -1668,6 +1807,7 @@
                 });
 
                 document.getElementById('btn-voodoo-sac')?.addEventListener('click', () => {
+                    if (this.tutorialStep > 0) return;
                     const h = this.game.humanPlayer;
                     if (this.game.config.useCharacterPowers && h.character === 'VOODOO_LADY' && !h.specialPowerUsed && !h.exploded && !h.hasStopped) {
                         this.showVoodooSacModal();
@@ -1675,6 +1815,7 @@
                 });
 
                 document.getElementById('btn-phantom-clone').addEventListener('click', async () => {
+                    if (this.tutorialStep > 0) return;
                     const h = this.game.humanPlayer;
                     if (this.game.config.useCharacterPowers && h.character === 'WIZARD' && !h.specialPowerUsed && !h.exploded && !h.hasStopped && h.cauldron.length > 0) {
                         h.specialPowerUsed = true;
@@ -1730,6 +1871,12 @@
                 });
                 
                 document.getElementById('btn-finish-buying').addEventListener('click', () => { 
+                    if (this.tutorialStep === 4) {
+                        this.tutorialStep = 0;
+                        setCookie('hasSeenHelp', 'true', 365);
+                        this.updateTutorialUI();
+                    }
+
                     document.getElementById('shop-modal').style.display = 'none'; 
                     this.game.humanPlayer.specialPowerActive = false; // Reset charm at end of shop phase
                     
@@ -1775,15 +1922,14 @@
 
                 document.getElementById('btn-settings').addEventListener('click', () => { this.showSettings(); });
                 document.getElementById('btn-close-settings').addEventListener('click', () => { document.getElementById('settings-modal').style.display = 'none'; });
+                
+                // Help button exclusively summons the 8-slide modal now
                 document.getElementById('btn-help').addEventListener('click', () => { this.showHelpModal(); });
                 document.getElementById('btn-book').addEventListener('click', () => { this.showBookModal(); });
                 document.getElementById('btn-close-book').addEventListener('click', () => { document.getElementById('book-modal').style.display = 'none'; });
                 
                 document.getElementById('btn-close-help').addEventListener('click', () => { 
                     document.getElementById('help-modal').style.display = 'none'; 
-                    if (this.game.round === 1) {
-                        this.playStartAnimation();
-                    }
                 });
                 
                 document.getElementById('btn-help-prev').addEventListener('click', () => {
@@ -1800,6 +1946,7 @@
                 });
 
                 document.getElementById('ui-human-face').addEventListener('click', () => {
+                    if (this.tutorialStep > 0) return;
                     this.showCharacterSelect(false);
                 });
 
@@ -2146,8 +2293,8 @@
                             const forceHelp = window.location.href.includes('help=1');
                             const hasSeenHelp = getCookie('hasSeenHelp');
                             if (forceHelp || !hasSeenHelp) {
-                                this.showHelpModal();
-                                setCookie('hasSeenHelp', 'true', 365);
+                                this.tutorialStep = 1;
+                                this.updateTutorialUI();
                             } else {
                                 this.playStartAnimation();
                             }
@@ -2517,6 +2664,9 @@
                     }
                 });
                 this.renderShopUI(); document.getElementById('shop-modal').style.display = 'flex'; this.updateFullUI();
+                
+                // Triggers shopping tutorial if active
+                if (this.tutorialStep === 3) this.updateTutorialUI();
             }
 
             renderShopUI() {
@@ -2570,6 +2720,7 @@
                                 this.unlockAchievement('BIG_SPENDER');
                             }
 
+                            if (this.tutorialStep === 3) this.tutorialStep = 4;
                             this.shopCart.push(item); 
                             this.renderShopUI(); 
                         } 
@@ -2683,6 +2834,11 @@
                     });
                 }
                 shopItems.appendChild(bagEl);
+                
+                if (this.tutorialStep >= 3) {
+                    // Slight delay to ensure DOM is updated and sizes exist before positioning tooltips
+                    setTimeout(() => this.updateTutorialUI(), 50); 
+                }
             }
 
             handleResize() {
@@ -2738,23 +2894,6 @@
                 const bagCount = document.getElementById('ui-bag-count');
                 if (bagCount) {
                     bagCount.style.fontSize = `${btnSize * 0.35}px`;
-                }
-
-                // Tutorial Arrows Positioning
-                const sackArrow = document.getElementById('tutorial-arrow-sack');
-                if (sackArrow) {
-                    sackArrow.style.left = 'auto';
-                    sackArrow.style.top = 'auto';
-                    sackArrow.style.right = `${10 + btnSize + 15}px`;
-                    sackArrow.style.bottom = `${10 + btnSize * 0.1}px`;
-                    sackArrow.style.fontSize = `${btnSize * 0.8}px`;
-                }
-
-                const sellArrow = document.getElementById('tutorial-arrow-sell');
-                if (sellArrow) {
-                    sellArrow.style.left = `${10 + btnSize + 15}px`;
-                    sellArrow.style.bottom = `${10 + btnSize * 0.1}px`;
-                    sellArrow.style.fontSize = `${btnSize * 0.8}px`;
                 }
             }
 
@@ -3269,24 +3408,6 @@
                     }
                 }
 
-                // Tutorial Arrows
-                const sackArrow = document.getElementById('tutorial-arrow-sack');
-                const sellArrow = document.getElementById('tutorial-arrow-sell');
-                if (sackArrow && sellArrow) {
-                    if (this.game.round === 1 && !human.hasStopped && !human.exploded) {
-                        if (human.cauldron.length < 3) {
-                            sackArrow.style.display = 'block';
-                            sellArrow.style.display = 'none';
-                        } else {
-                            sackArrow.style.display = 'none';
-                            sellArrow.style.display = 'block';
-                        }
-                    } else {
-                        sackArrow.style.display = 'none';
-                        sellArrow.style.display = 'none';
-                    }
-                }
-
                 const canDraw = !human.exploded && !human.hasStopped && human.bag.length > 0;
                 
                 const sackEl = document.getElementById('ui-sack');
@@ -3538,8 +3659,8 @@
                 const hasSeenHelp = getCookie('hasSeenHelp');
                 
                 if (forceHelp || !hasSeenHelp) {
-                    uiManager.showHelpModal();
-                    setCookie('hasSeenHelp', 'true', 365);
+                    uiManager.tutorialStep = 1;
+                    uiManager.updateTutorialUI();
                 } else {
                     uiManager.playStartAnimation();
                 }
