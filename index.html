@@ -60,7 +60,7 @@
         #game-container {
             display: grid;
             grid-template-columns: 1fr 320px;
-            grid-template-rows: auto 1fr; /* Top board is slim, bottom board takes all remaining space */
+            grid-template-rows: auto 1fr;
             gap: 15px;
             padding: 15px;
             height: 100%;
@@ -102,7 +102,7 @@
         #ui-human-face:hover { transform: scale(1.05); box-shadow: 0 0 12px rgba(255, 215, 0, 0.5); border-color: gold !important; }
 
         #side-panel { grid-column: 2 / 3; grid-row: 1 / 3; overflow-y: auto; display: flex; flex-direction: column; }
-        .player-card { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; margin-bottom: 15px; }
+        .player-card { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; margin-bottom: 15px; cursor: pointer; }
 
         #cauldron-wrapper {
             grid-column: 1 / 2; grid-row: 2 / 3;
@@ -155,7 +155,7 @@
         #ui-sack {
             position: absolute; bottom: 10px; right: 10px; z-index: 10; 
             display: flex; align-items: center; justify-content: center; 
-            transition: all 0.2s;
+            transition: all 0.2s; cursor: pointer;
         }
         #ui-sack:hover {
             transform: scale(1.05);
@@ -189,23 +189,7 @@
             direction: ltr; /* Ensure numbers don't flip in RTL */
         }
 
-        /* --- Tutorial & Animations --- */
-        .tutorial-arrow {
-            position: absolute;
-            z-index: 20;
-            pointer-events: none;
-            display: none;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-        }
-        @keyframes tutorial-poke-right {
-            0%, 100% { transform: translateX(0); opacity: 0.5; }
-            50% { transform: translateX(10px); opacity: 1; }
-        }
-        @keyframes tutorial-poke-left {
-            0%, 100% { transform: translateX(0); opacity: 0.5; }
-            50% { transform: translateX(-10px); opacity: 1; }
-        }
-
+        /* --- Animations --- */
         @keyframes flip-vertical {
             0% { transform: scaleY(1); }
             50% { transform: scaleY(0); }
@@ -221,6 +205,52 @@
         }
         .toast-animate {
             animation: toast-pop 0.3s ease-out forwards;
+        }
+
+        /* --- Tutorial Styles --- */
+        #tutorial-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.75); z-index: 2000;
+            display: none; pointer-events: auto;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .tutorial-highlight {
+            z-index: 2001 !important;
+            box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.8) !important;
+            border-color: gold !important;
+            animation: pulse-glow 1.5s infinite alternate;
+            pointer-events: auto !important;
+        }
+        .tutorial-relative {
+            position: relative !important;
+            background-color: var(--panel-bg);
+        }
+        #ui-sack.tutorial-highlight {
+            background-color: transparent !important;
+            border-radius: 50%;
+            z-index: 2002 !important;
+        }
+        #btn-sell-potion.tutorial-highlight {
+            background-color: rgba(0,0,0,0.9) !important;
+            z-index: 2002 !important;
+        }
+        #ui-boomberry-meter.tutorial-highlight {
+            z-index: 2002 !important;
+        }
+        @keyframes pulse-glow {
+            from { box-shadow: 0 0 10px 2px rgba(255, 215, 0, 0.8); }
+            to { box-shadow: 0 0 25px 10px rgba(255, 215, 0, 1); }
+        }
+        #tutorial-tooltip {
+            position: fixed;
+            background: #fff; color: #000; padding: 12px 18px; border-radius: 8px;
+            font-weight: bold; font-size: 1.05rem; z-index: 2003;
+            max-width: 250px; text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
         }
 
         /* --- Modal & Shop Styles --- */
@@ -303,6 +333,10 @@
         <div class="spinner"></div>
     </div>
 
+    <!-- Tutorial Elements -->
+    <div id="tutorial-overlay"></div>
+    <div id="tutorial-tooltip" style="display: none;"></div>
+
     <div id="game-container">
         <!-- Main Board Area -->
         <div id="main-board" class="panel">
@@ -355,12 +389,11 @@
         <div id="cauldron-wrapper">
             <button id="btn-toggle-values" data-i18n-title="tooltip_toggle_values" title="Toggle Track Values"><div id="ui-monocle-icon"></div></button>
             <button id="btn-sell-potion" data-i18n-title="tooltip_sell" title="Sell Potion">💲</button>
+            <div id="ui-live-brew-value" dir="ltr" style="position: absolute; left: 10px; z-index: 10; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 6px; border: 1px solid #4a4e69; display: flex; align-items: center; pointer-events: none; transition: opacity 0.2s; opacity: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.5);"></div>
             <div id="ui-boomberry-meter" data-i18n-title="tooltip_boomberry_limit" title="Boomberry Explosion Limit">
                 <div id="ui-boomberry-fill"></div>
                 <div id="ui-boomberry-text" dir="ltr">0 / 7</div>
             </div>
-            <div id="tutorial-arrow-sack" class="tutorial-arrow" style="animation: tutorial-poke-right 1.5s infinite;">👉</div>
-            <div id="tutorial-arrow-sell" class="tutorial-arrow" style="animation: tutorial-poke-left 1.5s infinite;">👈</div>
             
             <div id="ui-sack" data-i18n-title="tooltip_bag" title="Draw a random ingredient from bag">
                 <div id="ui-sack-icon"></div>
@@ -375,7 +408,7 @@
                 </div>
             </div>
 
-            <canvas id="cauldron-canvas"></canvas>
+            <canvas id="cauldron-canvas" style="border-radius: 8px;"></canvas>
             <video id="explosion-video" src="assets/explosion.mov" playsinline preload="auto" style="display: none;"></video>
             <video id="bubbling-video" src="assets/cauldron_bubble1.mov" playsinline preload="auto" loop style="display: none;"></video>
         </div>
@@ -430,6 +463,14 @@
                     <strong style="color: var(--accent); font-size: 1rem;" data-i18n="settings_char_powers">Character Powers</strong>
                 </label>
                 <p style="margin-top: 5px; font-size: 0.85em; color: #aaa;" data-i18n="settings_char_powers_desc">Enable unique special abilities for each character.</p>
+            </div>
+
+            <div style="margin-top: 10px; text-align: left; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="settings-sound-checkbox" style="width: 20px; height: 20px; cursor: pointer;">
+                    <strong style="color: var(--accent); font-size: 1rem;" data-i18n="settings_sound">Sound Effects</strong>
+                </label>
+                <p style="margin-top: 5px; font-size: 0.85em; color: #aaa;" data-i18n="settings_sound_desc">Enable or disable bubbling and explosion audio.</p>
             </div>
 
             <button id="btn-close-settings" style="background-color: #4a4e69; margin-top: 25px; width: 100%;" data-i18n="btn_done">Done</button>
@@ -794,6 +835,23 @@
             return null;
         }
 
+        // --- Sound Helpers ---
+        function applySoundSettings() {
+            const isSoundOn = getCookie('soundEnabled') !== '0'; // Defaults to true if not set
+            const isIPhone = /iPhone/i.test(navigator.userAgent);
+            
+            const bubblingVid = document.getElementById('bubbling-video');
+            const explosionVid = document.getElementById('explosion-video');
+            
+            if (bubblingVid) {
+                // Bubbling is always muted on iPhone regardless of user setting, to allow looping playback
+                bubblingVid.muted = !isSoundOn || isIPhone;
+            }
+            if (explosionVid) {
+                explosionVid.muted = !isSoundOn;
+            }
+        }
+
         /**
          * 1. ASSET MANAGEMENT & SPRITE MAPS
          */
@@ -916,19 +974,9 @@
             const row = CHAR_ROW[charName] || 0;
             const col = MOOD_COL[moodName] || 0;
             // For an 8x4 grid, the background size is 400% (cols) by 800% (rows)
-            // X position offsets are 0, 33.33%, 66.66%, 100%
-            // Y position offsets are 0, 14.28%, 28.57%, ..., 100%
             const x = col * 33.3333;
             const y = row * 14.2857;
             return `background-image: url('${ASSET_PATHS.CHARACTERS}'); background-size: 400% 800%; background-position: ${x}% ${y}%; background-repeat: no-repeat;`;
-        }
-
-        function getCharacterFallbackEmoji(charName) {
-            const CHAR_EMOJIS = {
-                'WIZARD': '🧙‍♂️', 'WITCH': '🧙‍♀️', 'MONK': '👨🏼‍🦲', 'CHILD': '🧒',
-                'PRINCESS': '👸', 'VOODOO_LADY': '🧟‍♀️', 'BARD': '🪕', 'GARDENER': '🧑‍🌾'
-            };
-            return CHAR_EMOJIS[charName] || '👤';
         }
 
         function getAchievementSpriteStyle(achId) {
@@ -937,6 +985,14 @@
             const posX = def.w < 1 ? (def.x / (1 - def.w)) * 100 : 0;
             const posY = def.h < 1 ? (def.y / (1 - def.h)) * 100 : 0;
             return `background-image: url('${ASSET_PATHS.ACHIEVEMENTS}'); background-size: ${100/def.w}% ${100/def.h}%; background-position: ${posX}% ${posY}%; background-repeat: no-repeat;`;
+        }
+
+        function getCharacterFallbackEmoji(charName) {
+            const CHAR_EMOJIS = {
+                'WIZARD': '🧙‍♂️', 'WITCH': '🧙‍♀️', 'MONK': '👨🏼‍🦲', 'CHILD': '🧒',
+                'PRINCESS': '👸', 'VOODOO_LADY': '🧟‍♀️', 'BARD': '🪕', 'GARDENER': '🧑‍🌾'
+            };
+            return CHAR_EMOJIS[charName] || '👤';
         }
 
         function getAchievementFallbackEmoji(achId) {
@@ -1356,6 +1412,7 @@
                 this.showTrackValues = false;
                 this.hasPlayedStartAnimation = false;
                 this.isWitchBonusDie = false;
+                this.tutorialStep = 0; // State for interactive onboarding
                 
                 this.isDebug = window.location.href.includes('debug=1');
                 this.unlockedAchievements = JSON.parse(getCookie('quacks_achievements') || '{}');
@@ -1528,6 +1585,138 @@
                 });
             }
 
+            updateTutorialUI() {
+                const overlay = document.getElementById('tutorial-overlay');
+                const tooltip = document.getElementById('tutorial-tooltip');
+                
+                // Clear previous highlights
+                document.querySelectorAll('.tutorial-highlight').forEach(el => {
+                    el.classList.remove('tutorial-highlight', 'tutorial-relative');
+                    if (el.id === 'cauldron-canvas') el.style.position = '';
+                });
+                
+                if (this.tutorialStep === 0) {
+                    overlay.style.opacity = '0';
+                    tooltip.style.opacity = '0';
+                    setTimeout(() => {
+                        if (this.tutorialStep === 0) {
+                            overlay.style.display = 'none';
+                            tooltip.style.display = 'none';
+                        }
+                    }, 300);
+                    return;
+                }
+                
+                if (tooltip.style.display === 'none' || tooltip.style.display === '') {
+                    tooltip.style.display = 'block';
+                }
+                
+                // The overlay blocks all interactions on the page. We conditionally hide it if a modal is managing the dark background.
+                if (this.tutorialStep === 2.5 || this.tutorialStep === 3 || this.tutorialStep === 4) {
+                    overlay.style.opacity = '0';
+                    setTimeout(() => {
+                        if (this.tutorialStep === 2.5 || this.tutorialStep === 3 || this.tutorialStep === 4) {
+                            overlay.style.display = 'none';
+                        }
+                    }, 300);
+                } else {
+                    if (overlay.style.display === 'none' || overlay.style.display === '') {
+                        overlay.style.display = 'block';
+                    }
+                    void overlay.offsetWidth; // force reflow
+                    overlay.style.opacity = '1';
+                }
+                
+                let targetEl, text, pos;
+
+                if (this.tutorialStep === 1) {
+                    targetEl = document.getElementById('ui-sack');
+                    text = t('tut_step1', "Tap the sack to draw your first ingredient!");
+                    pos = 'top';
+                } else if (this.tutorialStep === 1.5) {
+                    targetEl = document.getElementById('ui-sack');
+                    text = t('tut_step15', "Ingredients you draw are added to your cauldron. Keep tapping the sack to brew your potion!");
+                    pos = 'top';
+                    const canvasEl = document.getElementById('cauldron-canvas');
+                    if (canvasEl) {
+                        canvasEl.classList.add('tutorial-highlight');
+                        canvasEl.style.position = 'relative'; // Ensure z-index applies
+                    }
+                } else if (this.tutorialStep === 2) {
+                    targetEl = document.getElementById('btn-sell-potion');
+                    text = t('tut_step2', "Great job! You can keep drawing, but if you draw too many Boomberries, you explode! Let's play it safe and click Sell.");
+                    pos = 'right';
+                    const canvasEl = document.getElementById('cauldron-canvas');
+                    if (canvasEl) {
+                        canvasEl.classList.add('tutorial-highlight');
+                        canvasEl.style.position = 'relative';
+                    }
+                    const boomMeter = document.getElementById('ui-boomberry-meter');
+                    if (boomMeter) boomMeter.classList.add('tutorial-highlight');
+                } else if (this.tutorialStep === 2.5) {
+                    targetEl = document.getElementById('btn-sell-confirm');
+                    text = t('tut_step25', "Confirm selling your potion!");
+                    pos = 'top';
+                } else if (this.tutorialStep === 3) {
+                    const shopItems = document.querySelectorAll('.shop-item');
+                    targetEl = Array.from(shopItems).find(el => el.innerText.includes('Pumpkin') || el.innerText.includes('Cost: 3') || el.innerText.includes('3'));
+                    if (!targetEl && shopItems.length > 0) targetEl = shopItems[0];
+                    text = t('tut_step3', "You earned Money! Buy this Pumpkin to make your bag stronger for the next round.");
+                    pos = 'bottom';
+                } else if (this.tutorialStep === 4) {
+                    targetEl = document.getElementById('btn-finish-buying');
+                    text = t('tut_step4', "Click Next Round to continue and start Day 2!");
+                    pos = 'top';
+                    if (targetEl) {
+                        // Scroll modal to bottom so the button is fully visible before positioning tooltip
+                        targetEl.scrollIntoView({ block: 'nearest' });
+                    }
+                } else if (this.tutorialStep === 5) {
+                    targetEl = document.getElementById('ui-sack');
+                    text = t('tut_step5', "Your bag now has more ingredients! Keep brewing and selling potions to get the highest score by Day 9.");
+                    pos = 'top';
+                }
+
+                if (targetEl) {
+                    targetEl.classList.add('tutorial-highlight');
+                    // Add safe positioning context so z-index functions correctly above overlays
+                    if (targetEl.id === 'btn-sell-confirm' || targetEl.id === 'btn-finish-buying' || targetEl.classList.contains('shop-item')) {
+                        targetEl.classList.add('tutorial-relative');
+                    }
+                    this.positionTooltip(targetEl, tooltip, text, pos);
+                }
+                
+                void tooltip.offsetWidth; // force reflow
+                tooltip.style.opacity = '1';
+            }
+
+            positionTooltip(targetEl, tooltipEl, text, pos) {
+                tooltipEl.innerText = text;
+                const rect = targetEl.getBoundingClientRect();
+                
+                // Reset styling
+                tooltipEl.style.top = 'auto'; tooltipEl.style.bottom = 'auto';
+                tooltipEl.style.left = 'auto'; tooltipEl.style.right = 'auto';
+                tooltipEl.style.transform = 'none';
+
+                const offset = 20;
+
+                // Simple collision-aware dynamic placement relative to element
+                if (pos === 'top') {
+                    tooltipEl.style.bottom = `${window.innerHeight - rect.top + offset}px`;
+                    tooltipEl.style.left = `${rect.left + rect.width/2}px`;
+                    tooltipEl.style.transform = `translateX(-50%)`;
+                } else if (pos === 'bottom') {
+                    tooltipEl.style.top = `${rect.bottom + offset}px`;
+                    tooltipEl.style.left = `${rect.left + rect.width/2}px`;
+                    tooltipEl.style.transform = `translateX(-50%)`;
+                } else if (pos === 'right') {
+                    tooltipEl.style.top = `${rect.top + rect.height/2}px`;
+                    tooltipEl.style.left = `${rect.right + offset}px`;
+                    tooltipEl.style.transform = `translateY(-50%)`;
+                }
+            }
+
             async handlePlayerDraw(e) {
                 const canDraw = !this.game.humanPlayer.exploded && !this.game.humanPlayer.hasStopped && this.game.humanPlayer.bag.length > 0;
                 if (!canDraw) return;
@@ -1537,10 +1726,25 @@
                     return;
                 }
                 
+                if (this.tutorialStep === 5) {
+                    this.tutorialStep = 0;
+                    setCookie('hasSeenHelp', 'true', 365);
+                    this.updateTutorialUI();
+                }
+
                 const wasExploded = this.game.humanPlayer.exploded;
                 this.game.humanPlayer.drawChip(); 
-                this.updateFullUI();
+
+                if (this.tutorialStep === 1 && this.game.humanPlayer.cauldron.length === 1) {
+                    this.tutorialStep = 1.5;
+                    this.updateTutorialUI();
+                } else if ((this.tutorialStep === 1 || this.tutorialStep === 1.5) && this.game.humanPlayer.cauldron.length >= 3) {
+                    this.tutorialStep = 2;
+                    this.updateTutorialUI();
+                }
                 
+                this.updateFullUI();
+
                 // If the latest draw caused an explosion, play the video before triggering the evaluation phase
                 if (!wasExploded && this.game.humanPlayer.exploded) {
                     await this.playExplosionVideo();
@@ -1553,11 +1757,16 @@
             }
 
             bindEvents() {
-                window.addEventListener('resize', () => this.handleResize());
+                window.addEventListener('resize', () => {
+                    this.handleResize();
+                    if (this.tutorialStep > 0) this.updateTutorialUI();
+                });
 
                 const sackEl = document.getElementById('ui-sack');
                 if (sackEl) {
                     sackEl.addEventListener('click', (e) => {
+                        if (this.tutorialStep === 2) return; // Prevent drawing if they need to click Sell in tutorial
+                        
                         const canDraw = !this.game.humanPlayer.exploded && !this.game.humanPlayer.hasStopped && this.game.humanPlayer.bag.length > 0;
                         if (canDraw || (this.isDebug && e.shiftKey)) {
                             this.handlePlayerDraw(e);
@@ -1567,6 +1776,13 @@
                 
                 document.getElementById('btn-sell-potion').addEventListener('click', () => {
                     if (this.game.humanPlayer.hasStopped || this.game.humanPlayer.exploded) return;
+                    if (this.tutorialStep === 1 || this.tutorialStep === 1.5) return; // Block selling prematurely
+                    
+                    if (this.tutorialStep === 2) {
+                        this.tutorialStep = 2.5;
+                        this.updateTutorialUI();
+                    }
+
                     const h = this.game.humanPlayer;
                     const humanRewards = this.getProjectedRewards(h);
                     
@@ -1587,6 +1803,10 @@
                 });
 
                 document.getElementById('btn-sell-confirm').addEventListener('click', () => {
+                    if (this.tutorialStep === 2.5) {
+                        this.tutorialStep = 3;
+                    }
+                    
                     document.getElementById('sell-modal').style.display = 'none';
                     this.game.humanPlayer.hasStopped = true; 
                     this.updateFullUI(); 
@@ -1594,12 +1814,16 @@
                 });
 
                 document.getElementById('btn-sell-cancel').addEventListener('click', () => {
+                    if (this.tutorialStep > 0) return; // Disable cancel during tutorial
                     document.getElementById('sell-modal').style.display = 'none';
                 });
 
                 const flaskIconEl = document.getElementById('ui-flask-icon');
                 if (flaskIconEl) {
-                    flaskIconEl.addEventListener('click', () => { if(this.game.humanPlayer.useFlask()) this.updateFullUI(); });
+                    flaskIconEl.addEventListener('click', () => { 
+                        if (this.tutorialStep > 0) return;
+                        if(this.game.humanPlayer.useFlask()) this.updateFullUI(); 
+                    });
                 }
 
                 document.getElementById('btn-witch-brew').addEventListener('click', () => {
@@ -1617,6 +1841,7 @@
                 });
 
                 document.getElementById('btn-meditation')?.addEventListener('click', () => {
+                    if (this.tutorialStep > 0) return;
                     const h = this.game.humanPlayer;
                     if (this.game.config.useCharacterPowers && h.character === 'MONK' && !h.specialPowerUsed && !h.exploded && !h.hasStopped) {
                         h.specialPowerUsed = true;
@@ -1626,6 +1851,7 @@
                 });
 
                 document.getElementById('btn-miracle-gro')?.addEventListener('click', () => {
+                    if (this.tutorialStep > 0) return;
                     const h = this.game.humanPlayer;
                     if (this.game.config.useCharacterPowers && h.character === 'GARDENER' && !h.specialPowerUsed && !h.exploded && !h.hasStopped) {
                         h.specialPowerUsed = true; // Use it up
@@ -1635,6 +1861,7 @@
                 });
 
                 document.getElementById('btn-sugar-rush')?.addEventListener('click', () => {
+                    if (this.tutorialStep > 0) return;
                     const h = this.game.humanPlayer;
                     if (this.game.config.useCharacterPowers && h.character === 'CHILD' && !h.specialPowerUsed && !h.exploded && !h.hasStopped) {
                         h.specialPowerUsed = true; // Use it up
@@ -1644,6 +1871,7 @@
                 });
 
                 document.getElementById('btn-voodoo-sac')?.addEventListener('click', () => {
+                    if (this.tutorialStep > 0) return;
                     const h = this.game.humanPlayer;
                     if (this.game.config.useCharacterPowers && h.character === 'VOODOO_LADY' && !h.specialPowerUsed && !h.exploded && !h.hasStopped) {
                         this.showVoodooSacModal();
@@ -1651,6 +1879,7 @@
                 });
 
                 document.getElementById('btn-phantom-clone').addEventListener('click', async () => {
+                    if (this.tutorialStep > 0) return;
                     const h = this.game.humanPlayer;
                     if (this.game.config.useCharacterPowers && h.character === 'WIZARD' && !h.specialPowerUsed && !h.exploded && !h.hasStopped && h.cauldron.length > 0) {
                         h.specialPowerUsed = true;
@@ -1706,6 +1935,12 @@
                 });
                 
                 document.getElementById('btn-finish-buying').addEventListener('click', () => { 
+                    let advanceTutorial = false;
+                    if (this.tutorialStep === 4) {
+                        this.tutorialStep = 5;
+                        advanceTutorial = true;
+                    }
+
                     document.getElementById('shop-modal').style.display = 'none'; 
                     this.game.humanPlayer.specialPowerActive = false; // Reset charm at end of shop phase
                     
@@ -1720,6 +1955,10 @@
                     });
 
                     this.game.endRound(); 
+
+                    if (advanceTutorial) {
+                        setTimeout(() => this.updateTutorialUI(), 500); // Wait for the new round setup and UI rendering
+                    }
                 });
                 
                 document.getElementById('btn-close-bag').addEventListener('click', () => { 
@@ -1751,15 +1990,14 @@
 
                 document.getElementById('btn-settings').addEventListener('click', () => { this.showSettings(); });
                 document.getElementById('btn-close-settings').addEventListener('click', () => { document.getElementById('settings-modal').style.display = 'none'; });
+                
+                // Help button exclusively summons the 8-slide modal now
                 document.getElementById('btn-help').addEventListener('click', () => { this.showHelpModal(); });
                 document.getElementById('btn-book').addEventListener('click', () => { this.showBookModal(); });
                 document.getElementById('btn-close-book').addEventListener('click', () => { document.getElementById('book-modal').style.display = 'none'; });
                 
                 document.getElementById('btn-close-help').addEventListener('click', () => { 
                     document.getElementById('help-modal').style.display = 'none'; 
-                    if (this.game.round === 1) {
-                        this.playStartAnimation();
-                    }
                 });
                 
                 document.getElementById('btn-help-prev').addEventListener('click', () => {
@@ -1776,6 +2014,7 @@
                 });
 
                 document.getElementById('ui-human-face').addEventListener('click', () => {
+                    if (this.tutorialStep > 0) return;
                     this.showCharacterSelect(false);
                 });
 
@@ -2122,8 +2361,8 @@
                             const forceHelp = window.location.href.includes('help=1');
                             const hasSeenHelp = getCookie('hasSeenHelp');
                             if (forceHelp || !hasSeenHelp) {
-                                this.showHelpModal();
-                                setCookie('hasSeenHelp', 'true', 365);
+                                this.tutorialStep = 1;
+                                this.updateTutorialUI();
                             } else {
                                 this.playStartAnimation();
                             }
@@ -2196,6 +2435,17 @@
                         setCookie('useCharacterPowers', val ? '1' : '0', 365);
                         this.game.config.useCharacterPowers = val;
                         this.updateFullUI();
+                    };
+                }
+
+                // Sound Setting
+                const soundCheckbox = document.getElementById('settings-sound-checkbox');
+                if (soundCheckbox) {
+                    soundCheckbox.checked = getCookie('soundEnabled') !== '0';
+                    soundCheckbox.onchange = (e) => {
+                        const val = e.target.checked;
+                        setCookie('soundEnabled', val ? '1' : '0', 365);
+                        applySoundSettings();
                     };
                 }
 
@@ -2319,7 +2569,6 @@
                 if (face.isChip) {
                     iconHtml = `<div class="chip-icon" style="width: 40px; height: 40px; ${getChipSpriteStyle(face.typeId, face.value)}"></div>`;
                 } else {
-                    // Set width and height to 40px equally to ensure a perfect 1:1 aspect ratio!
                     iconHtml = `<div style="width: 40px; height: 40px; ${getUtilSpriteStyle(face.icon)}"></div>`;
                 }
 
@@ -2483,6 +2732,9 @@
                     }
                 });
                 this.renderShopUI(); document.getElementById('shop-modal').style.display = 'flex'; this.updateFullUI();
+                
+                // Triggers shopping tutorial if active
+                if (this.tutorialStep === 3) this.updateTutorialUI();
             }
 
             renderShopUI() {
@@ -2536,6 +2788,7 @@
                                 this.unlockAchievement('BIG_SPENDER');
                             }
 
+                            if (this.tutorialStep === 3) this.tutorialStep = 4;
                             this.shopCart.push(item); 
                             this.renderShopUI(); 
                         } 
@@ -2649,6 +2902,11 @@
                     });
                 }
                 shopItems.appendChild(bagEl);
+                
+                if (this.tutorialStep >= 3) {
+                    // Slight delay to ensure DOM is updated and sizes exist before positioning tooltips
+                    setTimeout(() => this.updateTutorialUI(), 50); 
+                }
             }
 
             handleResize() {
@@ -2679,6 +2937,12 @@
                     sellBtn.style.fontSize = `${btnSize * 0.5}px`;
                 }
 
+                const liveBrew = document.getElementById('ui-live-brew-value');
+                if (liveBrew) {
+                    liveBrew.style.bottom = `${10 + btnSize + 10}px`; // Place it exactly 10px above the dynamically sized sell button
+                    liveBrew.style.fontSize = `${btnSize * 0.25}px`;
+                }
+
                 const meter = document.getElementById('ui-boomberry-meter');
                 if (meter) {
                     meter.style.width = `${baseSize * 0.3}px`;
@@ -2698,23 +2962,6 @@
                 const bagCount = document.getElementById('ui-bag-count');
                 if (bagCount) {
                     bagCount.style.fontSize = `${btnSize * 0.35}px`;
-                }
-
-                // Tutorial Arrows Positioning
-                const sackArrow = document.getElementById('tutorial-arrow-sack');
-                if (sackArrow) {
-                    sackArrow.style.left = 'auto'; // Remove left positioning if it was there
-                    sackArrow.style.top = 'auto';
-                    sackArrow.style.right = `${10 + btnSize + 15}px`;
-                    sackArrow.style.bottom = `${10 + btnSize * 0.1}px`;
-                    sackArrow.style.fontSize = `${btnSize * 0.8}px`;
-                }
-
-                const sellArrow = document.getElementById('tutorial-arrow-sell');
-                if (sellArrow) {
-                    sellArrow.style.left = `${10 + btnSize + 15}px`;
-                    sellArrow.style.bottom = `${10 + btnSize * 0.1}px`;
-                    sellArrow.style.fontSize = `${btnSize * 0.8}px`;
                 }
             }
 
@@ -3159,9 +3406,32 @@
                     fortuneEl.innerText = `"${this.game.currentFortuneCard.text}"`;
                 }
 
+                const humanRewards = this.getProjectedRewards(human);
+
+                const liveBrewEl = document.getElementById('ui-live-brew-value');
+                if (liveBrewEl) {
+                    if (human.exploded || human.hasStopped) {
+                        liveBrewEl.style.opacity = '0';
+                    } else {
+                        liveBrewEl.style.opacity = '1';
+                        let brewHtml = ``;
+                        if (humanRewards.vp > 0) {
+                            brewHtml += `<strong style="color: #f5f5f5;">${humanRewards.vp}</strong><span style="width: 1.2em; height: 1.2em; display: inline-block; margin-left: 2px; margin-right: 6px; ${getUtilSpriteStyle('VP')}"></span>`;
+                        }
+                        brewHtml += `<strong style="color: gold;">${humanRewards.money}</strong><span style="width: 1.2em; height: 1.2em; display: inline-block; margin-left: 2px; margin-right: 6px; ${getUtilSpriteStyle('COIN')}"></span>`;
+                        if (humanRewards.rubies > 0) {
+                            if (humanRewards.rubies > 1) {
+                                brewHtml += `<strong style="color: #ff4444;">${humanRewards.rubies}</strong>`;
+                            }
+                            brewHtml += `<span style="width: 1.2em; height: 1.2em; display: inline-block; margin-left: 2px; ${getUtilSpriteStyle('RUBY')}"></span>`;
+                        }
+                        liveBrewEl.innerHTML = brewHtml;
+                    }
+                }
+
                 const sellBtn = document.getElementById('btn-sell-potion');
                 if (sellBtn) {
-                    sellBtn.disabled = human.exploded || human.hasStopped;
+                    sellBtn.disabled = human.exploded || human.hasStopped || this.tutorialStep === 1 || this.tutorialStep === 1.5;
                     
                     // Bonus Die Indicator Logic (Glow the sell button)
                     const nonExploded = this.game.players.filter(p => !p.exploded);
@@ -3203,24 +3473,6 @@
                         meterFill.style.backgroundColor = '#ffbb33'; // Orange/Yellow (Danger)
                     } else {
                         meterFill.style.backgroundColor = '#ffffff'; // White (Safe)
-                    }
-                }
-
-                // Tutorial Arrows
-                const sackArrow = document.getElementById('tutorial-arrow-sack');
-                const sellArrow = document.getElementById('tutorial-arrow-sell');
-                if (sackArrow && sellArrow) {
-                    if (this.game.round === 1 && !human.hasStopped && !human.exploded) {
-                        if (human.cauldron.length < 3) {
-                            sackArrow.style.display = 'block';
-                            sellArrow.style.display = 'none';
-                        } else {
-                            sackArrow.style.display = 'none';
-                            sellArrow.style.display = 'block';
-                        }
-                    } else {
-                        sackArrow.style.display = 'none';
-                        sellArrow.style.display = 'none';
                     }
                 }
 
@@ -3344,6 +3596,20 @@
                         const card = document.createElement('div'); card.className = 'player-card';
                         
                         const pRewards = this.getProjectedRewards(player);
+                        
+                        // Apply AI Explosion Choices to displayed rewards (only zeroing the track rewards, not token bonuses!)
+                        if (!player.isHuman && player.exploded) {
+                            const witchPowerAvailable = this.game.config.useCharacterPowers && player.character === 'WITCH' && !player.specialPowerUsed;
+                            if (!witchPowerAvailable) {
+                                const trackSpace = TRACK_REWARDS[Math.min(player.currentBrewValue || 0, TRACK_REWARDS.length - 1)];
+                                if (this.game.round > 6) {
+                                    pRewards.money -= trackSpace.money; // AI gives up track money late game
+                                } else {
+                                    pRewards.vp -= trackSpace.vp; // AI gives up track VP early game
+                                }
+                            }
+                        }
+
                         const pMood = getPlayerMood(player);
                         const pFaceStyle = getCharacterSpriteStyle(player.character, pMood);
                         const emojiStr = (window.GAME_ASSETS && window.GAME_ASSETS.CHARACTERS && window.GAME_ASSETS.CHARACTERS.naturalWidth > 0) ? '' : getCharacterFallbackEmoji(player.character);
@@ -3427,12 +3693,8 @@
                 }
             });
 
-            // --- iOS/iPhone Video Audio Fix ---
-            // iPhones strictly block unmuted programmatic video playback, especially for looping background videos. 
-            // We mute the bubbling video specifically on iPhone so the visual animations still work.
-            if (/iPhone/i.test(navigator.userAgent)) {
-                document.getElementById('bubbling-video').muted = true;
-            }
+            // --- iOS/iPhone Video Audio Fix & Sound Init ---
+            applySoundSettings();
 
             initGameData();
 
@@ -3465,8 +3727,8 @@
                 const hasSeenHelp = getCookie('hasSeenHelp');
                 
                 if (forceHelp || !hasSeenHelp) {
-                    uiManager.showHelpModal();
-                    setCookie('hasSeenHelp', 'true', 365);
+                    uiManager.tutorialStep = 1;
+                    uiManager.updateTutorialUI();
                 } else {
                     uiManager.playStartAnimation();
                 }
@@ -3553,7 +3815,7 @@
             });
         };
 
-        // Register the Service Worker for Offline PWA Support
+        // --- PWA & Offline Support ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
