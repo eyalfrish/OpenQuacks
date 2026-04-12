@@ -3705,8 +3705,15 @@
                 return window.I18N[key] !== undefined ? window.I18N[key] : defaultStr;
             };
 
+            const LANG_FLAGS = { en: '🇺🇸', es: '🇪🇸', he: '🇮🇱', ar: '🇸🇦', fa: '🇮🇷', pl: '🇵🇱', de: '🇩🇪', uk: '🇺🇦', el: '🇬🇷', ga: '🇮🇪', ja: '🇯🇵', pt: '🇧🇷' };
             const urlParams = new URLSearchParams(window.location.search);
-            const lang = urlParams.get('lang') || 'en';
+            
+            let lang = urlParams.get('lang');
+            if (!lang) {
+                // Detect browser language (e.g., 'es-ES' -> 'es'), fallback to 'en' if not supported
+                const browserLang = (navigator.language || navigator.userLanguage || 'en').split('-')[0].toLowerCase();
+                lang = LANG_FLAGS[browserLang] ? browserLang : 'en';
+            }
             
             document.documentElement.dir = ['he', 'ar', 'fa'].includes(lang) ? 'rtl' : 'ltr';
 
@@ -3778,9 +3785,8 @@
             }
 
             // --- Language Selector Setup ---
-            const LANG_FLAGS = { en: '🇺🇸', es: '🇪🇸', he: '🇮🇱', ar: '🇸🇦', fa: '🇮🇷', pl: '🇵🇱', de: '🇩🇪', uk: '🇺🇦', el: '🇬🇷', ga: '🇮🇪', ja: '🇯🇵', pt: '🇧🇷' };
             const langGrid = document.getElementById('lang-grid');
-            const currentLangParam = lang || 'en';
+            const currentLangParam = lang;
             
             document.getElementById('btn-lang').innerText = LANG_FLAGS[currentLangParam] || '🇺🇸';
 
