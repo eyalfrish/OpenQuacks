@@ -2547,7 +2547,10 @@
                     },
                     {
                         text: t('help_slide_8', "The game goes on for 9 rounds. At the end of the last day, whoever has the most VP is the winner!"),
-                        html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; font-size: 3rem;">🏆</div>`
+                        html: `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; margin-top: 15px;">
+                            <div style="font-size: 3rem;">🏆</div>
+                            <button onclick="setCookie('hasSeenHelp', '', -1); location.reload();" style="padding: 8px 16px; background-color: #00b4d8; width: auto; margin-top: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.5);">${t('btn_play_tutorial', 'Play the tutorial')}</button>
+                        </div>`
                     }
                 ];
 
