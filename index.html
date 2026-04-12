@@ -3750,7 +3750,8 @@
 
             // 3. Boot Game and Check Character Selection
             const savedBookSet = parseInt(getCookie('selectedBookSet')) || 1;
-            const savedPowers = getCookie('useCharacterPowers') === '1';
+            const savedPowersCookie = getCookie('useCharacterPowers');
+            const savedPowers = savedPowersCookie === null ? true : savedPowersCookie === '1';
             const gameConfig = { numAIs: 2, bookSet: savedBookSet, useCharacterPowers: savedPowers }; 
             const gameController = new GameController(gameConfig);
             const uiManager = new QuacksUIManager(gameController, window.GAME_ASSETS);
