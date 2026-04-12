@@ -1168,8 +1168,16 @@
                     });
                 }
 
-                this.currentFortuneCard = FORTUNE_CARDS[Math.floor(Math.random() * FORTUNE_CARDS.length)];
-                if (this.currentFortuneCard.type === 'immediate') this.currentFortuneCard.apply(this);
+                const forceHelp = window.location.href.includes('help=1');
+                const hasSeenHelp = getCookie('hasSeenHelp');
+                const isTutorial = (this.round === 1) && (forceHelp || !hasSeenHelp);
+
+                if (!isTutorial) {
+                    this.currentFortuneCard = FORTUNE_CARDS[Math.floor(Math.random() * FORTUNE_CARDS.length)];
+                    if (this.currentFortuneCard.type === 'immediate') this.currentFortuneCard.apply(this);
+                } else {
+                    this.currentFortuneCard = null;
+                }
 
                 const maxVp = Math.max(...this.players.map(p => p.victoryPoints));
                 this.players.forEach(p => {
@@ -3405,8 +3413,12 @@
                 if (roundEl) roundEl.innerText = this.game.round;
                 
                 const fortuneEl = document.getElementById('ui-fortune-text');
-                if (fortuneEl && this.game.currentFortuneCard) {
-                    fortuneEl.innerText = `"${this.game.currentFortuneCard.text}"`;
+                if (fortuneEl) {
+                    if (this.game.currentFortuneCard) {
+                        fortuneEl.innerText = `"${this.game.currentFortuneCard.text}"`;
+                    } else {
+                        fortuneEl.innerText = t('msg_tut_fortune', "The cards are quiet for now...");
+                    }
                 }
 
                 const humanRewards = this.getProjectedRewards(human);
