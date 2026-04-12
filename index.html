@@ -218,13 +218,12 @@
         .tutorial-highlight {
             z-index: 2001 !important;
             box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.8) !important;
-            border-color: gold !important;
+            border: 2px solid gold !important;
             animation: pulse-glow 1.5s infinite alternate;
             pointer-events: auto !important;
         }
         .tutorial-relative {
             position: relative !important;
-            background-color: var(--panel-bg);
         }
         #ui-sack.tutorial-highlight {
             background-color: transparent !important;
@@ -1683,6 +1682,15 @@
                     targetEl = document.getElementById('ui-sack');
                     text = t('tut_step5', "Your bag now has more ingredients! Keep brewing and selling potions to get the highest score by Day 9.");
                     pos = 'top';
+                } else if (this.tutorialStep === 6) {
+                    targetEl = null;
+                    text = t('tut_step6', "There's more to explore! Check out the Flask to undo Boomberries, tap your character card to change avatars, keep an eye on your opponents, and adjust settings in the top right. Tap anywhere to start playing!");
+                    pos = 'center';
+
+                    ['flask-section', 'human-character', 'side-panel', 'btn-settings'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.classList.add('tutorial-highlight', 'tutorial-relative');
+                    });
                 }
 
                 if (targetEl) {
@@ -1692,6 +1700,13 @@
                         targetEl.classList.add('tutorial-relative');
                     }
                     this.positionTooltip(targetEl, tooltip, text, pos);
+                } else if (pos === 'center') {
+                    tooltip.innerText = text;
+                    tooltip.style.top = '50%';
+                    tooltip.style.left = '50%';
+                    tooltip.style.transform = 'translate(-50%, -50%)';
+                    tooltip.style.bottom = 'auto';
+                    tooltip.style.right = 'auto';
                 }
                 
                 void tooltip.offsetWidth; // force reflow
@@ -1734,10 +1749,10 @@
                     return;
                 }
                 
+                let advanceToStep6 = false;
                 if (this.tutorialStep === 5) {
-                    this.tutorialStep = 0;
-                    setCookie('hasSeenHelp', 'true', 365);
-                    this.updateTutorialUI();
+                    this.tutorialStep = 6;
+                    advanceToStep6 = true;
                 }
 
                 const wasExploded = this.game.humanPlayer.exploded;
@@ -1748,6 +1763,8 @@
                     this.updateTutorialUI();
                 } else if ((this.tutorialStep === 1 || this.tutorialStep === 1.5) && this.game.humanPlayer.cauldron.length >= 3) {
                     this.tutorialStep = 2;
+                    this.updateTutorialUI();
+                } else if (advanceToStep6) {
                     this.updateTutorialUI();
                 }
                 
@@ -1765,6 +1782,16 @@
             }
 
             bindEvents() {
+                window.addEventListener('click', (e) => {
+                    if (this.tutorialStep === 6) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        this.tutorialStep = 0;
+                        setCookie('hasSeenHelp', 'true', 365);
+                        this.updateTutorialUI();
+                    }
+                }, true); // Capture phase intercepts the click before it activates anything else
+
                 window.addEventListener('resize', () => {
                     this.handleResize();
                     if (this.tutorialStep > 0) this.updateTutorialUI();
