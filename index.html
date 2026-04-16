@@ -2528,6 +2528,10 @@
                 const contentEl = document.getElementById('help-slide-content');
                 const indicatorEl = document.getElementById('help-slide-indicator');
                 
+                const hasSprite = window.GAME_ASSETS && window.GAME_ASSETS.UTILS && window.GAME_ASSETS.UTILS.naturalWidth > 0;
+                const emptyFlask = hasSprite ? `<div style="width:30px; height:45px; ${getUtilSpriteStyle('FLASK_EMPTY')}"></div>` : `<div style="width:30px; height:45px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; opacity: 0.5;">🧪</div>`;
+                const fullFlask = hasSprite ? `<div style="width:30px; height:45px; ${getUtilSpriteStyle('FLASK_FULL')}"></div>` : `<div style="width:30px; height:45px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">🧪</div>`;
+                
                 const slides = [
                     {
                         text: t('help_slide_1', "Press the SACK to draw random ingredients into your cauldron."),
@@ -2562,10 +2566,10 @@
                     {
                         text: t('help_slide_5', "Use the FLASK to take back a boomberry into your bag. You may only use the flask immediately after drawing a boomberry, and you cannot use the flask if your brew exploded! You can refill your flask for a price."),
                         html: `<div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; font-weight: bold;">
-                            <div style="width:30px; height:45px; ${getUtilSpriteStyle('FLASK_EMPTY')}"></div> + 
+                            ${emptyFlask} + 
                             <div style="width:25px; height:25px; ${getUtilSpriteStyle('RUBY')}"></div> + 
                             <div style="width:25px; height:25px; ${getUtilSpriteStyle('RUBY')}"></div> = 
-                            <div style="width:30px; height:45px; ${getUtilSpriteStyle('FLASK_FULL')}"></div>
+                            ${fullFlask}
                         </div>`
                     },
                     {
@@ -2908,8 +2912,14 @@
                 const flaskEl = document.createElement('div');
                 const canAffordFlask = h.rubies >= flaskCost && !h.flaskActive;
                 flaskEl.className = `shop-item ${!canAffordFlask ? 'disabled' : ''}`;
+                
+                const hasSpriteUtils = window.GAME_ASSETS && window.GAME_ASSETS.UTILS && window.GAME_ASSETS.UTILS.naturalWidth > 0;
+                const flaskIconHtml = hasSpriteUtils 
+                    ? `<div style="width: 25px; height: 35px; ${getUtilSpriteStyle(h.flaskActive ? 'FLASK_FULL' : 'FLASK_EMPTY')}"></div>`
+                    : `<div style="width: 25px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; opacity: ${h.flaskActive ? 1 : 0.5};">🧪</div>`;
+
                 flaskEl.innerHTML = `
-                    <div style="width: 25px; height: 35px; ${getUtilSpriteStyle(h.flaskActive ? 'FLASK_FULL' : 'FLASK_EMPTY')}"></div>
+                    ${flaskIconHtml}
                     <div style="font-size: 0.8em; font-weight: bold;">${t('shop_flask_title', 'Refill Flask')}</div>
                     <div style="font-size: 0.9em; color: #ff4444; display: flex; align-items: center; justify-content: center;">${t('cost', 'Cost:')} ${flaskCost} <span style="width: 16px; height: 16px; display: inline-block; margin-left: 4px; ${getUtilSpriteStyle('RUBY')}"></span></div>
                     <div class="tooltip">${h.flaskActive ? t('shop_flask_desc_full', 'Your flask is already full.') : t('shop_flask_desc_empty', 'Refill your empty flask so it can be used again.')}</div>
@@ -3536,7 +3546,17 @@
                     let flipDeg = human.flaskActive ? '0deg' : '180deg';
                     let transformStyle = `transform: rotateY(${flipDeg})${canFlask ? ' scale(1.05)' : ''};`;
                     let filterStyle = canFlask ? 'filter: drop-shadow(0 0 8px #00b4d8);' : '';
-                    flaskIconEl.style.cssText = `width: 60px; height: 70px; cursor: ${canFlask ? 'pointer' : 'default'}; transition: transform 0.4s ease, filter 0.2s ease; ${transformStyle} ${filterStyle} ${getUtilSpriteStyle(human.flaskActive ? 'FLASK_FULL' : 'FLASK_EMPTY')}`;
+                    
+                    const hasSprite = window.GAME_ASSETS && window.GAME_ASSETS.UTILS && window.GAME_ASSETS.UTILS.naturalWidth > 0;
+                    
+                    if (hasSprite) {
+                        flaskIconEl.style.cssText = `width: 60px; height: 70px; cursor: ${canFlask ? 'pointer' : 'default'}; transition: transform 0.4s ease, filter 0.2s ease; ${transformStyle} ${filterStyle} ${getUtilSpriteStyle(human.flaskActive ? 'FLASK_FULL' : 'FLASK_EMPTY')}`;
+                        flaskIconEl.innerText = '';
+                    } else {
+                        flaskIconEl.style.cssText = `width: 60px; height: 70px; cursor: ${canFlask ? 'pointer' : 'default'}; transition: transform 0.4s ease, filter 0.2s ease; ${transformStyle} ${filterStyle} display: flex; align-items: center; justify-content: center; font-size: 2.5rem; opacity: ${human.flaskActive ? 1 : 0.5};`;
+                        flaskIconEl.innerText = '🧪';
+                    }
+                    
                     flaskIconEl.title = canFlask ? t('msg_flask_ready', "Click to use Flask and return the last Boomberry to your bag!") : (!human.flaskActive ? t('msg_flask_empty', "Flask is empty.") : t('msg_flask_invalid', "Can only be used immediately after drawing a Boomberry."));
                 }
                 
