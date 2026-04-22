@@ -3654,10 +3654,22 @@
 
                 const playerListEl = document.getElementById('player-list'); 
                 if (playerListEl) {
+                    // FLIP Animation: 1. Record old positions
+                    const oldPositions = {};
+                    Array.from(playerListEl.children).forEach(card => {
+                        const id = card.getAttribute('data-player-id');
+                        if (id) oldPositions[id] = card.getBoundingClientRect().top;
+                    });
+
                     playerListEl.innerHTML = ''; 
-                    this.game.players.forEach(player => {
+                    
+                    // Sort players by VP descending
+                    const sortedPlayers = [...this.game.players].sort((a, b) => b.victoryPoints - a.victoryPoints);
+                    
+                    sortedPlayers.forEach(player => {
                         const status = player.exploded ? t('status_exploded', "EXPLODED!") : (player.hasStopped ? t('status_finished', "Finished") : t('status_brewing', "Brewing..."));
                         const card = document.createElement('div'); card.className = 'player-card';
+                        card.setAttribute('data-player-id', player.character);
                         
                         const pRewards = this.getProjectedRewards(player);
                         
@@ -3693,7 +3705,7 @@
 
                         card.innerHTML = `
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <div style="width: 70px; height: 90px; border-radius: 6px; border: 2px solid ${player.isHuman ? 'gold' : '#aaa'}; flex-shrink: 0; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; font-size: 3rem; ${pFaceStyle}">${emojiStr}</div>
+                                <div style="width: 70px; height: 90px; border-radius: 6px; border: 2px solid ${player.isHuman ? 'gold' : '#aaa'}; flex-shrink: 0; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; font-size: 3rem; overflow: hidden; ${pFaceStyle}">${emojiStr}</div>
                                 <div style="flex: 1;">
                                     <strong>${player.name}</strong>
                                     <div style="font-size: 0.9em; margin-top: 5px;">
@@ -3715,6 +3727,30 @@
                         }
 
                         playerListEl.appendChild(card);
+                    });
+
+                    // FLIP Animation: 2. Apply transforms
+                    requestAnimationFrame(() => {
+                        Array.from(playerListEl.children).forEach(card => {
+                            const id = card.getAttribute('data-player-id');
+                            if (oldPositions[id] !== undefined) {
+                                const newTop = card.getBoundingClientRect().top;
+                                const deltaY = oldPositions[id] - newTop;
+                                
+                                if (deltaY !== 0) {
+                                    // Invert: instantly move it back to where it was
+                                    card.style.transform = `translateY(${deltaY}px)`;
+                                    card.style.transition = 'none';
+                                    
+                                    // Trigger browser reflow
+                                    void card.offsetHeight;
+                                    
+                                    // Play: smoothly slide it to its new natural position
+                                    card.style.transform = '';
+                                    card.style.transition = 'transform 0.5s ease-in-out';
+                                }
+                            }
+                        });
                     });
                 }
             }
