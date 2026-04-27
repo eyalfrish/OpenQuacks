@@ -41,6 +41,11 @@
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             -webkit-tap-highlight-color: transparent;
+            /* Allow vertical scrolling, block pinch-zoom and double-tap-zoom
+               at the CSS level. touch-action does NOT inherit, so it must be
+               set on every element — body alone is not enough. canvas
+               overrides this to 'none' below for custom touch handling. */
+            touch-action: pan-y;
         }
 
         /* Block iOS long-press callout (Save Image, Copy) only on the
@@ -81,10 +86,6 @@
             flex-direction: column;
             overflow: hidden;
             padding: var(--sat) var(--sar) var(--sab) var(--sal);
-            /* Allow vertical scrolling, block pinch-zoom and double-tap-zoom
-               at the CSS level. Works in BOTH regular Safari (which ignores
-               viewport user-scalable=no for accessibility) and standalone. */
-            touch-action: pan-y;
         }
 
         /* --- Loading Screen Overlay --- */
@@ -348,24 +349,23 @@
         .icon-small { width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 5px; }
 
         /* --- Mobile / Narrow Screen Responsive Layout --- */
+        /* In mobile mode the body itself scrolls (matching upstream).
+           We tried locking body and scrolling #game-container instead
+           for a more "native" feel, but that broke the tutorial flow:
+           #tutorial-overlay (pointer-events: auto) catches scroll
+           gestures, and iOS Safari can't redirect them through to a
+           constrained scrollable child the way it natively scrolls
+           the body underneath a fixed overlay. Body-scroll wins. */
         @media (max-aspect-ratio: 2/3) {
             body {
-                height: 100vh;
-                height: 100dvh;
-                overflow: hidden;
+                height: auto;
+                overflow-y: auto;
             }
             #game-container {
                 display: flex;
                 flex-direction: column;
-                height: 100%;
-                overflow-y: auto;
-                overscroll-behavior: contain;
-                /* DO NOT add -webkit-overflow-scrolling: touch here.
-                   On iOS Safari it promotes this element to a new
-                   stacking context, which traps #ui-sack's z-index
-                   inside #game-container so the .tutorial-highlight
-                   gets covered by #tutorial-overlay (z-index 2000).
-                   Modern iOS has momentum scrolling by default. */
+                height: auto;
+                overflow: visible;
             }
             #main-board {
                 order: 1;
@@ -375,7 +375,6 @@
                 aspect-ratio: 1 / 1;
                 width: 100%;
                 min-height: 300px;
-                flex-shrink: 0;
             }
             #side-panel {
                 order: 3;
