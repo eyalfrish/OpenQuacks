@@ -40,7 +40,6 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -82,6 +81,10 @@
             flex-direction: column;
             overflow: hidden;
             padding: var(--sat) var(--sar) var(--sab) var(--sal);
+            /* Allow vertical scrolling, block pinch-zoom and double-tap-zoom
+               at the CSS level. Works in BOTH regular Safari (which ignores
+               viewport user-scalable=no for accessibility) and standalone. */
+            touch-action: pan-y;
         }
 
         /* --- Loading Screen Overlay --- */
@@ -153,7 +156,7 @@
             border: 2px dashed #4a4e69;
         }
         
-        canvas { display: block; outline: none; -webkit-tap-highlight-color: transparent; }
+        canvas { display: block; outline: none; -webkit-tap-highlight-color: transparent; touch-action: none; }
 
         button {
             flex: 1; padding: 12px; border: none; border-radius: 6px; font-size: 1rem;
@@ -271,15 +274,6 @@
             animation: pulse-glow 1.5s infinite alternate;
             pointer-events: auto !important;
             cursor: pointer; /* Ensures taps register on iOS Safari */
-            /* Force a composited layer so iOS Safari doesn't re-stack
-               this element below the overlay after the overlay's
-               opacity transition completes. translateZ(0) and
-               will-change: transform together promote the element to
-               its own layer, which keeps it visually above the overlay
-               even when WebKit re-composites. */
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
-            will-change: transform;
         }
         .tutorial-relative {
             position: relative !important;
@@ -4017,7 +4011,6 @@
                               || window.matchMedia('(display-mode: fullscreen)').matches
                               || window.navigator.standalone === true;
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-            const isAndroid = /Android/i.test(navigator.userAgent);
 
             const installSection = document.getElementById('install-section');
             const installBtn = document.getElementById('btn-install');
@@ -4055,7 +4048,6 @@
                 installBtn.style.display = 'none';
                 installIosBtn.style.display = 'none';
                 installSection.style.display = 'none';
-                try { localStorage.setItem('quacks_installed', '1'); } catch (e) {}
             });
 
             installBtn.addEventListener('click', async () => {
