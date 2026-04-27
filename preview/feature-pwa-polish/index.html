@@ -704,11 +704,13 @@
     </div>
 
     <script>
-        // --- Native-app feel: block iOS pinch-zoom and double-tap zoom ---
-        document.addEventListener('gesturestart', (e) => e.preventDefault());
-        document.addEventListener('gesturechange', (e) => e.preventDefault());
-        document.addEventListener('gestureend', (e) => e.preventDefault());
-        document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: false });
+        // Note: pinch-zoom blocking is handled by the viewport meta tag
+        // (user-scalable=no, maximum-scale=1) for installed PWA mode.
+        // Regular Safari ignores those for accessibility, which is fine.
+        // We deliberately do NOT add document-level preventDefault on
+        // gesturestart/gesturechange/gestureend/dblclick — those listeners
+        // can interfere with iOS Safari's synthesized click events on
+        // subsequent single-finger taps, breaking the tutorial highlight.
 
         // --- I18N Localization ---
         window.I18N = {};
