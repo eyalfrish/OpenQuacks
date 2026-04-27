@@ -251,9 +251,14 @@
         }
 
         /* --- Tutorial Styles --- */
+        /* Note: tutorial-overlay deliberately uses 100vh (not 100dvh).
+           On iOS Safari, mixing 100dvh with position:fixed and an opacity
+           transition can shuffle layer compositing as the URL bar
+           collapses, causing the .tutorial-highlight (which should sit
+           above this overlay via z-index) to end up visually below it
+           after a moment. 100vh keeps the layer stable. */
         #tutorial-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            height: 100dvh;
             background: rgba(0,0,0,0.75); z-index: 2000;
             display: none; pointer-events: auto;
             opacity: 0;
@@ -267,6 +272,15 @@
             animation: pulse-glow 1.5s infinite alternate;
             pointer-events: auto !important;
             cursor: pointer; /* Ensures taps register on iOS Safari */
+            /* Force a composited layer so iOS Safari doesn't re-stack
+               this element below the overlay after the overlay's
+               opacity transition completes. translateZ(0) and
+               will-change: transform together promote the element to
+               its own layer, which keeps it visually above the overlay
+               even when WebKit re-composites. */
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+            will-change: transform;
         }
         .tutorial-relative {
             position: relative !important;
