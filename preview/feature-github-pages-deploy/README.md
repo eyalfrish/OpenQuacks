@@ -43,26 +43,44 @@ Lightweight tags and tags that aren't on `main` are rejected by the workflow.
 
 ### Preview lifecycle
 
-A preview's URL is `https://<owner>.github.io/<repo>/preview/<slug>/`, where
-`<slug>` is the branch name with `/` replaced by `-` and non-alphanumeric
-characters stripped (`feature/foo` → `feature-foo`).
+**Previews never auto-expire.** A preview is created the first time a branch
+is pushed and lives on `gh-pages` from that moment until the directory is
+removed by hand. **Deleting the branch on GitHub does not remove the
+preview** — that's a known gap; a follow-up `branch_delete` workflow can
+plug it.
+
+A preview's URL is `https://doonch.github.io/OpenQuacks/preview/<slug>/`,
+where `<slug>` is the branch name with `/` replaced by `-` and
+non-alphanumeric characters stripped (`feature/foo` → `feature-foo`).
 
 | Event | Effect on `/preview/<slug>/` |
 |---|---|
 | First push to a non-`main` branch | Created |
 | Subsequent push to the same branch | Replaced atomically (the workflow runs `rm -rf <slug>/` then re-rsyncs the new tree) |
 | Production tag deploy | Untouched — only `/` is rewritten; all `preview/*` are preserved |
-| Branch deleted | **Persists.** Pages doesn't auto-clean. Remove manually from the `gh-pages` branch, or add a follow-up workflow that deletes on `branch_delete` |
-| Pages source toggled away from `gh-pages` | URL keeps loading briefly while the GitHub CDN cache expires (~minutes), and **indefinitely for any browser that already installed the PWA service worker for that path**. That's a property of PWAs, not a leak — to truly evict, the visitor needs to clear data or unregister the SW |
+| Branch deleted | **Persists.** No auto-cleanup; remove the directory manually from `gh-pages` |
+| Pages source toggled away from `gh-pages` | URL keeps loading briefly while the GitHub CDN cache expires (~minutes), and **indefinitely for any browser that already installed the PWA service worker for that path**. That's a property of PWAs, not a leak — to truly evict, the visitor needs to clear browser data or unregister the SW |
 
 Previews on a public repo are public — anyone with the URL can visit. That's
 the same as production. Pages has no per-path access control; the whole site
 inherits the repo's visibility.
 
-### Notes
-- `gh-pages` is an orphan branch (no shared history with `main`) — that's how
-  the Pages "deploy from branch" model works. It's auto-managed by the
-  workflows; you don't commit to it directly.
-- The two workflows share a `gh-pages-deploy` concurrency group, so a tag
-  push and a branch push that happen at the same time serialize cleanly
-  rather than racing on `gh-pages`.
+### Should I ever touch the `gh-pages` branch?
+
+**No, not in normal use.** It's 100% managed by the two workflows above. You
+never commit to it, merge into it, or pull from it as part of regular
+development. The only times a human edits it directly are:
+
+- **Cleanup**: removing a stale preview directory after deleting its branch
+  (one-off, until an auto-cleanup workflow is added).
+- **Emergency rollback**: reverting a bad production deploy by hand. Rare.
+
+`gh-pages` is an orphan branch (no shared history with `main`) — that's how
+the "deploy from branch" Pages model works. Treat it like a build-output
+directory: auto-generated, not for hand-editing.
+
+### Concurrency
+
+The two workflows share a `gh-pages-deploy` concurrency group, so a tag push
+and a branch push that happen at the same time serialize cleanly rather than
+racing on `gh-pages`.
