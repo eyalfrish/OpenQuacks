@@ -70,7 +70,6 @@
 
         html, body {
             overscroll-behavior: none;
-            -webkit-overflow-scrolling: touch;
             -webkit-text-size-adjust: 100%;
         }
 
@@ -367,7 +366,12 @@
                 height: 100%;
                 overflow-y: auto;
                 overscroll-behavior: contain;
-                -webkit-overflow-scrolling: touch;
+                /* DO NOT add -webkit-overflow-scrolling: touch here.
+                   On iOS Safari it promotes this element to a new
+                   stacking context, which traps #ui-sack's z-index
+                   inside #game-container so the .tutorial-highlight
+                   gets covered by #tutorial-overlay (z-index 2000).
+                   Modern iOS has momentum scrolling by default. */
             }
             #main-board {
                 order: 1;
