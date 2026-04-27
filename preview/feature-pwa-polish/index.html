@@ -42,9 +42,25 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Block iOS long-press callout (Save Image, Copy) only on the
+           media-bearing elements where it actually matters. Applying this
+           to all elements via * can interfere with iOS Safari's synthesized
+           click events on plain divs and break the tutorial highlight taps. */
+        canvas, video, img {
+            -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
-            -webkit-touch-callout: none;
+        }
+
+        /* Disallow text selection on body/UI text by default, but inputs
+           and editable areas remain selectable. Applied to body rather
+           than * so it doesn't interfere with iOS click delegation on
+           interactive elements. */
+        body {
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         input, textarea, [contenteditable] {
