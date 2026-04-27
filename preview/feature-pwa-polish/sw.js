@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-quacks-v5';
+const CACHE_NAME = 'open-quacks-v6';
 
 // List of all files necessary to run the game offline
 const ASSETS_TO_CACHE = [
