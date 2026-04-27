@@ -1,4 +1,4 @@
 preview_for: feature/pwa-polish
-commit:      c29e7eed4e66e5ec6a21e9988c152d7ae3c41f6d
+commit:      1784265b8ab2f9dc3875e445d13524701cd23b6e
 
-deployed_at: 2026-04-27T19:17:59Z
+deployed_at: 2026-04-27T21:10:32Z
