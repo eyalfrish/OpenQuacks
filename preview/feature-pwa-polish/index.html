@@ -157,7 +157,7 @@
             border: 2px dashed #4a4e69;
         }
         
-        canvas { display: block; outline: none; -webkit-tap-highlight-color: transparent; touch-action: none; }
+        canvas { display: block; outline: none; -webkit-tap-highlight-color: transparent; }
 
         button {
             flex: 1; padding: 12px; border: none; border-radius: 6px; font-size: 1rem;
@@ -715,13 +715,16 @@
     </div>
 
     <script>
-        // Note: pinch-zoom blocking is handled by the viewport meta tag
-        // (user-scalable=no, maximum-scale=1) for installed PWA mode.
-        // Regular Safari ignores those for accessibility, which is fine.
-        // We deliberately do NOT add document-level preventDefault on
-        // gesturestart/gesturechange/gestureend/dblclick — those listeners
-        // can interfere with iOS Safari's synthesized click events on
-        // subsequent single-finger taps, breaking the tutorial highlight.
+        // Pinch-zoom blocking: handled at the CSS level by `touch-action: pan-y`
+        // on the universal selector, plus viewport meta `user-scalable=no,
+        // maximum-scale=1` for installed PWA standalone mode.
+        // Defense-in-depth for iOS Safari double-tap-zoom: prevent default on
+        // dblclick. dblclick fires only AFTER both taps complete, so this does
+        // NOT interfere with rapid single-tap interactions like tapping the
+        // SACK to draw chips quickly. (We deliberately do NOT preventDefault
+        // on touchend/gesturestart at the document level — those can break
+        // single-tap synthesized clicks on iOS.)
+        document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: false });
 
         // --- I18N Localization ---
         window.I18N = {};
