@@ -560,6 +560,16 @@
         </div>
     </div>
 
+    <!-- Bottom install nudge banner. Shown once after the tutorial completes
+         on first-visit, dismissible. Hidden on subsequent visits via cookie.
+         Only appears on platforms where we can guide an actual install (iOS
+         Safari with manual instructions, or Chromium with beforeinstallprompt). -->
+    <div id="install-nudge-banner" style="display: none; position: fixed; left: 0; right: 0; bottom: 0; background: var(--panel-bg); border-top: 2px solid var(--panel-border); padding: 12px calc(var(--sar) + 12px) calc(var(--sab) + 12px) calc(var(--sal) + 12px); z-index: 1500; align-items: center; gap: 10px; box-shadow: 0 -4px 12px rgba(0,0,0,0.5);">
+        <span style="flex: 1; font-size: 0.9rem; color: var(--text-light);" data-i18n="install_nudge_text">📲 Install Quacks for the best experience</span>
+        <button id="btn-install-nudge-yes" style="padding: 8px 14px; background: var(--accent); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;" data-i18n="install_nudge_yes">Install</button>
+        <button id="btn-install-nudge-no" style="padding: 8px 10px; background: transparent; color: #aaa; border: 1px solid #4a4e69; border-radius: 6px; cursor: pointer; font-size: 0.85rem;" data-i18n="install_nudge_no">Later</button>
+    </div>
+
     <div id="book-modal" class="modal-overlay" style="z-index: 1007;">
         <div class="modal-content" style="max-width: 550px;">
             <h2 data-i18n="modal_book_title">📖 Ingredient Rules</h2>
@@ -1884,6 +1894,12 @@
                         this.tutorialStep = 0;
                         setCookie('hasSeenHelp', 'true', 365);
                         this.updateTutorialUI();
+                        // First-visit player just finished the tutorial — show
+                        // the install nudge banner if their platform supports
+                        // a guided install and they haven't dismissed it before.
+                        if (typeof window.__maybeShowInstallNudge === 'function') {
+                            window.__maybeShowInstallNudge();
+                        }
                     }
                 }, true); // Capture phase intercepts the click before it activates anything else
 
@@ -4073,6 +4089,59 @@
             iosModal.addEventListener('click', (e) => {
                 if (e.target === iosModal) iosModal.style.display = 'none';
             });
+
+            // --- First-visit install nudge banner ---
+            // Shown once after the tutorial completes if the platform supports
+            // a guided install (iOS Safari OR Chromium with beforeinstallprompt
+            // captured). Dismissed via the "Later" button = cookie set, never
+            // auto-shown again. The Settings -> Install section remains
+            // available for users who change their mind.
+            const banner = document.getElementById('install-nudge-banner');
+            const bannerYes = document.getElementById('btn-install-nudge-yes');
+            const bannerNo = document.getElementById('btn-install-nudge-no');
+
+            function maybeShowInstallNudge() {
+                if (!banner) return;
+                if (isStandalone) return;
+                if (typeof getCookie === 'function' && getCookie('quacks_install_nudge_seen') === '1') return;
+                // Only show if we have a way to actually guide the user to install.
+                const canGuideInstall = isIOS || !!deferredPrompt;
+                if (!canGuideInstall) return;
+                banner.style.display = 'flex';
+            }
+
+            function dismissInstallNudge() {
+                if (typeof setCookie === 'function') setCookie('quacks_install_nudge_seen', '1', 365);
+                if (banner) banner.style.display = 'none';
+            }
+
+            // Expose so the tutorial-dismissal hook can trigger us same-session.
+            window.__maybeShowInstallNudge = maybeShowInstallNudge;
+
+            if (bannerYes) {
+                bannerYes.addEventListener('click', async () => {
+                    if (isIOS) {
+                        iosModal.style.display = 'flex';
+                    } else if (deferredPrompt) {
+                        try {
+                            deferredPrompt.prompt();
+                            await deferredPrompt.userChoice;
+                        } catch (e) {
+                            console.log('Install prompt failed:', e);
+                        }
+                        deferredPrompt = null;
+                    }
+                    dismissInstallNudge();
+                });
+            }
+            if (bannerNo) {
+                bannerNo.addEventListener('click', dismissInstallNudge);
+            }
+
+            // Returning visitor: tutorial was completed in a previous session.
+            if (typeof getCookie === 'function' && getCookie('hasSeenHelp') === 'true') {
+                maybeShowInstallNudge();
+            }
         })();
     </script>
 </body>
