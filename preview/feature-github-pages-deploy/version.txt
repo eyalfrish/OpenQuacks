@@ -1,4 +1,0 @@
-preview_for: feature/github-pages-deploy
-commit:      926783fccdc4e148902fc3afd549a81288812039
-
-deployed_at: 2026-04-27T08:22:26Z
