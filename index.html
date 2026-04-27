@@ -2,15 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="color-scheme" content="dark">
+    <meta name="format-detection" content="telephone=no">
     <title data-i18n="title">Open Quacks</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧪</text></svg>">
-    
-    <!-- iOS Web App Support -->
+
+    <!-- PWA / Home Screen Support -->
     <link rel="apple-touch-icon" href="assets/icon.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="assets/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="assets/icon-512.png">
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Open Quacks">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Quacks">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <style>
@@ -23,6 +29,10 @@
             --text-light: #f5f5f5;
             --accent: #e94560;
             --canvas-bg: #22223b;
+            --sat: env(safe-area-inset-top, 0px);
+            --sar: env(safe-area-inset-right, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+            --sal: env(safe-area-inset-left, 0px);
         }
 
         * {
@@ -30,22 +40,58 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
+            /* Allow vertical scrolling, block pinch-zoom and double-tap-zoom
+               at the CSS level. touch-action does NOT inherit, so it must be
+               set on every element — body alone is not enough. canvas
+               overrides this to 'none' below for custom touch handling. */
+            touch-action: pan-y;
+        }
+
+        /* Block iOS long-press callout (Save Image, Copy) only on the
+           media-bearing elements where it actually matters. Applying this
+           to all elements via * can interfere with iOS Safari's synthesized
+           click events on plain divs and break the tutorial highlight taps. */
+        canvas, video, img {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* Disallow text selection on body/UI text by default, but inputs
+           and editable areas remain selectable. Applied to body rather
+           than * so it doesn't interfere with iOS click delegation on
+           interactive elements. */
+        body {
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        input, textarea, [contenteditable] {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        html, body {
+            overscroll-behavior: none;
+            -webkit-text-size-adjust: 100%;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-light);
             height: 100vh;
+            height: 100dvh;
             display: flex;
             flex-direction: column;
-            overflow: hidden; 
+            overflow: hidden;
+            padding: var(--sat) var(--sar) var(--sab) var(--sal);
         }
 
         /* --- Loading Screen Overlay --- */
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            height: 100dvh;
             background: var(--bg-color); z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
@@ -208,6 +254,12 @@
         }
 
         /* --- Tutorial Styles --- */
+        /* Note: tutorial-overlay deliberately uses 100vh (not 100dvh).
+           On iOS Safari, mixing 100dvh with position:fixed and an opacity
+           transition can shuffle layer compositing as the URL bar
+           collapses, causing the .tutorial-highlight (which should sit
+           above this overlay via z-index) to end up visually below it
+           after a moment. 100vh keeps the layer stable. */
         #tutorial-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0,0,0,0.75); z-index: 2000;
@@ -257,8 +309,10 @@
         /* --- Modal & Shop Styles --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            height: 100dvh;
             background: rgba(0,0,0,0.8); display: none;
             justify-content: center; align-items: center; z-index: 1000;
+            padding: var(--sat) var(--sar) var(--sab) var(--sal);
         }
         .modal-content {
             background: var(--panel-bg); border: 2px solid var(--panel-border);
@@ -295,6 +349,13 @@
         .icon-small { width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 5px; }
 
         /* --- Mobile / Narrow Screen Responsive Layout --- */
+        /* In mobile mode the body itself scrolls (matching upstream).
+           We tried locking body and scrolling #game-container instead
+           for a more "native" feel, but that broke the tutorial flow:
+           #tutorial-overlay (pointer-events: auto) catches scroll
+           gestures, and iOS Safari can't redirect them through to a
+           constrained scrollable child the way it natively scrolls
+           the body underneath a fixed overlay. Body-scroll wins. */
         @media (max-aspect-ratio: 2/3) {
             body {
                 height: auto;
@@ -401,7 +462,7 @@
                 <div id="ui-bag-count">0</div>
             </div>
 
-            <div id="achievement-toast" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center;">
+            <div id="achievement-toast" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; background: rgba(0,0,0,0.8); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: var(--sat) var(--sar) var(--sab) var(--sal);">
                 <div class="toast-animate">
                     <div id="toast-icon" style="width: 80px; height: 80px; margin: 0 auto 10px auto; font-size: 4rem; display: flex; align-items: center; justify-content: center;">🏆</div>
                     <h2 id="toast-title" style="color: gold; font-size: 1.8rem; margin-bottom: 10px; font-weight: bold;">Achievement Unlocked!</h2>
@@ -633,6 +694,17 @@
     </div>
 
     <script>
+        // Pinch-zoom blocking: handled at the CSS level by `touch-action: pan-y`
+        // on the universal selector, plus viewport meta `user-scalable=no,
+        // maximum-scale=1` for installed PWA standalone mode.
+        // Defense-in-depth for iOS Safari double-tap-zoom: prevent default on
+        // dblclick. dblclick fires only AFTER both taps complete, so this does
+        // NOT interfere with rapid single-tap interactions like tapping the
+        // SACK to draw chips quickly. (We deliberately do NOT preventDefault
+        // on touchend/gesturestart at the document level — those can break
+        // single-tap synthesized clicks on iOS.)
+        document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: false });
+
         // --- I18N Localization ---
         window.I18N = {};
         window.t = function(key, defaultStr) {
