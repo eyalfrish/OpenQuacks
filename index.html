@@ -535,8 +535,39 @@
                 <p style="margin-top: 5px; font-size: 0.85em; color: #aaa;" data-i18n="settings_sound_desc">Enable or disable bubbling and explosion audio.</p>
             </div>
 
+            <div id="install-section" style="margin-top: 15px; text-align: start; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; display: none;">
+                <strong style="color: var(--accent); font-size: 1rem;" data-i18n="settings_install_title">📲 Install as App</strong>
+                <p style="margin: 5px 0 10px 0; font-size: 0.85em; color: #aaa;" data-i18n="settings_install_desc">Run full-screen, work offline, no browser bars.</p>
+                <button id="btn-install" style="background-color: #2a9d8f; width: 100%; display: none;" data-i18n="settings_install_btn">Install Now</button>
+                <button id="btn-install-ios" style="background-color: #2a9d8f; width: 100%; display: none;" data-i18n="settings_install_ios_btn">How to Install on iPhone</button>
+            </div>
+
             <button id="btn-close-settings" style="background-color: #4a4e69; margin-top: 25px; width: 100%;" data-i18n="btn_done">Done</button>
         </div>
+    </div>
+
+    <div id="ios-install-modal" class="modal-overlay" style="z-index: 1009;">
+        <div class="modal-content" style="max-width: 380px;">
+            <h2 data-i18n="ios_install_title">📲 Install on iPhone</h2>
+            <p style="margin: 10px 0 15px 0; font-size: 0.9em; color: #aaa;" data-i18n="ios_install_subtitle">A few quick steps to add Quacks to your home screen:</p>
+            <ol style="text-align: start; line-height: 1.8; padding-inline-start: 24px; color: #ddd; font-size: 0.95em;">
+                <li data-i18n="ios_install_step1">Tap the <strong>Share</strong> button (the square with the upward arrow) at the bottom of Safari.</li>
+                <li data-i18n="ios_install_step2">Scroll down and tap <strong>Add to Home Screen</strong>.</li>
+                <li data-i18n="ios_install_step3">Tap <strong>Add</strong> in the top-right corner.</li>
+            </ol>
+            <p style="margin-top: 18px; font-size: 0.85em; color: #aaa;" data-i18n="ios_install_note">Then open Quacks from your home screen — full screen, offline-ready, no browser bars.</p>
+            <button id="btn-close-ios-install" style="background-color: #4a4e69; margin-top: 20px; width: 100%;" data-i18n="btn_got_it">Got it!</button>
+        </div>
+    </div>
+
+    <!-- Bottom install nudge banner. Shown once after the tutorial completes
+         on first-visit, dismissible. Hidden on subsequent visits via cookie.
+         Only appears on platforms where we can guide an actual install (iOS
+         Safari with manual instructions, or Chromium with beforeinstallprompt). -->
+    <div id="install-nudge-banner" style="display: none; position: fixed; left: 0; right: 0; bottom: 0; background: var(--panel-bg); border-top: 2px solid var(--panel-border); padding: 12px calc(var(--sar) + 12px) calc(var(--sab) + 12px) calc(var(--sal) + 12px); z-index: 1500; align-items: center; gap: 10px; box-shadow: 0 -4px 12px rgba(0,0,0,0.5);">
+        <span style="flex: 1; font-size: 0.9rem; color: var(--text-light);" data-i18n="install_nudge_text">📲 Install Quacks for the best experience</span>
+        <button id="btn-install-nudge-yes" style="padding: 8px 14px; background: var(--accent); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem;" data-i18n="install_nudge_yes">Install</button>
+        <button id="btn-install-nudge-no" style="padding: 8px 10px; background: transparent; color: #aaa; border: 1px solid #4a4e69; border-radius: 6px; cursor: pointer; font-size: 0.85rem;" data-i18n="install_nudge_no">Later</button>
     </div>
 
     <div id="book-modal" class="modal-overlay" style="z-index: 1007;">
@@ -1863,6 +1894,12 @@
                         this.tutorialStep = 0;
                         setCookie('hasSeenHelp', 'true', 365);
                         this.updateTutorialUI();
+                        // First-visit player just finished the tutorial — show
+                        // the install nudge banner if their platform supports
+                        // a guided install and they haven't dismissed it before.
+                        if (typeof window.__maybeShowInstallNudge === 'function') {
+                            window.__maybeShowInstallNudge();
+                        }
                     }
                 }, true); // Capture phase intercepts the click before it activates anything else
 
@@ -3985,6 +4022,127 @@
                     });
             });
         }
+
+        // --- PWA Install UX ---
+        (function setupInstallUX() {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                              || window.matchMedia('(display-mode: fullscreen)').matches
+                              || window.navigator.standalone === true;
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+            const installSection = document.getElementById('install-section');
+            const installBtn = document.getElementById('btn-install');
+            const installIosBtn = document.getElementById('btn-install-ios');
+            const iosModal = document.getElementById('ios-install-modal');
+            const closeIosBtn = document.getElementById('btn-close-ios-install');
+
+            if (!installSection || !installBtn || !installIosBtn || !iosModal || !closeIosBtn) return;
+
+            let deferredPrompt = null;
+
+            // If we're already running as an installed PWA, hide everything.
+            if (isStandalone) {
+                installSection.style.display = 'none';
+                return;
+            }
+
+            // iOS Safari: no beforeinstallprompt event — show manual instructions button.
+            if (isIOS) {
+                installSection.style.display = 'block';
+                installIosBtn.style.display = 'block';
+            }
+
+            // Android / Chromium: capture the prompt for later use.
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                installSection.style.display = 'block';
+                installBtn.style.display = 'block';
+            });
+
+            // Hide install UI once the app is installed.
+            window.addEventListener('appinstalled', () => {
+                deferredPrompt = null;
+                installBtn.style.display = 'none';
+                installIosBtn.style.display = 'none';
+                installSection.style.display = 'none';
+            });
+
+            installBtn.addEventListener('click', async () => {
+                if (!deferredPrompt) return;
+                try {
+                    deferredPrompt.prompt();
+                    await deferredPrompt.userChoice;
+                } catch (e) {
+                    console.log('Install prompt failed:', e);
+                }
+                deferredPrompt = null;
+                installBtn.style.display = 'none';
+            });
+
+            installIosBtn.addEventListener('click', () => {
+                iosModal.style.display = 'flex';
+            });
+            closeIosBtn.addEventListener('click', () => {
+                iosModal.style.display = 'none';
+            });
+            iosModal.addEventListener('click', (e) => {
+                if (e.target === iosModal) iosModal.style.display = 'none';
+            });
+
+            // --- First-visit install nudge banner ---
+            // Shown once after the tutorial completes if the platform supports
+            // a guided install (iOS Safari OR Chromium with beforeinstallprompt
+            // captured). Dismissed via the "Later" button = cookie set, never
+            // auto-shown again. The Settings -> Install section remains
+            // available for users who change their mind.
+            const banner = document.getElementById('install-nudge-banner');
+            const bannerYes = document.getElementById('btn-install-nudge-yes');
+            const bannerNo = document.getElementById('btn-install-nudge-no');
+
+            function maybeShowInstallNudge() {
+                if (!banner) return;
+                if (isStandalone) return;
+                if (typeof getCookie === 'function' && getCookie('quacks_install_nudge_seen') === '1') return;
+                // Only show if we have a way to actually guide the user to install.
+                const canGuideInstall = isIOS || !!deferredPrompt;
+                if (!canGuideInstall) return;
+                banner.style.display = 'flex';
+            }
+
+            function dismissInstallNudge() {
+                if (typeof setCookie === 'function') setCookie('quacks_install_nudge_seen', '1', 365);
+                if (banner) banner.style.display = 'none';
+            }
+
+            // Expose so the tutorial-dismissal hook can trigger us same-session.
+            window.__maybeShowInstallNudge = maybeShowInstallNudge;
+
+            if (bannerYes) {
+                bannerYes.addEventListener('click', async () => {
+                    if (isIOS) {
+                        iosModal.style.display = 'flex';
+                    } else if (deferredPrompt) {
+                        try {
+                            deferredPrompt.prompt();
+                            await deferredPrompt.userChoice;
+                        } catch (e) {
+                            console.log('Install prompt failed:', e);
+                        }
+                        deferredPrompt = null;
+                    }
+                    dismissInstallNudge();
+                });
+            }
+            if (bannerNo) {
+                bannerNo.addEventListener('click', dismissInstallNudge);
+            }
+
+            // Returning visitor: tutorial was completed in a previous session.
+            if (typeof getCookie === 'function' && getCookie('hasSeenHelp') === 'true') {
+                maybeShowInstallNudge();
+            }
+        })();
     </script>
 </body>
 </html>
