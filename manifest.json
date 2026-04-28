@@ -1,6 +1,6 @@
 {
   "name": "Open Quacks",
-  "short_name": "Quacks",
+  "short_name": "OpenQuacks",
   "description": "A single-player potion brewing adventure!",
   "start_url": "./?source=pwa",
   "scope": "./",
