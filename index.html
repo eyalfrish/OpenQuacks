@@ -3875,7 +3875,7 @@
             const LANG_FLAGS = { en: '🇺🇸', es: '🇪🇸', he: '🇮🇱', ar: '🇸🇦', fa: '🇮🇷', pl: '🇵🇱', de: '🇩🇪', uk: '🇺🇦', el: '🇬🇷', ga: '🇮🇪', ja: '🇯🇵', pt: '🇧🇷' };
             const urlParams = new URLSearchParams(window.location.search);
             
-            let lang = urlParams.get('lang');
+            let lang = urlParams.get('lang') || getCookie('selectedLanguage');
             if (!lang) {
                 // Detect browser language (e.g., 'es-ES' -> 'es'), fallback to 'en' if not supported
                 const browserLang = (navigator.language || navigator.userLanguage || 'en').split('-')[0].toLowerCase();
@@ -3979,6 +3979,8 @@
                 btn.innerText = LANG_FLAGS[l];
                 btn.onclick = async () => {
                     document.documentElement.dir = ['he', 'ar', 'fa'].includes(l) ? 'rtl' : 'ltr';
+                    setCookie('selectedLanguage', l, 365); // Save preference for PWA reloads
+                    
                     try {
                         const response = await fetch(`lang/${l}.json`);
                         if (response.ok) {
