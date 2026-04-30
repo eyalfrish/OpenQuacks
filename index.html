@@ -3875,7 +3875,13 @@
             const LANG_FLAGS = { en: '🇺🇸', es: '🇪🇸', he: '🇮🇱', ar: '🇸🇦', fa: '🇮🇷', pl: '🇵🇱', de: '🇩🇪', uk: '🇺🇦', el: '🇬🇷', ga: '🇮🇪', ja: '🇯🇵', pt: '🇧🇷' };
             const urlParams = new URLSearchParams(window.location.search);
             
-            let lang = urlParams.get('lang') || getCookie('selectedLanguage');
+            // Read order: ?lang= -> cookie -> localStorage -> navigator.language -> 'en'.
+            // localStorage is the durable backstop on iOS, where ITP caps document.cookie
+            // expiry at 7 days regardless of the expires= attribute. localStorage in
+            // standalone PWAs survives normal-use patterns much longer.
+            let lang = urlParams.get('lang')
+                || getCookie('selectedLanguage')
+                || (() => { try { return localStorage.getItem('selectedLanguage'); } catch (e) { return null; } })();
             if (!lang) {
                 // Detect browser language (e.g., 'es-ES' -> 'es'), fallback to 'en' if not supported
                 const browserLang = (navigator.language || navigator.userLanguage || 'en').split('-')[0].toLowerCase();
@@ -3980,6 +3986,7 @@
                 btn.onclick = async () => {
                     document.documentElement.dir = ['he', 'ar', 'fa'].includes(l) ? 'rtl' : 'ltr';
                     setCookie('selectedLanguage', l, 365); // Save preference for PWA reloads
+                    try { localStorage.setItem('selectedLanguage', l); } catch (e) {} // Durable backstop on iOS (ITP caps cookie at 7 days)
                     
                     try {
                         const response = await fetch(`lang/${l}.json`);
